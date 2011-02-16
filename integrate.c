@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <fftw3.h>
 #include "utils.h"
 #include "integrate.h"
 #include "interaction_data.h"
@@ -110,7 +111,7 @@ void finalize_p_inst_npt();
 
 /************************************************************/
 
-int invalidate_system(ClientData data, Tcl_Interp *interp, int argc, char **argv) {
+int tclcommand_invalidate_system(ClientData data, Tcl_Interp *interp, int argc, char **argv) {
   mpi_bcast_event(INVALIDATE_SYSTEM);
   return TCL_OK;
 }
@@ -450,7 +451,13 @@ void integrate_vv(int n_steps)
     if(integ_switch == INTEG_METHOD_NPT_ISO || nemd_method != NEMD_METHOD_OFF) {
       propagate_vel();  propagate_pos(); }
     else
+
+#ifdef PIMD_NM
+     propagate_vel_pos_nm();
+#else
       propagate_vel_pos();
+#endif
+    
 #ifdef ROTATION
     propagate_omega_quat();
 #endif
@@ -1040,3 +1047,234 @@ void force_and_velocity_display()
 	    local_particles[db_maxv_id]->m.v[1],local_particles[db_maxv_id]->m.v[2]);
 #endif
 }
+
+
+void propagate_vel_pos_nm()
+//nb=trotter number, npart=Total number of para-H2 molecules 
+//time step, temperature and mass define in a.u.
+{
+  Cell *cell;
+  Particle *p;
+  int c, i, j,t,a,np;
+  int nb=48,npart=10;
+  double dt=1, beta=1/7.91339e-5, mass=3674.305;
+  double **pos_array2,**vel_array2, **poly;
+  
+
+/*Allocate pointer memory for the first dimension of a 2D array[][]; */
+  pos_array2=(double **) malloc(3*npart * sizeof(double *));
+  vel_array2=(double **) malloc(3*npart * sizeof(double *));
+  if(NULL == pos_array2){free(pos_array2); printf("Memory allocation failed while allocating for pos_array2[].\n"); exit(-1);}
+  if(NULL == vel_array2){free(vel_array2); printf("Memory allocation failed while allocating for vel_array2[].\n"); exit(-1);}
+  /* Allocate integer memory for the second dimension of a 2D array[][]; */
+  for(i = 0; i < 3*npart; i++)
+  {
+    pos_array2[i] = (double *) malloc(nb * sizeof(double));
+    vel_array2[i] = (double *) malloc(nb * sizeof(double));
+    if(NULL == pos_array2[i]){free(pos_array2[i]); printf("Memory allocation failed while allocating for pos_array2[i][].\n"); exit(-1);}
+    if(NULL == vel_array2[i]){free(vel_array2[i]); printf("Memory allocation failed while allocating for vel_array2[i][].\n"); exit(-1);}
+  }
+
+  poly=(double **) malloc(4 * sizeof(double *));
+  if(NULL == poly){free(poly); printf("Memory allocation failed while allocating for vel_array2[].\n"); exit(-1);}
+  for(i = 0; i < 4; i++)
+  {
+    poly[i] = (double *) malloc(nb * sizeof(double));
+    if(NULL == poly[i]){free(poly[i]); printf("Memory allocation failed while allocating for pos_array2[i][].\n"); exit(-1);}
+  }
+
+  INTEG_TRACE(fprintf(stderr,"%d: propagate_vel_pos:\n",this_node));
+
+  rebuild_verletlist = 0;
+  for (c = 0; c < local_cells.n; c++) {
+    cell = local_cells.cell[c];
+    p  = cell->part;
+    np = cell->n;
+    
+    for(i=0; i<3*npart; i++) {
+      for(j=0; j<nb; j++) {
+	pos_array2[i][j]=0;
+	vel_array2[i][j]=0;
+      }
+    }
+    t=-1;
+    for(i = 0; i < np; i++) {
+#ifdef VIRTUAL_SITES
+       if (ifParticleIsVirtual(&p[i])) continue;
+#endif
+       if ( fmod(i,(nb+1)) == 0.0 ) {
+	      t+=1;
+	    }
+       
+     for(j=0; j < 3; j++){
+#ifdef EXTERNAL_FORCES
+	if (!(p[i].l.ext_flag & COORD_FIXED(j)))
+#endif
+	  {
+#ifdef PIMD_NM
+            /* Propagate velocities: v(t+0.5*dt) = v(t) + 0.5*dt * f(t) */
+
+	    p[i].m.v[j] += p[i].f.f[j];
+	   
+#endif 
+	  	
+	    pos_array2[j+3*t][i-(nb+1)*t]=p[i].r.p[j];
+	    vel_array2[j+3*t][i-(nb+1)*t]=p[i].m.v[j]/dt;
+
+	  }
+     }
+
+      ONEPART_TRACE(if(p[i].p.identity==check_id) fprintf(stderr,"%d: OPT: PV_1 v_new = (%.3e,%.3e,%.3e)\n",this_node,p[i].m.v[0],p[i].m.v[1],p[i].m.v[2]));
+      ONEPART_TRACE(if(p[i].p.identity==check_id) fprintf(stderr,"%d: OPT: PPOS p = (%.3f,%.3f,%.3f)\n",this_node,p[i].r.p[0],p[i].r.p[1],p[i].r.p[2]));
+    }
+ 
+/* Propagate positions of a free single ring polymer*/
+
+    propagate_pos_nm(vel_array2,pos_array2,nb,npart,dt,beta,mass,poly);
+    a=-1;
+    for(i=0; i<np; i++){
+#ifdef VIRTUAL_SITES
+      if (ifParticleIsVirtual(&p[i])) continue;
+#endif
+       if ( fmod(i,(nb+1)) == 0.0 ) {
+	 a+=1;
+       }
+       for(j=0; j < 3; j++){
+	
+	 p[i].r.p[j]=pos_array2[j+3*a][i-(nb+1)*a];
+	 p[i].m.v[j]=vel_array2[j+3*a][i-(nb+1)*a]*dt;
+
+       }
+#ifdef ADDITIONAL_CHECKS
+       force_and_velocity_check(&p[i]);
+#endif
+       
+       /* Verlet criterion check */
+       if(distance2(p[i].r.p,p[i].l.p_old) > skin2 ) rebuild_verletlist = 1;
+    }
+
+  }
+
+/* Deallocate memory of 2D array. */
+    for(i = 0; i < 3*npart; i++)
+    free(pos_array2[i]);
+    free(pos_array2);
+
+    for(j = 0; j < 3*npart; j++)
+    free(vel_array2[j]);
+    free(vel_array2);
+  
+  if(dd.use_vList) announce_rebuild_vlist();
+  
+#ifdef ADDITIONAL_CHECKS
+  force_and_velocity_display();
+#endif
+}
+
+void  propagate_pos_nm(double **vel_array2, double **pos_array2, int nb, int npart, double dt, double beta, double mass, double **poly) 
+//Here is propagated the positions and velocities according to the EOM of the free ring-polymer
+// in the framework of the normal modes
+{ 
+  int k,j;
+  double pjnew;
+ 
+  mono_ring(poly,dt,nb,beta,mass);
+
+
+  realft(vel_array2,nb,npart,1);
+  realft(pos_array2,nb,npart,1);
+   
+  /*modification of pos and vel according to free ring polymer*/
+
+  for(k=0;k<nb;k++){
+    for(j=0;j<3*npart;j++){
+      pjnew = vel_array2[j][k]*poly[0][k]+pos_array2[j][k]*poly[1][k];
+      pos_array2[j][k] = vel_array2[j][k]*poly[2][k]+pos_array2[j][k]*poly[3][k];
+      vel_array2[j][k] = pjnew;
+    }
+    }
+
+  realft(vel_array2,nb,npart,-1);
+  realft(pos_array2,nb,npart,-1);
+}
+
+
+void mono_ring(double **poly, double dt, int nb, double beta, double mass)
+//this is considered to be the monodromy matrix of a single ring-polymer with "nb" beads
+{
+  double betan,twown,pibyn,wk,wt,wm,cwt,swt;
+  int i,j,hbar=1;
+  double em;
+
+  em=1;
+  poly[0][0]=1;
+  poly[1][0]=0;
+  poly[2][0]=dt/em;
+  poly[3][0]=1;
+
+  if(nb >1){
+    betan = beta/nb;
+    twown = 2*(sqrt(mass))/(betan*hbar);
+    pibyn = acos(-1)/nb;
+    for(i=0;i<nb/2;i++){
+      wk = twown*sin((i+1)*pibyn);
+      wt = wk*dt;
+      wm = wk*em;
+      cwt = cos(wt);
+      swt = sin(wt);
+      poly[0][i+1] = cwt;
+      poly[1][i+1] = -wm*swt;
+      poly[2][i+1] = swt/(wm);
+      poly[3][i+1] = cwt;
+    }
+
+    for(j=0;j<((nb/2)-1);j++){
+      poly[0][nb-j-1] = poly[0][j+1];
+      poly[1][nb-j-1] = poly[1][j+1];
+      poly[2][nb-j-1] = poly[2][j+1];
+      poly[3][nb-j-1] = poly[3][j+1];
+    }
+  }
+}
+
+
+void realft(double **array,int nb,int npart,int mode)
+//FFTw routine used to obtain components of normal modes per polymer-ring
+{
+  int i,j,k;
+  double copy[nb];
+
+  fftw_plan plan_backward;
+  fftw_plan plan_forward;
+ 
+  for ( i=0; i< 3*npart; i++){
+    for (j=0; j<nb; j++) {
+      copy[j]=array[i][j];
+    }
+    
+       //FFTW forward
+    if(mode == 1) { 
+     
+      //plan_forward = fftw_plan_r2r_1d ( nb, copy, copy, FFTW_R2HC, FFTW_ESTIMATE );
+      plan_forward = fftw_plan_r2r_1d ( nb, copy, copy, 0, 64 );
+      fftw_execute ( plan_forward );
+      fftw_destroy_plan ( plan_forward ); 
+
+    } //FFTW backward
+    else { 
+      //plan_backward = fftw_plan_r2r_1d ( nb, copy, copy, FFTW_HC2R, FFTW_ESTIMATE );
+      plan_backward = fftw_plan_r2r_1d ( nb, copy, copy, 1, 64);
+	
+    fftw_execute ( plan_backward);
+    fftw_destroy_plan ( plan_backward );
+
+    }
+     
+    for( k=0; k<nb; k++) {
+      array[i][k]=copy[k]/sqrt(nb);
+    } 
+     
+  }
+
+}
+

@@ -661,7 +661,7 @@ static void init_tcl(Tcl_Interp *interp)
   /* in cells.c */
   REGISTER_COMMAND("cellsystem", cellsystem);
   /* in integrate.c */
-  REGISTER_COMMAND("invalidate_system", invalidate_system);
+  REGISTER_COMMAND("invalidate_system", tclcommand_invalidate_system);
   REGISTER_COMMAND("integrate", integrate);
   /* in global.c */
   REGISTER_COMMAND("setmd", setmd);
