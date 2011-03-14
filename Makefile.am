@@ -17,14 +17,11 @@
 #
 SUBDIRS = src . scripts tools testsuite doc
 
-ACLOCAL_AMFLAGS = -Iconfig
+ACLOCAL_AMFLAGS = -I config
 
 # List files that should go into the distribution but are not required
 # by any other means
-EXTRA_DIST = darwinlink.sh \
-	autogen.sh samples cmake CMakeLists.txt \
-        acconfig.h.cmakein packages \
-	$(extra)
+EXTRA_DIST = darwinlink.sh bootstrap.sh samples packages $(extra)
 
 #################################################################
 # Installation of the main program
