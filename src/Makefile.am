@@ -75,6 +75,7 @@ libEspresso_a_SOURCES = \
 	rattle.c rattle.h \
 	reaction.c reaction.h \
 	rotation.c rotation.h \
+	scafacos.c scafacos.h \
 	specfunc.c specfunc.h \
 	statistics.c statistics.h \
 	statistics_chain.c statistics_chain.h \
@@ -143,8 +144,8 @@ libEspresso_a_SOURCES += \
 	p3m.c p3m.h \
 	p3m-common.c p3m-common.h \
 	p3m-dipolar.c p3m-dipolar.h \
-	reaction_field.c reaction_field.h
-
+	reaction_field.c reaction_field.h \
+	scafacos_p3m_tuning.c scafacos_p3m_tuning.h
 if TCL
 
 libEspresso_a_SOURCES += \
@@ -240,8 +241,18 @@ libEspresso_a_SOURCES += \
 	tcl/p3m-dipolar_tcl.c tcl/p3m-dipolar_tcl.h \
 	tcl/p3m_tcl.c tcl/p3m_tcl.h \
 	tcl/reaction_field_tcl.c tcl/reaction_field_tcl.h \
-	tcl/mdlc_correction_tcl.c tcl/mdlc_correction_tcl.h	
-
+	tcl/mdlc_correction_tcl.c tcl/mdlc_correction_tcl.h \
+	tcl/scafacos_direct_tcl.c tcl/scafacos_direct_tcl.h \
+	tcl/scafacos_ewald_tcl.c tcl/scafacos_ewald_tcl.h \
+	tcl/scafacos_fmm_tcl.c tcl/scafacos_fmm_tcl.h \
+	tcl/scafacos_memd_tcl.c tcl/scafacos_memd_tcl.h \
+	tcl/scafacos_mmm1d_tcl.c tcl/scafacos_mmm1d_tcl.h \
+	tcl/scafacos_mmm2d_tcl.c tcl/scafacos_mmm2d_tcl.h \
+	tcl/scafacos_p2nfft_tcl.c tcl/scafacos_p2nfft_tcl.h \
+	tcl/scafacos_p3m_tcl.c tcl/scafacos_p3m_tcl.h \
+	tcl/scafacos_pepc_tcl.c tcl/scafacos_pepc_tcl.h \
+	tcl/scafacos_pp3mg_tcl.c tcl/scafacos_pp3mg_tcl.h \
+	tcl/scafacos_vmg_tcl.c tcl/scafcos_vmg_tcl.h
 endif
 
 if TCL

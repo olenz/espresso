@@ -77,6 +77,7 @@
 #include "elc.h"
 #include "iccp3m.h"
 #include "collision.h" 
+#include "scafacos.h"
 /* end of force files */
 
 /** \name Exported Functions */
@@ -293,7 +294,28 @@ MDINLINE void add_non_bonded_pair_force(Particle *p1, Particle *p2,
   
   if (coulomb.method == COULOMB_RF)
     add_rf_coulomb_pair_force(p1,p2,d,dist,force);
-#endif
+#ifdef SCAFACOS
+  fcs_float sh_field;
+  if(scafacos.short_range_flag == 0 && (coulomb.method == COULOMB_SCAFACOS_P2NFFT || coulomb.method == COULOMB_SCAFACOS_P3M)) {
+    fcs_compute_near_field(fcs_handle, (fcs_float) dist, &sh_field);
+    int i;
+    for(i=0; i<3; i++){
+      p1->f.f[i] -= sh_field * d[i] /dist * p2->p.q * p1->p.q * coulomb.bjerrum;
+      p2->f.f[i] += sh_field * d[i] /dist * p2->p.q * p1->p.q * coulomb.bjerrum;
+      
+      /*
+      p1->f.f[0] -= sh_field * d[0] /dist * p2->p.q * p1->p.q * coulomb.bjerrum;
+      p1->f.f[1] -= sh_field * d[1] /dist * p2->p.q * p1->p.q * coulomb.bjerrum;
+      p1->f.f[2] -= sh_field * d[2] /dist * p2->p.q * p1->p.q * coulomb.bjerrum;
+      p2->f.f[0] += sh_field * d[0] /dist * p2->p.q * p1->p.q * coulomb.bjerrum;
+      p2->f.f[1] += sh_field * d[1] /dist * p2->p.q * p1->p.q * coulomb.bjerrum;
+      p2->f.f[2] += sh_field * d[2] /dist * p2->p.q * p1->p.q * coulomb.bjerrum;*/
+		 // printf("particle_id1: %d , particle_id2: %d , dist: %f , bjerrum: %f \n", p1->p.identity, p2->p.identity, dist, coulomb.bjerrum);
+    }
+  }
+	      
+#endif /* ifdef SCAFACOS */
+#endif /*ifdef ELECTROSTATICS */
 
   /*********************************************************************/
   /* everything before this contributes to the virial pressure in NpT, */

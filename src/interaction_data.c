@@ -60,6 +60,7 @@
 #include "magnetic_non_p3m_methods.h"
 #include "mdlc_correction.h"
 #include "initialize.h"
+#include "scafacos.h"
 
 /****************************************
  * variables
@@ -521,6 +522,26 @@ static void recalc_global_maximal_nonbonded_cutoff()
     if (max_cut_global < rf_params.r_cut)
       max_cut_global = rf_params.r_cut;
     break;
+    
+#ifdef SCAFACOS
+double r_cut_scafacos = 0;
+  case COULOMB_SCAFACOS_P2NFFT: {
+    if(scafacos.short_range_flag == 0){
+
+      fcs_p2nfft_get_r_cut(fcs_handle, &r_cut_scafacos);
+    }
+    break;
+  }
+  case COULOMB_SCAFACOS_P3M: {
+    if(scafacos.short_range_flag == 0){
+      fcs_p3m_get_r_cut(fcs_handle, &r_cut_scafacos);
+    }
+    break;
+  }  
+  
+  if (max_cut_global < r_cut_scafacos)
+      max_cut_global = r_cut_scafacos;
+#endif/* ifdef SCAFACOS */
   }
 #endif /*ifdef ELECTROSTATICS */
   
@@ -685,7 +706,32 @@ static void recalc_maximal_cutoff_nonbonded()
 	max_cut_current += 2.0* max_cut_bonded;
       }
 #endif
+#ifdef SCAFACOS
 
+ //TODO
+double r_cut_scafacos = 0;
+if(scafacos.short_range_flag == 0){
+  switch (coulomb.method) {
+    case COULOMB_SCAFACOS_P2NFFT: {
+
+      fcs_p2nfft_get_r_cut(fcs_handle, &r_cut_scafacos);
+      fprintf(stderr, "interaction_data.c:r_cut_scafacos is %f \n", r_cut_scafacos);
+      break;
+    }
+    case COULOMB_SCAFACOS_P3M: {
+
+      fcs_p3m_get_r_cut(fcs_handle, &r_cut_scafacos);
+      fprintf(stderr, "interaction_data.c:r_cut_scafacos is %f \n", r_cut_scafacos);
+      break;
+    }
+  }
+}
+
+      if(max_cut_current < r_cut_scafacos)
+	max_cut_current = r_cut_scafacos;
+#endif /* ifdef SCAFACOS */
+	
+	
       IA_parameters *data_sym = get_ia_param(j, i);
 
       /* no interaction ever touched it, at least no real
@@ -705,6 +751,8 @@ static void recalc_maximal_cutoff_nonbonded()
 
       CELL_TRACE(fprintf(stderr, "%d: pair %d,%d max_cut total %f\n",
 			 this_node, i, j, data->max_cut));
+      
+      
     }
 }
 

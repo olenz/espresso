@@ -113,6 +113,18 @@
   #define COULOMB_RF 9
   /** Coulomb method is Reaction-Field BUT as interactions */
   #define COULOMB_INTER_RF 10
+  /** Coulomb methods from the SCAFACOS Library **/
+  #define COULOMB_SCAFACOS_DIRECT 11
+  #define COULOMB_SCAFACOS_EWALD  12
+  #define COULOMB_SCAFACOS_FMM    13
+  #define COULOMB_SCAFACOS_MEMD   14
+  #define COULOMB_SCAFACOS_MMM1D  15
+  #define COULOMB_SCAFACOS_MMM2D  16
+  #define COULOMB_SCAFACOS_P2NFFT 17
+  #define COULOMB_SCAFACOS_P3M    18
+  #define COULOMB_SCAFACOS_PP3MG  19
+  #define COULOMB_SCAFACOS_PEPC   20
+  #define COULOMB_SCAFACOS_VMG    21
 #endif
 /*@}*/
 

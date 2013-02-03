@@ -290,7 +290,55 @@ if(reaction.rate != 0.0) {
 
   /* Ensemble preparation: NVT or NPT */
   integrate_ensemble_init();
+  
+#ifdef SCAFACOS
+/* initialize Scafacos, set up the system and solver specific parameters, all on
+each node. functions include MPI_Bcast */
 
+  mpi_bcast_coulomb_method();
+  
+  switch(coulomb.method){
+    case COULOMB_SCAFACOS_DIRECT: 
+    case COULOMB_SCAFACOS_EWALD:
+    case COULOMB_SCAFACOS_FMM: 
+    case COULOMB_SCAFACOS_MEMD: 
+    case COULOMB_SCAFACOS_MMM1D: 
+    case COULOMB_SCAFACOS_MMM2D: 
+    case COULOMB_SCAFACOS_P2NFFT: 
+    case COULOMB_SCAFACOS_P3M: 
+    case COULOMB_SCAFACOS_PEPC: 
+    case COULOMB_SCAFACOS_PP3MG: 
+    case COULOMB_SCAFACOS_VMG: {
+      mpi_scafacos_bcast_common_params();
+      mpi_scafacos_bcast_solver_specific();
+      mpi_scafacos_init();
+      mpi_scafacos_common_set();
+      mpi_scafacos_solver_specific_set();
+      break;
+    }
+    default: 
+      break;
+  }
+/* tune in order to generate at least defaults for cutoff, transfer the cutoff back
+to Espresso and generate new cell system on each node*/
+  switch(coulomb.method){
+    case COULOMB_SCAFACOS_P2NFFT:
+      if( scafacos.short_range_flag == 0 ){
+        scafacos_tune();
+        recalc_maximal_cutoff();
+        cells_on_geometry_change(0);
+      }
+      break;
+    case COULOMB_SCAFACOS_P3M:
+      if( scafacos.short_range_flag == 0 ){
+        scafacos_tune();
+        recalc_maximal_cutoff();
+        cells_on_geometry_change(0);
+      }
+    default:
+      break;
+  }
+#endif
   /* Update particle and observable information for routines in statistics.c */
   invalidate_obs();
   freePartCfg();

@@ -62,6 +62,9 @@
 #include "mdlc_correction.h"
 #include "reaction.h"
 
+#ifdef SCAFACOS
+#include "scafacos.h"
+#endif /* SCAFACOS */
 int this_node = -1;
 int n_nodes = -1;
 MPI_Comm comm_cart;
@@ -379,11 +382,16 @@ void mpi_bcast_event_slave(int node, int event)
   case P3M_COUNT_CHARGES:
     p3m_count_charged_particles();
     break;
-#endif
+#endif /*ifdef P3M */
   case MAGGS_COUNT_CHARGES:
     maggs_count_charged_particles();
-    break; 
-#endif
+    break;
+#ifdef SCAFACOS
+  case FCS_P3M_COUNT_CHARGES:
+    fcs_p3m_count_charged_particles();
+    break;
+#endif /*ifdef SCAFACOS */
+#endif /*ifdef ELECTROSTATICS*/
   case INVALIDATE_SYSTEM:
     local_invalidate_system();
     break;
@@ -1748,11 +1756,51 @@ void mpi_bcast_coulomb_params_slave(int node, int parm)
   case COULOMB_INTER_RF:
     MPI_Bcast(&rf_params, sizeof(Reaction_field_params), MPI_BYTE, 0, comm_cart);
     break;
+    
+#ifdef SCAFACOS
+    
+  case COULOMB_SCAFACOS_DIRECT:
+    MPI_Bcast(&scafacos_direct, sizeof(scafacos_direct_parameter_structure), MPI_BYTE, 0, comm_cart);
+    break;
+  case COULOMB_SCAFACOS_EWALD:
+    MPI_Bcast(&scafacos_ewald, sizeof(scafacos_ewald_parameter_structure), MPI_BYTE, 0, comm_cart);
+    break;
+  case COULOMB_SCAFACOS_FMM:
+    MPI_Bcast(&scafacos_fmm, sizeof(scafacos_fmm_parameter_structure), MPI_BYTE, 0, comm_cart);
+    break;
+  case COULOMB_SCAFACOS_MEMD:
+    MPI_Bcast(&scafacos_memd, sizeof(scafacos_memd_parameter_structure), MPI_BYTE, 0, comm_cart);
+    break;
+  case COULOMB_SCAFACOS_MMM1D:
+    MPI_Bcast(&scafacos_mmm1d, sizeof(scafacos_mmm1d_parameter_structure), MPI_BYTE, 0, comm_cart);
+    break;
+  case COULOMB_SCAFACOS_MMM2D:
+    MPI_Bcast(&scafacos_mmm2d, sizeof(scafacos_mmm2d_parameter_structure), MPI_BYTE, 0, comm_cart);
+    break;
+  case COULOMB_SCAFACOS_P2NFFT:
+    MPI_Bcast(&scafacos_p2nfft, sizeof(scafacos_p2nfft_parameter_structure), MPI_BYTE, 0, comm_cart);
+    break;
+    
+  case COULOMB_SCAFACOS_P3M:
+    MPI_Bcast(&scafacos_p3m.params, sizeof(scafacos_p3m_data_struct), MPI_BYTE, 0, comm_cart);
+    break;
+   
+  case COULOMB_SCAFACOS_PP3MG:
+    MPI_Bcast(&scafacos_pp3mg, sizeof(scafacos_pp3mg_parameter_structure), MPI_BYTE, 0, comm_cart);
+    break;
+  case COULOMB_SCAFACOS_VMG:
+    MPI_Bcast(&scafacos_vmg, sizeof(scafacos_vmg_parameter_structure), MPI_BYTE, 0, comm_cart);
+    break;
+  case COULOMB_SCAFACOS_PEPC:
+    MPI_Bcast(&scafacos_pepc, sizeof(scafacos_pepc_parameter_structure), MPI_BYTE, 0, comm_cart);
+    break;
+    
+#endif /*ifdef SCAFACOS */
   default:
     fprintf(stderr, "%d: INTERNAL ERROR: cannot bcast coulomb params for unknown method %d\n", this_node, coulomb.method);
     errexit();
   }
-#endif
+#endif /*ifdef ELECTROSTATICS*/
 
 #ifdef DIPOLES
   switch (coulomb.Dmethod) {

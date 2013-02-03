@@ -404,6 +404,34 @@ AS_IF([test x$fftw_found = xyes],[
   AC_DEFINE(FFTW,[],[Whether FFTW is available])])
 
 ##################################
+# check for SCAFACOS
+# with_scafacos=no    don't use SCAFACOS
+# with_scafacos=yes   try to find a working SCAFACOS, bail out if none is found
+# not given	  try to find a working SCAFACOS, continue if not found
+AC_MSG_CHECKING([whether to use SCAFACOS])
+AC_ARG_WITH([scafacos],
+	AS_HELP_STRING([--with-scafacos],[specify whether or not to use SCAFACOS]),
+	, with_scafacos=guess)
+AC_MSG_RESULT($with_scafacos)
+
+AS_IF([test x$with_scafacos = xno], [scafacos_found=no],
+  [ AC_SEARCH_LIBS(fcs_init, [fcs], [scafacos_found=yes], [scafacos_found=no])
+    AS_IF([test x$scafacos_found = xyes],
+      [AC_CHECK_HEADER([fcs.h],, [scafacos_found=no])])
+  ])
+
+AS_IF([test x$scafacos_found = xno],[
+  AS_IF([test x$with_scafacos = xyes],[
+    AC_MSG_FAILURE([SCAFACOS requested, but SCAFACOS was not found!])
+    ],[ AS_IF([test x$with_scafacos = xguess], [
+          AC_MSG_WARN([SCAFACOS not found. Some features will not be available!])
+         ])
+    ])
+  ])
+AS_IF([test x$scafacos_found = xyes],[
+  AC_DEFINE(SCAFACOS,[],[Whether SCAFACOS is available])])
+
+##################################
 # check for CUDA
 AC_MSG_CHECKING([whether to use CUDA])
 
@@ -621,6 +649,7 @@ Libraries
 Tcl version		= $use_tcl
 Tk version		= $use_tk
 FFTW 			= $fftw_found
+SCAFACOS		= $scafacos_found
 efence			= $with_efence
 
 Other settings

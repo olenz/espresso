@@ -66,6 +66,18 @@
 #include "mmm2d_tcl.h"
 #include "p3m_tcl.h"
 #include "reaction_field_tcl.h"
+#include "scafacos.h"
+#include "scafacos_direct_tcl.h"
+#include "scafacos_ewald_tcl.h"
+#include "scafacos_fmm_tcl.h"
+#include "scafacos_memd_tcl.h"
+#include "scafacos_mmm1d_tcl.h"
+#include "scafacos_mmm2d_tcl.h"
+#include "scafacos_p2nfft_tcl.h"
+#include "scafacos_p3m_tcl.h"
+#include "scafacos_pepc_tcl.h"
+#include "scafacos_pp3mg_tcl.h"
+#include "scafacos_vmg_tcl.h"
 
 // Magnetostatics
 #include "mdlc_correction_tcl.h"
@@ -171,6 +183,30 @@ int tclcommand_inter_parse_coulomb(Tcl_Interp * interp, int argc, char ** argv)
 
   REGISTER_COULOMB("memd", tclcommand_inter_coulomb_parse_maggs);
 
+  /* SCAFACOS METHODS */
+#ifdef SCAFACOS
+  REGISTER_COULOMB("scafacos_direct", tclcommand_inter_coulomb_parse_scafacos_direct);
+
+  REGISTER_COULOMB("scafacos_ewald", tclcommand_inter_coulomb_parse_scafacos_ewald);
+
+  REGISTER_COULOMB("scafacos_fmm", tclcommand_inter_coulomb_parse_scafacos_fmm);  
+
+  REGISTER_COULOMB("scafacos_memd", tclcommand_inter_coulomb_parse_scafacos_memd);
+
+  REGISTER_COULOMB("scafacos_mmm1d", tclcommand_inter_coulomb_parse_scafacos_mmm1d);
+
+  REGISTER_COULOMB("scafacos_mmm2d", tclcommand_inter_coulomb_parse_scafacos_mmm2d);
+
+  REGISTER_COULOMB("scafacos_p3m", tclcommand_inter_coulomb_parse_scafacos_p3m);
+
+  REGISTER_COULOMB("scafacos_p2nfft", tclcommand_inter_coulomb_parse_scafacos_p2nfft);
+
+  REGISTER_COULOMB("scafacos_pepc", tclcommand_inter_coulomb_parse_scafacos_pepc);
+
+  REGISTER_COULOMB("scafacos_pp3mg", tclcommand_inter_coulomb_parse_scafacos_pp3mg);
+
+  REGISTER_COULOMB("scafacos_vmg", tclcommand_inter_coulomb_parse_scafacos_vmg);
+#endif
   /* fallback */
   coulomb.method  = COULOMB_NONE;
   coulomb.bjerrum = 0.0;
@@ -501,6 +537,19 @@ int tclprint_to_result_CoulombIA(Tcl_Interp *interp)
   case COULOMB_MMM1D: tclprint_to_result_MMM1D(interp); break;
   case COULOMB_MMM2D: tclprint_to_result_MMM2D(interp); break;
   case COULOMB_MAGGS: tclprint_to_result_Maggs(interp); break;
+#ifdef SCAFACOS
+  case COULOMB_SCAFACOS_DIRECT: tclprint_to_result_scafacos_direct(interp); break;
+  case COULOMB_SCAFACOS_EWALD: tclprint_to_result_scafacos_ewald(interp); break;
+  case COULOMB_SCAFACOS_FMM: tclprint_to_result_scafacos_fmm(interp); break;
+//  case COULOMB_SCAFACOS_MEMD: tclprint_to_result_scafacos_memd(interp); break;
+  case COULOMB_SCAFACOS_MMM1D: tclprint_to_result_scafacos_mmm1d(interp); break;
+  case COULOMB_SCAFACOS_MMM2D: tclprint_to_result_scafacos_mmm2d(interp); break;
+  case COULOMB_SCAFACOS_P3M: tclprint_to_result_scafacos_p3m(interp); break;
+  case COULOMB_SCAFACOS_P2NFFT: tclprint_to_result_scafacos_p2nfft(interp); break;
+  case COULOMB_SCAFACOS_PEPC: tclprint_to_result_scafacos_pepc(interp); break;
+  case COULOMB_SCAFACOS_PP3MG: tclprint_to_result_scafacos_pp3mg(interp); break;
+  case COULOMB_SCAFACOS_VMG: tclprint_to_result_scafacos_vmg(interp); break;
+#endif
   default: break;
   }
   Tcl_AppendResult(interp, "}",(char *) NULL);

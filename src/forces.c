@@ -51,7 +51,7 @@
 #include "constraint.h"
 #include "lbgpu.h"
 #include "iccp3m.h"
-
+#include "scafacos.h"
 /************************************************************/
 /* local prototypes                                         */
 /************************************************************/
@@ -166,6 +166,21 @@ void calc_long_range_forces()
     case COULOMB_MMM2D:
       MMM2D_add_far_force();
       MMM2D_dielectric_layers_force_contribution();
+#ifdef SCAFACOS
+    case COULOMB_SCAFACOS_DIRECT:
+    case COULOMB_SCAFACOS_EWALD:
+    case COULOMB_SCAFACOS_FMM:
+    case COULOMB_SCAFACOS_MMM1D:
+    case COULOMB_SCAFACOS_MMM2D:
+    case COULOMB_SCAFACOS_MEMD:
+    case COULOMB_SCAFACOS_P2NFFT:
+    case COULOMB_SCAFACOS_P3M:
+    case COULOMB_SCAFACOS_PEPC:
+    case COULOMB_SCAFACOS_PP3MG:
+    case COULOMB_SCAFACOS_VMG:
+      run_scafacos();
+      break;
+#endif /* ifdef SCAFACOS */
     }
   }
 #endif  /*ifdef ELECTROSTATICS */
