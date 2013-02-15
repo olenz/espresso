@@ -180,7 +180,22 @@ MDINLINE void friction_thermo_langevin(Particle *p)
         p->f.f[j] = langevin_pref1*p->m.v[j]*PMASS(*p) + langevin_pref2_temp*(d_random()-0.5)*massf;
       }
 #else
+
+#ifdef LEES_EDWARDS
+    if( j == 0 ) {
+   
+      double relV, relY;
+      relY = p->r.p[1] * box_l_i[1];
+      while(relY >  1.0){relY -= 1.0;}
+      while(relY <  0.0){relY += 1.0;}
+      relY -= 0.5;
+      relV  = p->m.v[0] - relY * lees_edwards_rate;
+      p->f.f[j] = langevin_pref1*relV*PMASS(*p) + langevin_pref2*(d_random()-0.5)*massf;
+    }else
       p->f.f[j] = langevin_pref1*p->m.v[j]*PMASS(*p) + langevin_pref2*(d_random()-0.5)*massf;
+#else
+      p->f.f[j] = langevin_pref1*p->m.v[j]*PMASS(*p) + langevin_pref2*(d_random()-0.5)*massf;
+#endif
 #endif
     }
 #ifdef EXTERNAL_FORCES

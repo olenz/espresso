@@ -31,6 +31,7 @@
 #include "energy.h"
 #include "constraint.h"
 #include "initialize.h"
+#include "lees_edwards.h"
 
 /************************************************/
 /** \name Defines */
@@ -56,7 +57,7 @@ double max_skin   = 0.0;
 /*@}*/
 
 /************************************************************/
-/** \name Privat Functions */
+/** \name Private Functions */
 /************************************************************/
 /*@{*/
 
@@ -460,21 +461,53 @@ void dd_init_cell_interactions()
   /* loop all local cells */
   DD_LOCAL_CELLS_LOOP(m,n,o) {
     dd.cell_inter[c_cnt].nList = (IA_Neighbor *) realloc(dd.cell_inter[c_cnt].nList, CELLS_MAX_NEIGHBORS*sizeof(IA_Neighbor));
-    dd.cell_inter[c_cnt].n_neighbors = CELLS_MAX_NEIGHBORS;
- 
+
     n_cnt=0;
     ind1 = get_linear_index(m,n,o,dd.ghost_cell_grid);
+
     /* loop all neighbor cells */
-    for(p=o-1; p<=o+1; p++)	
-      for(q=n-1; q<=n+1; q++)
-	for(r=m-1; r<=m+1; r++) {   
-	  ind2 = get_linear_index(r,q,p,dd.ghost_cell_grid);
-	  if(ind2 >= ind1) {
-	    dd.cell_inter[c_cnt].nList[n_cnt].cell_ind = ind2;
-	    dd.cell_inter[c_cnt].nList[n_cnt].pList    = &cells[ind2];
-	    init_pairList(&dd.cell_inter[c_cnt].nList[n_cnt].vList);
-	    n_cnt++;
-	  }
+    for(p=o-1; p<=o+1; p++)	{
+      for(q=n-1; q<=n+1; q++) {
+#ifdef LEES_EDWARDS
+        /* if these neighbours' y-position is still within the box */  
+	    if (q > 0 && q < dd.cell_grid[1] + 1) { 
+          for(r=m-1; r<=m+1; r++) {  
+	        ind2 = get_linear_index(r,q,p,dd.ghost_cell_grid);
+	        if(ind2 >= ind1) {
+                if( n_cnt >= CELLS_MAX_NEIGHBORS ) 
+                    dd.cell_inter[c_cnt].nList = (IA_Neighbor *) realloc(dd.cell_inter[c_cnt].nList, (n_cnt+1)*sizeof(IA_Neighbor));
+	            dd.cell_inter[c_cnt].nList[n_cnt].cell_ind = ind2;
+	            dd.cell_inter[c_cnt].nList[n_cnt].pList    = &cells[ind2];
+	            init_pairList(&dd.cell_inter[c_cnt].nList[n_cnt].vList);
+	            n_cnt++;
+	        }
+          }
+        }else{ /* if these neighbour cells are imaged across the sliding boundary */
+           for(r=0; r< dd.ghost_cell_grid[0]; r++) {  /* any cell along x could be a neighbour */
+	        ind2 = get_linear_index(r,q,p,dd.ghost_cell_grid);
+	        if(ind2 >= ind1) {
+                if( n_cnt >= CELLS_MAX_NEIGHBORS ) 
+                    dd.cell_inter[c_cnt].nList = (IA_Neighbor *) realloc(dd.cell_inter[c_cnt].nList, (n_cnt+1)*sizeof(IA_Neighbor));
+	            dd.cell_inter[c_cnt].nList[n_cnt].cell_ind = ind2;
+	            dd.cell_inter[c_cnt].nList[n_cnt].pList    = &cells[ind2];
+	            init_pairList(&dd.cell_inter[c_cnt].nList[n_cnt].vList);
+	            n_cnt++;
+	        }
+          }
+        }
+        
+#else
+        for(r=m-1; r<=m+1; r++) {  
+	        ind2 = get_linear_index(r,q,p,dd.ghost_cell_grid);
+	        if(ind2 >= ind1) {
+	            dd.cell_inter[c_cnt].nList[n_cnt].cell_ind = ind2;
+	            dd.cell_inter[c_cnt].nList[n_cnt].pList    = &cells[ind2];
+	            init_pairList(&dd.cell_inter[c_cnt].nList[n_cnt].vList);
+	            n_cnt++;
+	        }
+        }
+#endif
+      }
 	}
     c_cnt++;
   }
@@ -838,7 +871,7 @@ void  dd_exchange_and_sort_particles(int global_flag)
 	  recv_particles(&recv_buf_l, node_neighbors[2*dir]);
 	  send_particles(&send_buf_r, node_neighbors[2*dir+1]);
 	}
-	/* sort received particles to cells */
+	/* sort received particles to cells, folding of coordinates also happens in here. */
 	if(dd_append_particles(&recv_buf_l, 2*dir  ) && dir == 2) finished = 0;
 	if(dd_append_particles(&recv_buf_r, 2*dir+1) && dir == 2) finished = 0; 
 	/* reset send/recv buffers */
@@ -886,7 +919,7 @@ void  dd_exchange_and_sort_particles(int global_flag)
       }
     }
 
-    /* Communicate wether particle exchange is finished */
+    /* Communicate whether particle exchange is finished */
     if(global_flag == CELL_GLOBAL_EXCHANGE) {
       if(this_node==0) {
 	int sum;

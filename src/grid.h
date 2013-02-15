@@ -42,6 +42,7 @@
  *
  *  For more information on the domain decomposition, see \ref grid.c "grid.c". 
 */
+#include "lees_edwards.h"
 #include "utils.h"
 #include <limits.h>
 #include "communication.h"
@@ -175,6 +176,20 @@ void rescale_boxl(int dir, double d_new);
 */
 MDINLINE void get_mi_vector(double res[3], double a[3], double b[3])
 {
+#ifdef LEES_EDWARDS
+  int y_img_count;
+  double delta_x;
+
+  y_img_count = (int)floor(b[1]*box_l_i[1]) - (int)floor(a[1]*box_l_i[1]);
+  delta_x     = y_img_count * lees_edwards_offset;   
+  
+  res[0]  = (a[0] - ( b[0] + delta_x) );
+  res[0] -= dround(res[0]*box_l_i[0])*box_l[0];
+  res[1]  = (a[1] - b[1]); 
+  res[1] -= dround(res[1]*box_l_i[1])*box_l[1];
+  res[2]  = (a[2] - b[2]); 
+  res[2] -= dround(res[2]*box_l_i[2])*box_l[2];
+#else
   int i;
 
   for(i=0;i<3;i++) {
@@ -184,6 +199,8 @@ MDINLINE void get_mi_vector(double res[3], double a[3], double b[3])
 #endif
       res[i] -= dround(res[i]*box_l_i[i])*box_l[i];
   }
+#endif
+
 }
 
 /** fold a coordinate to primary simulation box.
@@ -201,6 +218,14 @@ MDINLINE void fold_coordinate(double pos[3], int image_box[3], int dir)
   if (PERIODIC(dir))
 #endif
     {
+#ifdef LEES_EDWARDS
+      if( dir == 0 ){
+          int y_img_count;
+          y_img_count   = (int)floor(pos[1]*box_l_i[1]);
+          pos[0]       -= (lees_edwards_offset * y_img_count); 
+      }
+#endif
+
       image_box[dir] += (tmp = (int)floor(pos[dir]*box_l_i[dir]));
       pos[dir]        = pos[dir] - tmp*box_l[dir];    
       if(pos[dir] < 0 || pos[dir] >= box_l[dir]) {
@@ -239,12 +264,128 @@ MDINLINE void fold_position(double pos[3],int image_box[3])
 */
 MDINLINE void unfold_position(double pos[3],int image_box[3])
 {
+#ifdef LEES_EDWARDS
+
+  int y_img_count;
+  y_img_count   = (int)floor( pos[1]*box_l_i[1] + image_box[1] );
+
+  pos[0] = pos[0] + image_box[0]*box_l[0] + y_img_count*lees_edwards_offset;
+  pos[1] = pos[1] + image_box[1]*box_l[1];
+  pos[2] = pos[2] + image_box[2]*box_l[2];
+  image_box[0] = image_box[1] = image_box[2] = 0;
+#else
   int i;
   for(i=0;i<3;i++) {
     pos[i]       = pos[i] + image_box[i]*box_l[i];    
     image_box[i] = 0;
   }
+#endif
 }
+
+
+
+/*************************************************************/
+/** \name Distance calculations.  */
+/*************************************************************/
+/*@{*/
+
+/** returns the distance between two position. 
+ *  \param pos1 Position one.
+ *  \param pos2 Position two.
+*/
+MDINLINE double distance(double pos1[3], double pos2[3])
+{
+#ifndef LEES_EDWARDS
+  return sqrt( SQR(pos1[0]-pos2[0]) + SQR(pos1[1]-pos2[1]) + SQR(pos1[2]-pos2[2]) );
+#else
+  int y_img_count;
+  y_img_count = (int)floor(pos1[1]*box_l_i[1]) - (int)floor(pos2[1]*box_l_i[1]);
+ 
+  return( sqrt(SQR(pos1[0]+y_img_count*lees_edwards_offset-pos2[0]) 
+             + SQR(pos1[1]-pos2[1]) 
+             + SQR(pos1[2]-pos2[2])) );
+  
+#endif
+}
+
+/** returns the distance between two positions squared.
+ *  \param pos1 Position one.
+ *  \param pos2 Position two.
+*/
+MDINLINE double distance2(double pos1[3], double pos2[3])
+{
+#ifndef LEES_EDWARDS
+  return SQR(pos1[0]-pos2[0]) + SQR(pos1[1]-pos2[1]) + SQR(pos1[2]-pos2[2]);
+#else
+  int y_img_count;
+  y_img_count = (int)floor(pos1[1]*box_l_i[1]) - (int)floor(pos2[1]*box_l_i[1]);
+ 
+  return( SQR(pos1[0]+y_img_count*lees_edwards_offset-pos2[0]) 
+             + SQR(pos1[1]-pos2[1]) 
+             + SQR(pos1[2]-pos2[2]) );
+  
+#endif
+}
+
+/** Returns the distance between two positions squared and stores the
+    distance vector pos1-pos2 in vec.
+ *  \param pos1 Position one.
+ *  \param pos2 Position two.
+ *  \param vec  vecotr pos1-pos2.
+ *  \return distance squared
+*/
+MDINLINE double distance2vec(double pos1[3], double pos2[3], double vec[3])
+{
+#ifdef LEES_EDWARDS
+  int y_img_count;
+  y_img_count = (int)floor(pos1[1]*box_l_i[1]) - (int)floor(pos2[1]*box_l_i[1]);
+  vec[0]      = pos1[0]+y_img_count*lees_edwards_offset - pos2[0];
+  while(vec[0] >  0.5*box_l[0]){vec[0]-=box_l[0];}
+  while(vec[0] < -0.5*box_l[0]){vec[0]+=box_l[0];}
+#else
+  vec[0] = pos1[0]-pos2[0];
+#endif
+  vec[1] = pos1[1]-pos2[1];
+  vec[2] = pos1[2]-pos2[2];
+  return SQR(vec[0]) + SQR(vec[1]) + SQR(vec[2]);
+}
+
+/** returns the distance between the unfolded coordintes of two particles. 
+ *  \param pos1       Position of particle one.
+ *  \param image_box1 simulation box index of particle one .
+ *  \param pos2       Position of particle two.
+ *  \param image_box2 simulation box index of particle two .
+ *  \param box_l      size of simulation box.
+*/
+MDINLINE double unfolded_distance(double pos1[3], int image_box1[3], 
+                  double pos2[3], int image_box2[3], double box_l[3])
+{
+  double dist;
+  double lpos1[3],lpos2[3];
+
+
+  /*unrolling the loop so can neatly add Lees-Edwards: 
+   *compiler probably unrolls anyway*/
+  lpos1[0]  = pos1[0] + image_box1[0]*box_l[0];
+  lpos2[0]  = pos2[0] + image_box2[0]*box_l[0];
+#ifdef LEES_EDWARDS
+  lpos1[0] += image_box1[1] * lees_edwards_offset;
+  lpos2[0] += image_box2[1] * lees_edwards_offset;
+#endif
+  dist      = SQR(lpos1[0]-lpos2[0]);
+
+  lpos1[1]  = pos1[1] + image_box1[1]*box_l[1];
+  lpos2[1]  = pos2[1] + image_box2[1]*box_l[1];
+  dist     += SQR(lpos1[1]-lpos2[1]);
+
+  lpos1[2]  = pos1[2] + image_box1[2]*box_l[2];
+  lpos2[2]  = pos2[2] + image_box2[2]*box_l[2];
+  dist     += SQR(lpos1[2]-lpos2[2]);
+
+  return sqrt(dist);
+}
+/*@}*/
+
 
 /*@}*/
 #endif

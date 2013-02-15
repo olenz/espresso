@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "lees_edwards.h"
 #include "utils.h"
 #include "integrate.h"
 #include "reaction.h"
@@ -784,6 +785,28 @@ void propagate_vel_pos()
 	    p[i].r.p[j] += p[i].m.v[j];
 	  }
       }
+
+
+      
+
+
+/* Whatever happens in subsequent folding/unfolding of coords, crossing a box boundary 
+ * is tested for here */
+#ifdef LEES_EDWARDS
+      {
+      
+        int   delta_box;
+        delta_box    = (int)floor(p[i].r.p[1]*box_l_i[1]) - (int)floor(p[i].l.p_old[1]*box_l_i[1]);
+        if( delta_box != 0 ){   
+
+            /* The particle has crossed a y-boundary, so the x-position and vel must be adjusted immediately 
+             * or the coordinates are no longer consistent */
+            p[i].m.v[0]     -= delta_box * lees_edwards_rate;    
+            p[i].r.p[0]     -= delta_box * lees_edwards_offset; 
+            p[i].l.p_old[0] -= delta_box * lees_edwards_offset; 
+      }
+#endif
+
 
       ONEPART_TRACE(if(p[i].p.identity==check_id) fprintf(stderr,"%d: OPT: PV_1 v_new = (%.3e,%.3e,%.3e)\n",this_node,p[i].m.v[0],p[i].m.v[1],p[i].m.v[2]));
       ONEPART_TRACE(if(p[i].p.identity==check_id) fprintf(stderr,"%d: OPT: PPOS p = (%.3f,%.3f,%.3f)\n",this_node,p[i].r.p[0],p[i].r.p[1],p[i].r.p[2]));

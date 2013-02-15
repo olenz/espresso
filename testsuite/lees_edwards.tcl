@@ -1,78 +1,6 @@
 
 
 
-proc thermostat_byAxes { n_part gamma T timestep } {
-
-##based on this line from espresso C code:
-## ..assuming unit mass.
-
-#p->f.f[j] = langevin_pref1*p->m.v[j]*PMASS(*p) + langevin_pref2*(d_random()-0.5)*massf;
-
-##
-    set pref1 [expr -1.0 * $gamma / $timestep]
-    set pref2 [expr sqrt(24.0*$T*$gamma/$timestep)]
-
-    for { set i 0 } { $i < $n_part } { incr i } {
-        #set pos [ part $i print pos ] 
-        set vel [ part $i print v ] 
-        
-        set vZ  [ lindex $vel 2 ]
-        set fZ [expr $pref1*$vZ + $pref2*(rand()-0.5)]
-
-        #puts "$i $pref1 $pref2 $vZ $fZ"
-
-        set vZ [expr $vZ + $fZ]
-        part $i v [lindex $vel 0] [lindex $vel 1] $vZ 
-    }
-
-
-}
-
-#
-# get_instant_temp
-#
-# Get the apparent instantaneous temperature in Kelvin
-#
-#############################################################
-proc get_instant_temp { n_part velocity_conversion k_b } {
-
-    set vel2 0.0
-
-
-    for { set i 0 } { $i < $n_part } { incr i } {
-    
-        set vels [part $i print v]
-        
-        set speed 0.0
-
-        set vv [expr [lindex $vels 0]]
-        set speed [expr $vv * $vv]
-        set vv [expr [lindex $vels 1]]
-        set speed [expr $speed + $vv * $vv]
-        set vv [expr [lindex $vels 2]]
-        set speed [expr $speed + $vv * $vv]
-
-        set vel2 [expr $vel2 + $speed]
-    }
-    set speed [expr sqrt($speed)]
-
-    #puts "velocity $vels"
-    #set v_x_ms [expr $speed * $velocity_conversion] 
-    #puts "m/s speed: $v_x_ms"
-   
-    set vel2          [expr $vel2 / ($n_part * 3)]
-    #set vel2_m_per_s  [expr $vel2  * $velocity_conversion  * $velocity_conversion]
-
-    ##return the temperature in reduced units
-    #set effective_temperature [expr $mass * $vel2 / $k_b ]
-    #set effective_temperature [expr $vel2_m_per_s * $mass / $KB_SI ]
-    
-    #puts "$vel2 $vel2_m_per_s $effective_temperature"
-
-    return $vel2
-
-}
-
 ####reduced units are:
 ## energy:   kcal/mol
 ## distance: Angstrom
@@ -145,7 +73,7 @@ puts "#velocity conversion factor to m/s: $velocity_conversion"
 
 
 #############################################################
-#  Interaction Setup                                          #
+#  Interaction Setup                                        #
 #############################################################
 # set up harm interaction
 #inter 0 harm $harm_k $harm_r0
@@ -190,7 +118,9 @@ writevsf $f
 
 
 thermostat langevin $temperature 5.0
-inter ljforcecap  100
+inter forcecap  10
+integrate 100
+
 for { set step 0 } { $step < $shear_equil } { incr step $shear_per } {
     if { [expr $step % $write_per] == 0 } then {
         writevcf $f folded
@@ -230,18 +160,11 @@ close $f
 set f [open "noCap.vtf" w]
 writevsf $f
 inter ljforcecap  0
-set time_step     0.001
-set shear_rate    0.01
-setmd time_step  $time_step
 set write_per    10
 for { set step 0 } { $step < $max_step_shear } { incr step $shear_per } {
     if { [expr $step % $write_per] == 0 } then {
         writevcf $f folded
     }
-    #if { [expr $step % $therm_per] == 0 } then {
-    #    thermostat_byAxes $n_part 0.00001 $temperature $time_step
-    #}
-
     lees_edwards_offset  $offset
     integrate            $shear_per
 
