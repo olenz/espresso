@@ -60,7 +60,8 @@ libEspresso_a_SOURCES = \
 	lb-boundaries.c lb-boundaries.h \
 	lb-d3q18.h lb-d3q19.h \
 	lbgpu_cfile.c \
-	metadynamics.c metadynamics.h \
+	lees_edwards.c lees_edwards.h \
+        metadynamics.c metadynamics.h \
 	modes.c	modes.h \
 	molforces.c molforces.h \
 	mol_cut.c mol_cut.h \
@@ -170,7 +171,8 @@ libEspresso_a_SOURCES += \
 	tcl/interaction_data_tcl.c tcl/interaction_data_tcl.h \
 	tcl/lb-boundaries_tcl.c \
 	tcl/lb_tcl.c tcl/lb_tcl.h \
-	tcl/metadynamics_tcl.c tcl/metadynamics_tcl.h \
+	tcl/lees_edwards_tcl.c tcl/lees_edwards_tcl.h \
+        tcl/metadynamics_tcl.c tcl/metadynamics_tcl.h \
 	tcl/nemd_tcl.c \
 	tcl/mol_cut_tcl.c tcl/mol_cut_tcl.h \
 	tcl/parser.c tcl/parser.h \

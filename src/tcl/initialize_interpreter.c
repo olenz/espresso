@@ -34,6 +34,7 @@
 #include "integrate_tcl.h"
 #include "interaction_data_tcl.h"
 #include "lb_tcl.h"
+#include "lees_edwards_tcl.h"
 #include "lj_tcl.h"
 #include "maggs_tcl.h"
 #include "metadynamics_tcl.h"
@@ -102,6 +103,9 @@ int tclcommand_part(ClientData data, Tcl_Interp *interp,
 int tclcommand_uwerr(ClientData data, Tcl_Interp *interp, int argc, char *argv[]);
 /** callback for \ref timing_samples. See \ref tuning_tcl.c */
 int tclcallback_timings(Tcl_Interp *interp, void *data);
+
+/** Tcl command to alter the shear offset between periodic images. */
+int tclcommand_lees_edwards_offset(ClientData data, Tcl_Interp *interp, int argc, char **argv);
 
 /// from \ref scriptsdir.c
 char *get_default_scriptsdir();
@@ -204,6 +208,9 @@ static void register_tcl_commands(Tcl_Interp* interp) {
 #ifdef COLLISION_DETECTION
   REGISTER_COMMAND("on_collision", tclcommand_on_collision);
 #endif
+/* #ifdef LEES_EDWARDS Register the command even if not implemented, so it can return an informative error*/ 
+  REGISTER_COMMAND("lees_edwards_offset", tclcommand_lees_edwards_offset);
+/* #endif */
 #ifdef REACTIONS
   REGISTER_COMMAND("reaction", tclcommand_reaction);
 #endif

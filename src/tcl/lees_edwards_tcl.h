@@ -18,31 +18,18 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 */
-/* This is the default myconfig.h-file. If no other myconfig-file is
-   found, this file is used.
-*/
-/* global features */
-#define PARTIAL_PERIODIC
-#define ELECTROSTATICS
-#define EXTERNAL_FORCES
-#define CONSTRAINTS
-#define MASS
-#define EXCLUSIONS
-#define COMFORCE
-#define COMFIXED
-#define NPT
-#define LEES_EDWARDS
+#ifndef _LEES_EDWARDS_TCL_H
+#define _LEES_EDWARDS_TCL_H
+#include "parser.h"
 
-/* potentials */
-#define TABULATED
-#define LENNARD_JONES
-#define LENNARD_JONES_GENERIC
-#define MORSE
-#define LJCOS
-#define LJCOS2
-#define BUCKINGHAM
-#define SOFT_SPHERE
-#define BOND_ANGLE
+/** \name Exported Functions */
+/************************************************************/
+/*@{*/
 
-#define MPI_CORE
-#define FORCE_CORE
+/** return data for \ref #lees_edwards. Get or set current PBC image offset. */
+int tclcommand_lees_edwards_offset(ClientData data, Tcl_Interp *interp, int argc, char **argv);
+
+
+/*@}*/
+
+#endif

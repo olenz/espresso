@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2010,2011,2012 The ESPResSo project
+  Copyright (C) 2010,2012 The ESPResSo project
   Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009,2010 
     Max-Planck-Institute for Polymer Research, Theory Group
   
@@ -18,31 +18,18 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 */
-/* This is the default myconfig.h-file. If no other myconfig-file is
-   found, this file is used.
+/** \file lees_edwards.h
+    Data and methods for Lees-Edwards periodic boundary conditions.  The gist of LE-PBCs is to impose shear flow
+    by constantly moving the PBC wrap such that:  $x_{unfolded} == x_{folded} + x_{img} \times L  + (y_{img} * \gamma * t)$,
+    and $vx_{unfolded} =  vx_{folded} + (y_{img} * \gamma)$.
 */
-/* global features */
-#define PARTIAL_PERIODIC
-#define ELECTROSTATICS
-#define EXTERNAL_FORCES
-#define CONSTRAINTS
-#define MASS
-#define EXCLUSIONS
-#define COMFORCE
-#define COMFIXED
-#define NPT
-#define LEES_EDWARDS
+#ifndef LEES_EDWARDS_H
+#define LEES_EDWARDS_H
 
-/* potentials */
-#define TABULATED
-#define LENNARD_JONES
-#define LENNARD_JONES_GENERIC
-#define MORSE
-#define LJCOS
-#define LJCOS2
-#define BUCKINGHAM
-#define SOFT_SPHERE
-#define BOND_ANGLE
+extern double lees_edwards_offset, lees_edwards_rate;
 
-#define MPI_CORE
-#define FORCE_CORE
+#ifdef LEES_EDWARDS
+void lees_edwards_step_boundaries();
+#endif //LEES_EDWARDS
+
+#endif //LEES_EDWARDS_H
