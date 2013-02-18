@@ -50,7 +50,8 @@ tests = \
 	lb.tcl \
 	lb_stokes_sphere.tcl \
 	lb_gpu.tcl \
-	lj.tcl \
+	lees_edwards.tcl \
+        lj.tcl \
 	lj-cos.tcl \
 	lj-generic.tcl \
 	madelung.tcl \
