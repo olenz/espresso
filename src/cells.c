@@ -404,8 +404,15 @@ void cells_update_ghosts()
     resort_particles = 1;
 
   if (resort_particles) {
+#ifdef LEES_EDWARDS
+    /* Lees Edwards BCs include occasional sudden jumps of position. 
+       Domdec global exchange doesn't seem to be much slower in practice than 
+       neighbours-only, so call it every time. */
+    cells_resort_particles(CELL_GLOBAL_EXCHANGE);
+#else
     /* Communication step:  number of ghosts and ghost information */
     cells_resort_particles(CELL_NEIGHBOR_EXCHANGE);
+#endif
   }
   else
     /* Communication step: ghost information */

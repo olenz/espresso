@@ -509,6 +509,7 @@ void dd_init_cell_interactions()
 #endif
       }
 	}
+    dd.cell_inter[c_cnt].n_neighbors = n_cnt; 
     c_cnt++;
   }
 }
@@ -856,7 +857,7 @@ void  dd_exchange_and_sort_particles(int global_flag)
 	      }
 	    }
 	  }
-	}
+    }
 
 	/* Exchange particles */
 	if(node_pos[dir]%2==0) {

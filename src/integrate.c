@@ -786,10 +786,6 @@ void propagate_vel_pos()
 	  }
       }
 
-
-      
-
-
 /* Whatever happens in subsequent folding/unfolding of coords, crossing a box boundary 
  * is tested for here */
 #ifdef LEES_EDWARDS
@@ -799,11 +795,11 @@ void propagate_vel_pos()
         delta_box    = (int)floor(p[i].r.p[1]*box_l_i[1]) - (int)floor(p[i].l.p_old[1]*box_l_i[1]);
         if( delta_box != 0 ){   
 
-            /* The particle has crossed a y-boundary, so the x-position and vel must be adjusted immediately 
+            /* The particle has crossed a y-boundary, so the x-position and vel must be adjusted
              * or the coordinates are no longer consistent */
             p[i].m.v[0]     -= delta_box * lees_edwards_rate;    
             p[i].r.p[0]     -= delta_box * lees_edwards_offset; 
-            p[i].l.p_old[0] -= delta_box * lees_edwards_offset; 
+        }
       }
 #endif
 
