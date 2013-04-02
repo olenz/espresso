@@ -30,7 +30,7 @@ puts "------------------------------------------"
 
 
 # system setup
-set L                 30     ;#box size
+set L                 10     ;#box size
 set temperature        1.0   ;#temperature in reduced units
 set T                500     ;#temperature in Kelvin
 
@@ -44,7 +44,7 @@ set num_steps_equil 10000000
 set skin                   0.2
 
 set length_polymer  50
-set N_chains        28
+set N_chains         5
 set n_part [expr $length_polymer * $N_chains]
 
 
@@ -61,6 +61,7 @@ set lj_epsilon [expr  0.112/$k_temp]
 set sigma 4.01
 set lj1_sig 1.0
 set lj1_cut [expr 2.5*$lj1_sig]
+#set lj1_cut [expr 15.0-$skin]
 set cut [expr 1/$lj1_cut]
 set shift [expr 2* pow($cut, 6) - pow($cut, 12)]
 set lj1_shift [expr $shift]
@@ -105,7 +106,7 @@ set shear_equil       5000
 set mean_from         1000
 set shear_per            1
 set write_per          100
-set shear_rate           0.005
+set shear_rate           0.003
 set offset               0.0
 
 set f [open "thermalising.vtf" w]
@@ -120,7 +121,8 @@ set mean_z2 0.0
 set count   0.0
 for { set step 0 } { $step < $shear_equil } { incr step $shear_per } {
     if { [expr $step % $write_per] == 0 } then {
-        writevcf $f folded
+        writevcf $f 
+#folded
     }
 
     lees_edwards_offset  $offset
@@ -155,6 +157,7 @@ for { set step 0 } { $step < $shear_equil } { incr step $shear_per } {
         
     }
 
+
     set offset [expr $offset + $shear_rate * $shear_per]
 }
 close $f
@@ -166,11 +169,11 @@ puts "#means: $mean_x2 $mean_y2 $mean_z2"
 
 ##Below is the loop for an extended test, to
 ##see if the code is stable without a forcecap for a long time.
-##exit
 
 set f [open "noCap.vtf" w]
 writevsf $f
 inter forcecap  0
+##thermostat langevin $temperature 0.01
 for { set step 0 } { $step < $max_step_shear } { incr step $shear_per } {
     if { [expr $step % $write_per] == 0 } then {
         writevcf $f folded

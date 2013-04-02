@@ -167,6 +167,10 @@ typedef struct {
 extern Cell *cells;
 /** size of \ref cells::cells */
 extern int n_cells;
+#ifdef LEES_EDWARDS
+/** number of "extra" Lees-Edwards ghost cells. */
+extern int n_le_extra_cells;
+#endif
 /** list of all cells containing particles physically on the local
     node */
 extern CellPList local_cells;

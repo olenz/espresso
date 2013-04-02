@@ -800,6 +800,8 @@ int tclcommand_inter_parse_non_bonded(Tcl_Interp * interp,
       Tcl_AppendResult(interp, "excessive parameter/unknown interaction type \"", argv[0],
 		       "\" in parsing non bonded interaction",
 		       (char *) NULL);
+       // fprintf(stderr, "Attempted: %s %i %i %i %s", argv[0], part_type_a, part_type_b, argc, argv[1]);
+       // REGISTER_NONBONDED("lennard-jones", tclcommand_inter_parse_lj);
       return TCL_ERROR;
     }
 

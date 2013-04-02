@@ -61,6 +61,7 @@ libEspresso_a_SOURCES = \
 	lb-d3q18.h lb-d3q19.h \
 	lbgpu_cfile.c \
 	lees_edwards.c lees_edwards.h \
+        lees_edwards_domain_decomposition.c lees_edwards_domain_decomposition.h \
         metadynamics.c metadynamics.h \
 	modes.c	modes.h \
 	molforces.c molforces.h \

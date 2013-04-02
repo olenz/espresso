@@ -27,6 +27,7 @@ double lees_edwards_offset      = 0.0;
 double lees_edwards_rate        = 0.0;
 
 #ifdef LEES_EDWARDS
+int lees_edwards_count          =   0;
 
 /* local state variables */
 double lees_edwards_prev_set_at = 0.0;
@@ -42,10 +43,9 @@ void lees_edwards_step_boundaries(){
  while( delta >  0.5 * box_l[0] ) delta -= box_l[0];
  while( delta < -0.5 * box_l[0] ) delta += box_l[0];
  
- /*while( lees_edwards_offset > box_l[0] ) lees_edwards_offset -= box_l[0];
-  *while( lees_edwards_offset < 0.0 )      lees_edwards_offset += box_l[0];
-  */
-  
+ while( lees_edwards_offset >  0.5*box_l[0]) { lees_edwards_count++; lees_edwards_offset -= box_l[0];}
+ while( lees_edwards_offset < -0.5*box_l[0]) { lees_edwards_count--; lees_edwards_offset += box_l[0];}
+   
  /* update the apparent shear rate */
  if( sim_time - lees_edwards_prev_set_at > 0.0 )
     lees_edwards_rate     = delta * time_step / (sim_time - lees_edwards_prev_set_at);
@@ -58,6 +58,8 @@ void lees_edwards_step_boundaries(){
 
  /* request a new verlet list */
  rebuild_verletlist    = 1;
+
+le_dd_update_communicators_w_boxl();
 
  return;
 }

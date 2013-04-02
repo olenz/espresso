@@ -126,11 +126,19 @@ typedef struct {
 #endif
 } ParticleProperties;
 
+#define LEES_EDWARDS_DEBUG
+
 /** Positional information on a particle. Information that is
     communicated to calculate interactions with ghost particles. */
 typedef struct {
   /** periodically folded position. */
   double p[3];
+
+/* debug stuff */
+#ifdef LEES_EDWARDS_DEBUG
+  int neighbor_count_out;
+  int neighbor_count_in;
+#endif
 
 #ifdef ROTATION
   /** quaternions to define particle orientation */

@@ -47,6 +47,7 @@
 #include <limits.h>
 #include "communication.h"
 #include "errorhandling.h"
+#include "debug.h"
 
 /** Macro that tests for a coordinate being periodic or not. */
 #ifdef PARTIAL_PERIODIC
@@ -63,8 +64,17 @@
 extern int node_grid[3];
 /** position of node in node grid */
 extern int node_pos[3];
+#ifdef LEES_EDWARDS
+/** the nearest neighbors of a node in the node grid. */
+extern int *node_neighbors;
+extern int *node_neighbor_lr;
+extern int *node_neighbor_wrap;
+/** the number of nearest neighbors of a node in the node grid. */
+extern int  my_neighbor_count;
+#else
 /** the six nearest neighbors of a node in the node grid. */
 extern int node_neighbors[6];
+#endif
 /** where to fold particles that leave local box in direction i. */
 extern int boundary[6];
 /** Flags for all three dimensions wether pbc are applied (default).
@@ -130,11 +140,12 @@ int map_position_node_array(double pos[3]);
 
 /** fill neighbor lists of node. 
  *
- * Calculates the numbers of the 6 nearest neighbors for a node and
- * stors them in \ref node_neighbors.
+ * Calculates the numbers of the nearest neighbors for a node and
+ * stores them in \ref node_neighbors.
  *
+ * \return     the number of neighbors
  * \param node number of the node.  */
-void calc_node_neighbors(int node);
+int calc_node_neighbors(int node);
 
 /** called from \ref mpi_bcast_parameter . */
 void grid_changed_n_nodes();
@@ -176,7 +187,7 @@ void rescale_boxl(int dir, double d_new);
 */
 MDINLINE void get_mi_vector(double res[3], double a[3], double b[3])
 {
-#ifdef LEES_EDWARDS
+#ifdef _LEES_EDWARDS
   int y_img_count;
   double delta_x;
 
@@ -203,6 +214,54 @@ MDINLINE void get_mi_vector(double res[3], double a[3], double b[3])
 
 }
 
+
+
+/** fold a coordinate to primary simulation box.
+    \param pos         the position...
+    \param vel         the velocity...
+    \param image_box   and the box
+    \param dir         the coordinate to fold: dir = 0,1,2 for x, y and z coordinate.
+
+    Both pos and image_box are I/O,
+    i. e. a previously folded position will be folded correctly.
+*/
+#ifdef LEES_EDWARDS
+MDINLINE void fold_coordinate_le(double pos[3], double vel[3], int image_box[3], int dir)
+{
+      if( dir != 1 ){ 
+        int tmp;
+
+        image_box[dir] += (tmp = (int)floor(pos[dir]*box_l_i[dir]));
+        pos[dir]        = pos[dir] - tmp*box_l[dir];    
+        if(pos[dir] < 0 || pos[dir] >= box_l[dir]) {
+    /* slow but safe */
+    if (fabs(pos[dir]*box_l_i[dir]) >= INT_MAX/2) {
+      char *errtext = runtime_error(128 + ES_INTEGER_SPACE + ES_DOUBLE_SPACE);
+      ERROR_SPRINTF(errtext,"{086 particle coordinate out of range, pos = %g, image box = %d} ", pos[dir], image_box[dir]);
+      image_box[dir] = 0;
+      pos[dir] = 0;
+    }
+        }
+      }else{
+      /* must image y and v_x at same time as x */
+          int img_count;
+          img_count     = (int)floor(pos[1]*box_l_i[1]);
+          pos[0]       -= (lees_edwards_offset * img_count); 
+          vel[0]       -= (lees_edwards_rate   * img_count);       
+   
+          /* image y */
+          image_box[1] += img_count;
+          pos[1]        = pos[1] - img_count*box_l[1];    
+          
+          /* image x */
+          img_count     = (int)floor(pos[0]*box_l_i[0]);
+          image_box[0] += img_count;
+          pos[0]        = pos[0] - img_count*box_l[0];    
+      
+    }
+}
+#endif
+
 /** fold a coordinate to primary simulation box.
     \param pos         the position...
     \param image_box   and the box
@@ -218,13 +277,6 @@ MDINLINE void fold_coordinate(double pos[3], int image_box[3], int dir)
   if (PERIODIC(dir))
 #endif
     {
-#ifdef LEES_EDWARDS
-      if( dir == 0 ){
-          int y_img_count;
-          y_img_count   = (int)floor(pos[1]*box_l_i[1]);
-          pos[0]       -= (lees_edwards_offset * y_img_count); 
-      }
-#endif
 
       image_box[dir] += (tmp = (int)floor(pos[dir]*box_l_i[dir]));
       pos[dir]        = pos[dir] - tmp*box_l[dir];    
@@ -255,6 +307,23 @@ MDINLINE void fold_position(double pos[3],int image_box[3])
     fold_coordinate(pos, image_box, i);
 }
 
+/** fold particle coordinates to primary simulation box.
+    \param pos the position...
+    \param vel the velocity...
+    \param image_box and the box
+
+    Pos, vel and image_box are I/O,
+    i. e. a previously folded position will be folded correctly.
+*/
+#ifdef LEES_EDWARDS
+MDINLINE void fold_position_le(double pos[3], double vel[3], int image_box[3])
+{
+  int i;
+  for(i=0;i<3;i++)
+    fold_coordinate_le(pos, vel, image_box, i);
+}
+#endif
+
 /** unfold coordinates to physical position.
     \param pos the position...
     \param image_box and the box
@@ -269,7 +338,7 @@ MDINLINE void unfold_position(double pos[3],int image_box[3])
   int y_img_count;
   y_img_count   = (int)floor( pos[1]*box_l_i[1] + image_box[1] );
 
-  pos[0] = pos[0] + image_box[0]*box_l[0] + y_img_count*lees_edwards_offset;
+  pos[0] = pos[0] + image_box[0]*box_l[0] + y_img_count*(lees_edwards_offset);
   pos[1] = pos[1] + image_box[1]*box_l[1];
   pos[2] = pos[2] + image_box[2]*box_l[2];
   image_box[0] = image_box[1] = image_box[2] = 0;
@@ -289,19 +358,23 @@ MDINLINE void unfold_position(double pos[3],int image_box[3])
 /*************************************************************/
 /*@{*/
 
-/** returns the distance between two position. 
+/** returns the distance between two positions. 
  *  \param pos1 Position one.
  *  \param pos2 Position two.
 */
 MDINLINE double distance(double pos1[3], double pos2[3])
 {
-#ifndef LEES_EDWARDS
+#ifndef _LEES_EDWARDS
   return sqrt( SQR(pos1[0]-pos2[0]) + SQR(pos1[1]-pos2[1]) + SQR(pos1[2]-pos2[2]) );
 #else
-  int y_img_count;
+  int    y_img_count;
+  double dx;
   y_img_count = (int)floor(pos1[1]*box_l_i[1]) - (int)floor(pos2[1]*box_l_i[1]);
+  dx          = pos1[0]+y_img_count*lees_edwards_offset-pos2[0];
+  if( dx > 0.5 * box_l[0] ) dx -= box_l[0];
+  if( dx <-0.5 * box_l[0] ) dx += box_l[0];
  
-  return( sqrt(SQR(pos1[0]+y_img_count*lees_edwards_offset-pos2[0]) 
+  return( sqrt(SQR(dx) 
              + SQR(pos1[1]-pos2[1]) 
              + SQR(pos1[2]-pos2[2])) );
   
@@ -314,13 +387,19 @@ MDINLINE double distance(double pos1[3], double pos2[3])
 */
 MDINLINE double distance2(double pos1[3], double pos2[3])
 {
-#ifndef LEES_EDWARDS
+#ifndef _LEES_EDWARDS
   return SQR(pos1[0]-pos2[0]) + SQR(pos1[1]-pos2[1]) + SQR(pos1[2]-pos2[2]);
 #else
   int y_img_count;
+  double dx;
+  
   y_img_count = (int)floor(pos1[1]*box_l_i[1]) - (int)floor(pos2[1]*box_l_i[1]);
+  dx          = pos1[0]+y_img_count*lees_edwards_offset-pos2[0];
+  if( dx > 0.5 * box_l[0] ) dx -= box_l[0];
+  if( dx <-0.5 * box_l[0] ) dx += box_l[0];
  
-  return( SQR(pos1[0]+y_img_count*lees_edwards_offset-pos2[0]) 
+  
+  return( SQR(dx) 
              + SQR(pos1[1]-pos2[1]) 
              + SQR(pos1[2]-pos2[2]) );
   
@@ -337,16 +416,42 @@ MDINLINE double distance2(double pos1[3], double pos2[3])
 MDINLINE double distance2vec(double pos1[3], double pos2[3], double vec[3])
 {
 #ifdef LEES_EDWARDS
-  int y_img_count;
-  y_img_count = (int)floor(pos1[1]*box_l_i[1]) - (int)floor(pos2[1]*box_l_i[1]);
-  vec[0]      = pos1[0]+y_img_count*lees_edwards_offset - pos2[0];
-  while(vec[0] >  0.5*box_l[0]){vec[0]-=box_l[0];}
-  while(vec[0] < -0.5*box_l[0]){vec[0]+=box_l[0];}
-#else
+  int x_img_count, y_img_count, x_img_new;
+  double dx, xprime;
+  
+
   vec[0] = pos1[0]-pos2[0];
-#endif
   vec[1] = pos1[1]-pos2[1];
   vec[2] = pos1[2]-pos2[2];
+
+
+
+
+
+  /* Imaging in x is needed because of LE offset, 
+   * but should only need a maximum of one image.
+   */
+
+   if( pos2[1] > box_l[0] || pos2[1] < 0.0 ){
+     if( vec[0] < -0.5 * box_l[0] ){
+          vec[0] += box_l[0];
+     }
+     else if( vec[0] > 0.5 * box_l[0] ){
+          vec[0] -= box_l[0];
+     }
+   }
+   //}
+   //else if( pos2[1] > box_l[1] ) {
+   //  vec[0] -= lees_edwards_offset;
+   //  if( vec[0] < -0.5*box_l[0] ) vec[0] += box_l[0];
+   //}
+
+  
+#else
+  vec[0] = pos1[0]-pos2[0];
+  vec[1] = pos1[1]-pos2[1];
+  vec[2] = pos1[2]-pos2[2];
+#endif
   return SQR(vec[0]) + SQR(vec[1]) + SQR(vec[2]);
 }
 

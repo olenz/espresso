@@ -25,8 +25,10 @@
 */
 #ifndef LEES_EDWARDS_H
 #define LEES_EDWARDS_H
-
+#define _ADDITIONAL_CHECKS
+#define _GHOST_DEBUG
 extern double lees_edwards_offset, lees_edwards_rate;
+extern int    lees_edwards_count;
 
 #ifdef LEES_EDWARDS
 void lees_edwards_step_boundaries();

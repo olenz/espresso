@@ -711,7 +711,8 @@ void propagate_vel()
 }
 
 void propagate_pos()
-{
+{  
+    
   INTEG_TRACE(fprintf(stderr,"%d: propagate_pos:\n",this_node));
   if(integ_switch == INTEG_METHOD_NPT_ISO)
     /* Special propagator for NPT ISOTROPIC */
@@ -758,8 +759,8 @@ void propagate_vel_pos()
   Particle *p;
   int c, i, j, np;
 
-  INTEG_TRACE(fprintf(stderr,"%d: propagate_vel_pos:\n",this_node));
-
+  INTEG_TRACE(fprintf(stderr,"%d: propagate_vel_pos:\n",this_node));   
+    
 #ifdef ADDITIONAL_CHECKS
   db_max_force = db_max_vel = 0;
   db_maxf_id = db_maxv_id = -1;
@@ -786,24 +787,6 @@ void propagate_vel_pos()
 	  }
       }
 
-/* Whatever happens in subsequent folding/unfolding of coords, crossing a box boundary 
- * is tested for here */
-#ifdef LEES_EDWARDS
-      {
-      
-        int   delta_box;
-        delta_box    = (int)floor(p[i].r.p[1]*box_l_i[1]) - (int)floor(p[i].l.p_old[1]*box_l_i[1]);
-        if( delta_box != 0 ){   
-
-            /* The particle has crossed a y-boundary, so the x-position and vel must be adjusted
-             * or the coordinates are no longer consistent */
-            p[i].m.v[0]     -= delta_box * lees_edwards_rate;    
-            p[i].r.p[0]     -= delta_box * lees_edwards_offset; 
-        }
-      }
-#endif
-
-
       ONEPART_TRACE(if(p[i].p.identity==check_id) fprintf(stderr,"%d: OPT: PV_1 v_new = (%.3e,%.3e,%.3e)\n",this_node,p[i].m.v[0],p[i].m.v[1],p[i].m.v[2]));
       ONEPART_TRACE(if(p[i].p.identity==check_id) fprintf(stderr,"%d: OPT: PPOS p = (%.3f,%.3f,%.3f)\n",this_node,p[i].r.p[0],p[i].r.p[1],p[i].r.p[2]));
 
@@ -815,12 +798,30 @@ void propagate_vel_pos()
 #endif
 
       /* Verlet criterion check */
+#ifdef LEES_EDWARDS
+      {
+                    int   b1, delta_box;
+                    b1           = (int)floor( p[i].r.p[1]*box_l_i[1]);
+                    delta_box    = b1 - (int)floor(( p[i].r.p[1] - p[i].m.v[1])*box_l_i[1] );
+                    if( delta_box != 0 ){  
+//fprintf(stderr,"%i: le_wrapping part %i offsetting vx from %f to %f\n",
+ //                                  this_node,p[i].p.identity,p[i].m.v[0],p[i].m.v[0]-delta_box * lees_edwards_rate);
+
+                         p[i].m.v[0]     -= delta_box * lees_edwards_rate;   
+                         p[i].r.p[0]     -= delta_box * lees_edwards_offset; 
+                         p[i].r.p[1]     -= delta_box * box_l[1]; 
+                      while( p[i].r.p[0] >  box_l[0] ) p[i].r.p[0] -= box_l[0];
+                      while( p[i].r.p[0] <  0.0 )      p[i].r.p[0] += box_l[0];
+                         resort_particles = 1;
+                    }
+      }
+#endif
       if(distance2(p[i].r.p,p[i].l.p_old) > skin2 ) resort_particles = 1;
     }
   }
-
+  resort_particles = 1;
   announce_resort_particles();
-
+  
 #ifdef ADDITIONAL_CHECKS
   force_and_velocity_display();
 #endif
