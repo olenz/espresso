@@ -26,7 +26,6 @@
 #define LEES_EDWARDS_DD_H
 #ifdef LEES_EDWARDS
 
-
 #include "utils.h"
 #include "cells.h"
 #include "integrate.h"

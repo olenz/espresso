@@ -60,6 +60,7 @@ void lees_edwards_step_boundaries(){
  /* request a new verlet list */
  rebuild_verletlist    = 1;
 
+ /* imaging of particles needs to change */
  le_dd_update_communicators_w_boxl();
 
  return;

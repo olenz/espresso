@@ -797,16 +797,13 @@ void propagate_vel_pos()
       propagate_omega_quat_particle(&p[i]);
 #endif
 
-      /* Verlet criterion check */
 #ifdef LEES_EDWARDS
+      /* test for crossing of a y-pbc: requires adjustment of velocity.*/
       {
                     int   b1, delta_box;
                     b1           = (int)floor( p[i].r.p[1]*box_l_i[1]);
                     delta_box    = b1 - (int)floor(( p[i].r.p[1] - p[i].m.v[1])*box_l_i[1] );
                     if( delta_box != 0 ){  
-//fprintf(stderr,"%i: le_wrapping part %i offsetting vx from %f to %f\n",
- //                                  this_node,p[i].p.identity,p[i].m.v[0],p[i].m.v[0]-delta_box * lees_edwards_rate);
-
                          p[i].m.v[0]     -= delta_box * lees_edwards_rate;   
                          p[i].r.p[0]     -= delta_box * lees_edwards_offset; 
                          p[i].r.p[1]     -= delta_box * box_l[1]; 
@@ -816,7 +813,12 @@ void propagate_vel_pos()
                     }
       }
 #endif
+
+
+      /* Verlet criterion check */
       if(distance2(p[i].r.p,p[i].l.p_old) > skin2 ) resort_particles = 1;
+
+
     }
   }
   resort_particles = 1;
