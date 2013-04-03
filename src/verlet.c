@@ -311,8 +311,6 @@ if( (int)(sim_time/time_step) % 100 == 0 && dist2 <= SQR(get_ia_param(p1[i].p.ty
         while( imaged[0] + p1[i].r.p[0] < 0.0)      imaged[0] += box_l[0];
 
 
-//&&   dist2 > SQR(get_ia_param(p1[i].p.type, p2[j].p.type)->max_cut + skin)){
-//&& dist2 <= 9.1){
         fprintf(verlet_log2, "%i %i %f %f %f %f %f %f %f %.12f %i %i %f %f %f\n",p1[i].p.identity,p2[j].p.identity,
                                                            p1[i].r.p[0],p1[i].r.p[1],p1[i].r.p[2],
                                                            -vec21[0],
@@ -345,7 +343,7 @@ if( (int)(sim_time/time_step) % 100 == 0 && dist2 <= SQR(get_ia_param(p1[i].p.ty
 
 
 #ifdef VERLET_DEBUG
-if( fabs(sim_time - 0.078) <= 0.0001){
+if( (int)(sim_time/time_step) % 100 == 0 ){
 fprintf(verlet_log, "\n\n");
 fprintf(verlet_log2, "\n\n");
 }

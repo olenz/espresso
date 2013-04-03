@@ -77,9 +77,6 @@ int tclcommand_inter_parse_lj(Tcl_Interp * interp,
   double eps, sig, cut, shift, offset, cap_radius, min;
   int compute_auto_shift, change;
 
-  fprintf(stderr, "parsing LJ\n");
-
-
   /* get lennard-jones interaction type */
   if (argc < 4) {
     Tcl_AppendResult(interp, "lennard-jones needs at least 3 parameters: "
