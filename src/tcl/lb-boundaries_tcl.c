@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2010,2011,2012 The ESPResSo project
+  Copyright (C) 2010,2011,2012,2013 The ESPResSo project
   Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009,2010 
     Max-Planck-Institute for Polymer Research, Theory Group
   
@@ -786,11 +786,6 @@ int tclcommand_lbboundary(ClientData data, Tcl_Interp *interp, int argc, char **
     if(c_num < 0 || c_num >= n_lb_boundaries) {
       Tcl_AppendResult(interp, "Error in lbboundary force: The selected boundary does not exist",(char *) NULL);
       return (TCL_ERROR);
-    }
-
-    if (lattice_switch & LATTICE_LB_GPU) {
-      Tcl_AppendResult(interp, "Error in lbboundary force: cannot read out forces from the GPU code" ,(char *) NULL);
-      return (TCL_ERROR);	
     }
 
 #ifdef LB
