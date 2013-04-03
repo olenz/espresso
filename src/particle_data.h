@@ -126,7 +126,6 @@ typedef struct {
 #endif
 } ParticleProperties;
 
-#define LEES_EDWARDS_DEBUG
 
 /** Positional information on a particle. Information that is
     communicated to calculate interactions with ghost particles. */

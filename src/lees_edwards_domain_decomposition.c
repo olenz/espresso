@@ -39,6 +39,8 @@
 
 #ifdef LEES_EDWARDS
 
+
+
 /** Init cell interactions for the Lees-Edwards cell system.
  * initializes the interacting neighbor cell list of a cell. The
  * created list of interacting neighbor cells is used by the verlet
@@ -47,8 +49,7 @@
 void le_dd_init_cell_interactions()
 {
   int m,n,o,p,q,r,ind1,ind2,c_cnt=0,n_cnt;
-  int my_ncount, extra_cells = 0;
- 
+  int extra_cells = 0;
 
   /* initialize cell neighbor structures */
   dd.cell_inter = (IA_Neighbor_List *) realloc(dd.cell_inter,local_cells.n*sizeof(IA_Neighbor_List));
@@ -93,11 +94,11 @@ void le_dd_init_cell_interactions()
 	            dd.cell_inter[c_cnt].nList[n_cnt].cell_ind = ind2;
 	            dd.cell_inter[c_cnt].nList[n_cnt].pList    = &cells[ind2];
 	            init_pairList(&dd.cell_inter[c_cnt].nList[n_cnt].vList);
-	
+#ifdef CELL_DEBUG	
     dd.cell_inter[c_cnt].nList[n_cnt].my_pos[0] = my_left[0] + r * dd.cell_size[0];
     dd.cell_inter[c_cnt].nList[n_cnt].my_pos[1] = my_left[1] + q * dd.cell_size[1];
     dd.cell_inter[c_cnt].nList[n_cnt].my_pos[2] = my_left[2] + p * dd.cell_size[2];
-
+#endif
 	            n_cnt++;
    
 
@@ -118,20 +119,16 @@ void le_dd_init_cell_interactions()
         for(p=o-1; p<=o+1; p++)	{ /* usual loop over z */
             for( r=1; r <= dd.cell_grid[0]; r++){ /* ANY x could be a neighbor */
 
-//                if( abs(r-m) <= 1) continue; /* skip dupes */
-//                if( r == 1 && m == dd.cell_grid[0] ) continue;
-//                if( r == dd.cell_grid[0] && m == 1 ) continue;
-
 	            ind2 = get_linear_index(r,q,p,dd.ghost_cell_grid);
 	            if(ind2 >= ind1) {
 	                dd.cell_inter[c_cnt].nList[n_cnt].cell_ind = ind2;
 	                dd.cell_inter[c_cnt].nList[n_cnt].pList    = &cells[ind2];
 	                init_pairList(&dd.cell_inter[c_cnt].nList[n_cnt].vList);
-	
+#ifdef CELL_DEBUG	
     dd.cell_inter[c_cnt].nList[n_cnt].my_pos[0] = my_left[0] + r * dd.cell_size[0];
     dd.cell_inter[c_cnt].nList[n_cnt].my_pos[1] = my_left[1] + q * dd.cell_size[1];
     dd.cell_inter[c_cnt].nList[n_cnt].my_pos[2] = my_left[2] + p * dd.cell_size[2];
-
+#endif
 	                n_cnt++;
 	            }
             }
@@ -147,20 +144,16 @@ void le_dd_init_cell_interactions()
         for(p=o-1; p<=o+1; p++)	{ /* usual loop over z */
             for( r=1; r <= dd.cell_grid[0]; r++){ /* ANY x could be a neighbor */
 
-//                if( abs(r-m) <= 1) continue; /* skip dupes */
-//                if( r == 1 && m == dd.cell_grid[0] ) continue;
-//                if( r == dd.cell_grid[0] && m == 1 ) continue;
-
 	            ind2 = get_linear_index(r,q,p,dd.ghost_cell_grid);
 	            if(ind2 >= ind1) {
 	                dd.cell_inter[c_cnt].nList[n_cnt].cell_ind = ind2;
 	                dd.cell_inter[c_cnt].nList[n_cnt].pList    = &cells[ind2];
 	                init_pairList(&dd.cell_inter[c_cnt].nList[n_cnt].vList);
-
+#ifdef CELL_DEBUG
     dd.cell_inter[c_cnt].nList[n_cnt].my_pos[0] = my_left[0] + r * dd.cell_size[0];
     dd.cell_inter[c_cnt].nList[n_cnt].my_pos[1] = my_left[1] + q * dd.cell_size[1];
     dd.cell_inter[c_cnt].nList[n_cnt].my_pos[2] = my_left[2] + p * dd.cell_size[2];
-
+#endif
 
 	                n_cnt++;
 	            }
@@ -168,7 +161,6 @@ void le_dd_init_cell_interactions()
         }
     }
 
-#if 1
     /* Also need ghost cells from other nodes, if running in parallel.*/
     if( n == dd.cell_grid[1] && boundary[3] == -1 ){
 
@@ -204,11 +196,11 @@ void le_dd_init_cell_interactions()
 	            dd.cell_inter[c_cnt].nList[n_cnt].cell_ind = ind2;
 	            dd.cell_inter[c_cnt].nList[n_cnt].pList    = &cells[ind2];
 	            init_pairList(&dd.cell_inter[c_cnt].nList[n_cnt].vList);
-
+#ifdef CELL_DEBUG
     dd.cell_inter[c_cnt].nList[n_cnt].my_pos[0] = rr * dd.cell_size[0];
     dd.cell_inter[c_cnt].nList[n_cnt].my_pos[1] = my_left[1] + (qq-1) * dd.cell_size[1];
     dd.cell_inter[c_cnt].nList[n_cnt].my_pos[2] = pp * dd.cell_size[2];
-
+#endif
 	            n_cnt++;
             }
         }
@@ -245,22 +237,21 @@ void le_dd_init_cell_interactions()
 	            dd.cell_inter[c_cnt].nList[n_cnt].cell_ind = ind2;
 	            dd.cell_inter[c_cnt].nList[n_cnt].pList    = &cells[ind2];
 	            init_pairList(&dd.cell_inter[c_cnt].nList[n_cnt].vList);
-
+#ifdef CELL_DEBUG
     dd.cell_inter[c_cnt].nList[n_cnt].my_pos[0] = rr * dd.cell_size[0];
     dd.cell_inter[c_cnt].nList[n_cnt].my_pos[1] = 0.0;
     dd.cell_inter[c_cnt].nList[n_cnt].my_pos[2] = pp * dd.cell_size[2];
-
+#endif
 	            n_cnt++;
             }
         }
     }
-#endif
 
     dd.cell_inter[c_cnt].n_neighbors = n_cnt; 
     c_cnt++;
   }
 
-
+#ifdef CELL_DEBUG
   FILE *cells_fp;
   char cLogName[64];
   int  c,nn,this_n;
@@ -272,6 +263,8 @@ void le_dd_init_cell_interactions()
                         dd.ghost_cell_grid_le_extra[1] * 
                         dd.ghost_cell_grid_le_extra[2] );
 
+  /* print out line segments showing the vector from each cell to each neighbour cell*/
+
   for(c=0;c<c_cnt;c++){
      myPos[0] = my_left[0] + dd.cell_size[0] * ( 1 + c % dd.cell_grid[0] );  
      myPos[1] = my_left[1] + dd.cell_size[1] * ( 1 + (c / dd.cell_grid[0]) % dd.cell_grid[1]);  
@@ -280,17 +273,15 @@ void le_dd_init_cell_interactions()
      for(nn=0;nn<dd.cell_inter[c].n_neighbors;nn++){
         
         this_n = dd.cell_inter[c].nList[nn].cell_ind;
-
-
         fprintf(cells_fp,"%i %i %i %f %f %f %f %f %f\n",c,nn,this_n,
             myPos[0], myPos[1], myPos[2], 
             dd.cell_inter[c].nList[nn].my_pos[0], 
             dd.cell_inter[c].nList[nn].my_pos[1], 
             dd.cell_inter[c].nList[nn].my_pos[2]);
-          
      }
   }  
   fclose(cells_fp);
+#endif
 
 }
 
@@ -317,7 +308,6 @@ int le_dd_fill_comm_cell_lists(Cell **part_lists, Cell *cell_array_base, int lc[
     for(n=lc[1]; n<=hc[1]; n++) 
       for(m=lc[2]; m<=hc[2]; m++) {
 	i = get_linear_index(o,n,m,dd.ghost_cell_grid_le_extra);
-	//CELL_TRACE(fprintf(stderr,"%d: dd_fill_comm_cell_list: added ghost cell %d based on crds %i %i %i\n",this_node,i,o,n,m));
 	part_lists[c] = &cell_array_base[i];
 	c++;
       }
@@ -408,35 +398,33 @@ void  le_dd_prepare_comm(GhostCommunicator *comm, int data_parts)
   have_le[0] = 0;
   have_le[1] = 0;
    
-  /* prepare communicator... need 2 comms for non-trivial exchange, 1 comm for local exchange */
+  /* prepare communicator... need 2 comms for non-trivial exchange, 1 comm for node-local exchange */
   num = my_neighbor_count * 2;
   for(i = 0; i < my_neighbor_count; i++) {
-        if( node_neighbors[i] == this_node ){
-            num--;
-        }
+        if( node_neighbors[i] == this_node ) num--;
   }
 
   CELL_TRACE(fprintf(stderr,"%d Create Communicator: prep_comm data_parts %d num_neighbor_comms: %d\n",this_node,data_parts,num));
   prepare_comm(comm, data_parts, num);
 
   /* number of cells owned by this node to communicate in each direction:
-     note that  dd.ghost_cell_grid[1] doesn't get a mention. */
+     the sequence of comms decides the size of the surface to share, because ghost cells are acquired at each comm. */
   n_comm_cells[0] = dd.cell_grid[1]       * dd.cell_grid[2];
   n_comm_cells[1] = dd.ghost_cell_grid[2] * dd.ghost_cell_grid[0]; /* order of comms is x-z-y */
   n_comm_cells[2] = dd.ghost_cell_grid[0] * dd.cell_grid[1];
 
-  cnt=0;
 
   CELL_TRACE(fprintf(stderr,"%d: neighbours:", this_node));  
   CELL_TRACE(for(i = 0; i < my_neighbor_count; i++)fprintf(stderr," %d",node_neighbors[i]);) 
   CELL_TRACE(fprintf(stderr,"\n"));  
 
   /* loop over neighbours */
+  cnt=0;
   for(i = 0; i < my_neighbor_count; i++) {
   
-    int buf, neighbor_coords[3], neighbor_rank;
+    int neighbor_coords[3], neighbor_rank;
     
-    /* must loop on order x-z-y or (z-x-y): y imaging must carry ghost cells already genned in the 
+    /* must loop on order x-z-y for Lees Edwards: y imaging must carry ghost cells already genned in the 
        plane perpendicular to y. */
     neighbor_index = i;
     if( i == 0 || i == 1 ){
@@ -466,7 +454,6 @@ void  le_dd_prepare_comm(GhostCommunicator *comm, int data_parts)
     }
     lr            = node_neighbor_lr[neighbor_index]; 
 
-
     /* find out where this neighbor is */
     neighbor_rank = node_neighbors[neighbor_index];
     map_node_array(neighbor_rank, neighbor_coords);
@@ -492,7 +479,6 @@ void  le_dd_prepare_comm(GhostCommunicator *comm, int data_parts)
         comm->comm[cnt].type          = GHOST_LOCL;
 	    comm->comm[cnt].node          = this_node;
 
-
 	    /* prepare folding of ghost positions */
         data_parts |= GHOSTTRANS_POSSHFTD;
         comm->comm[cnt].shift[dir] = node_neighbor_wrap[neighbor_index]*box_l[dir];  
@@ -506,7 +492,6 @@ void  le_dd_prepare_comm(GhostCommunicator *comm, int data_parts)
             hc[0]                     = dd.cell_grid[0];
              
             n_comm_cells[1] = dd.cell_grid[0] * dd.ghost_cell_grid[2];
-
         }
 
         /*if top plane */
@@ -520,18 +505,14 @@ void  le_dd_prepare_comm(GhostCommunicator *comm, int data_parts)
                     hc[dir] = 1;
         }
 
-        
 	    /* Buffer has to contain both Send and Recv cells -> factor 2 */
 	    comm->comm[cnt].part_lists    = malloc(2*n_comm_cells[dir]*sizeof(ParticleList *));
 	    comm->comm[cnt].n_part_lists  = 2*n_comm_cells[dir];
-
 
         if( dd_fill_comm_cell_lists(comm->comm[cnt].part_lists,lc,hc) != comm->comm[cnt].n_part_lists / 2){
             fprintf(stderr, "ERROR failed loading comm cell lists for node-local send.\n");
             exit( 1 );
         }
- 
-
 	    CELL_TRACE(fprintf(stderr,"%d: prep_comm %d copy %d from grid (%d,%d,%d)-(%d,%d,%d) shift: %f-%f-%f\n",this_node,cnt, 
                    comm->comm[cnt].n_part_lists/2,
 			       lc[0],lc[1],lc[2],hc[0],hc[1],hc[2],comm->comm[cnt].shift[0],comm->comm[cnt].shift[1],comm->comm[cnt].shift[2]));
@@ -556,13 +537,14 @@ void  le_dd_prepare_comm(GhostCommunicator *comm, int data_parts)
          
 
     }else{
-        /* send/recv loop */
+        /* send/recv loop: sends and receives must synchronise, or at worst be in the correct order to avoid deadlocks. */
         for(send_rec=0; send_rec<2; send_rec++) {  
         
             comm->comm[cnt].node          = neighbor_rank;
  
             if( (send_rec == 0  && neighbor_rank > this_node) 
               ||(send_rec == 1  && neighbor_rank < this_node)){
+
                 comm->comm[cnt].type          = GHOST_SEND;
           
                 /* prepare fold-on-send of ghost positions */
@@ -583,11 +565,9 @@ void  le_dd_prepare_comm(GhostCommunicator *comm, int data_parts)
                 }else {
                         lc[dir] = 1;
                         hc[dir] = 1;
-                }
- 
+                } 
 
                 if( neighbor_index >= 6){ /* send to extra Lees-Edwards ghost cells */
-                    int node_off = neighbor_coords[0] - node_pos[0];
                     int n_lists;
 
                     data_parts |= GHOSTTRANS_POSSHFTD;
@@ -617,7 +597,6 @@ void  le_dd_prepare_comm(GhostCommunicator *comm, int data_parts)
                     }
                 }else{
 
-
                     /* we don't send corner-ghosts through a LE y-wrap */
                     if( dir == 1 ){
                         if(  node_neighbor_wrap[neighbor_index] != 0 ){
@@ -628,9 +607,6 @@ void  le_dd_prepare_comm(GhostCommunicator *comm, int data_parts)
                             n_comm_cells[1] = (1+hc[0]-lc[0]) * dd.ghost_cell_grid[2];
                         }
                     }
-
-
-
                     comm->comm[cnt].part_lists    = malloc(n_comm_cells[dir]*sizeof(ParticleList *));
                     comm->comm[cnt].n_part_lists  = n_comm_cells[dir];
 
@@ -646,10 +622,10 @@ void  le_dd_prepare_comm(GhostCommunicator *comm, int data_parts)
                 }
 
 
-
-                int pc_index, part_count = 0;
-                CELL_TRACE(for( pc_index = 0; pc_index < comm->comm[cnt].n_part_lists; pc_index++) part_count+=comm->comm[cnt].part_lists[pc_index]->n;);
-                CELL_TRACE(fprintf(stderr,"%d: prep_comm %d send %d lists %d parts to   node %d grid (%d,%d,%d)-(%d,%d,%d) dir %d shift (%f,%f,%f)\n",this_node,cnt,comm->comm[cnt].n_part_lists,part_count,comm->comm[cnt].node,lc[0],lc[1],lc[2],hc[0],hc[1],hc[2],dir,comm->comm[cnt].shift[0],comm->comm[cnt].shift[1],comm->comm[cnt].shift[2]));
+                CELL_TRACE(int pc_index;)
+                CELL_TRACE(int part_count = 0;)
+                CELL_TRACE(for( pc_index = 0; pc_index < comm->comm[cnt].n_part_lists; pc_index++) part_count+=comm->comm[cnt].part_lists[pc_index]->n;)
+                CELL_TRACE(fprintf(stderr,"%d: prep_comm %d send %d lists %d parts to   node %d grid (%d,%d,%d)-(%d,%d,%d) dir %d shift (%f,%f,%f)\n",this_node,cnt,comm->comm[cnt].n_part_lists,part_count,comm->comm[cnt].node,lc[0],lc[1],lc[2],hc[0],hc[1],hc[2],dir,comm->comm[cnt].shift[0],comm->comm[cnt].shift[1],comm->comm[cnt].shift[2]))
 
             }else {
                 comm->comm[cnt].type          = GHOST_RECV;
@@ -667,7 +643,7 @@ void  le_dd_prepare_comm(GhostCommunicator *comm, int data_parts)
           
                 if( neighbor_index < 6 ){
 
-                    /* we don't send corner-ghosts through a LE y-wrap */
+                    /* we don't expect to receive corner-ghosts through a LE y-wrap */
                     if( dir == 1 ){
                         if( node_neighbor_wrap[neighbor_index] != 0 ){               
                             lc[0]     = 1;
@@ -680,8 +656,9 @@ void  le_dd_prepare_comm(GhostCommunicator *comm, int data_parts)
                     dd_fill_comm_cell_lists(comm->comm[cnt].part_lists,lc,hc);
 
                 }else{ /* receive into Lees-Edwards extra ghost cells */
+
                     int node_off = neighbor_coords[0] - node_pos[0];
-                    int n_lists, receive_from_this;
+                    int n_lists;
 
                     /* the neighbor is to my right, then already have some*/
                     if( node_off > 0){
@@ -691,8 +668,7 @@ void  le_dd_prepare_comm(GhostCommunicator *comm, int data_parts)
                     }
                     hc[0] = lc[0] + dd.cell_grid[0] - 1;
 
-
-                    /* y and z grid sections fixed more as normal */
+                    /* y and z grid sections are fixed more as normal */
                     /* there are max of two layers in y */
                     if( lr == 0 ){
                         lc[1] = 0;
@@ -703,7 +679,6 @@ void  le_dd_prepare_comm(GhostCommunicator *comm, int data_parts)
                     }                    
                       lc[2] = 0;
                     hc[2] = dd.ghost_cell_grid_le_extra[2] - 1;
-
 
                     /* number of lists is (x-range * z-range * 1) */
                     if( hc[0] >= lc[0] && lc[0] >= 0 ){ 
@@ -736,180 +711,5 @@ void  le_dd_prepare_comm(GhostCommunicator *comm, int data_parts)
 
 }
 
-
-
-
-/************************************************************/
-void  le_dd_exchange_and_sort_particles(int global_flag)
-{
-  int           neighbor_index, dir, c, p, i, finished=0, count = 0;
-  ParticleList *cell,*sort_cell, send_buf_l, send_buf_r, recv_buf_l, recv_buf_r;
-  Particle     *part;
-
-  CELL_TRACE(fprintf(stderr,"%d: dd_exchange_and_sort_particles(%d):\n",this_node,global_flag));
-
-  init_particlelist(&send_buf_l);
-  init_particlelist(&send_buf_r);
-  init_particlelist(&recv_buf_l);
-  init_particlelist(&recv_buf_r);
-
-  while(finished == 0 ) {
-    finished=1; count++;
-
-    /* loop over x,y,z */  
-    for( dir = 0; dir < 2; dir++ ){    
-      if(node_grid[dir] > 1) {
-
-	/* Communicate particles that have left the node domain */
-	/* particle loop */
-	for(c=0; c<local_cells.n; c++) {
-	  cell = local_cells.cell[c];
-	  for (p = 0; p < cell->n; p++) {
-	    part = &cell->part[p];
-       
-	    /* Move particles to the left side */
-	    if(part->r.p[dir] - my_left[dir] < -ROUND_ERROR_PREC*box_l[dir]) {
-		  CELL_TRACE(fprintf(stderr,"%d: dd_ex_and_sort_p: send part left %d\n",this_node,part->p.identity));
-		  local_particles[part->p.identity] = NULL;
-		  move_indexed_particle(&send_buf_l, cell, p);
-		  if(p < cell->n) p--;
-		}
-	    /* Move particles to the right side */
-	    else if(part->r.p[dir] - my_right[dir] >= ROUND_ERROR_PREC*box_l[dir]) {
-		  CELL_TRACE(fprintf(stderr,"%d: dd_ex_and_sort_p: send part right %d\n",this_node,part->p.identity));
-		  local_particles[part->p.identity] = NULL;
-		  move_indexed_particle(&send_buf_r, cell, p);
-		  if(p < cell->n) p--;
-	    }
-	    /* Sort particles in cells of this node during last direction */
-	    else if(dir==2) {
-	      sort_cell = dd_save_position_to_cell(part->r.p);
-	      if(sort_cell != cell) {
-		if(sort_cell==NULL) {
-		  CELL_TRACE(fprintf(stderr,"%d: dd_exchange_and_sort_particles: Take another loop",this_node));
-		  CELL_TRACE(fprintf(stderr, "%d: dd_exchange_and_sort_particles: CP1 Particle %d (%f,%f,%f) not inside node domain.\n",
-				     this_node,part->p.identity,part->r.p[0],part->r.p[1],part->r.p[2]));		 
-		  finished=0;
-		  sort_cell = local_cells.cell[0];
-		  if(sort_cell != cell) {
-		    move_indexed_particle(sort_cell, cell, p);
-		    if(p < cell->n) p--;
-		  }
-		}
-		else {
-		  move_indexed_particle(sort_cell, cell, p);
-		  if(p < cell->n) p--;
-		}
-	      }
-	    }
-	  }
-    }
-
-	/* Exchange particles */
-	if(node_pos[dir]%2==0) {
-	  send_particles(&send_buf_l, node_neighbors[2*dir]);
-	  recv_particles(&recv_buf_r, node_neighbors[2*dir+1]);
-	  send_particles(&send_buf_r, node_neighbors[2*dir+1]);
-	  recv_particles(&recv_buf_l, node_neighbors[2*dir]);
-	}
-	else {
-	  recv_particles(&recv_buf_r, node_neighbors[2*dir+1]);
-	  send_particles(&send_buf_l, node_neighbors[2*dir]);
-	  recv_particles(&recv_buf_l, node_neighbors[2*dir]);
-	  send_particles(&send_buf_r, node_neighbors[2*dir+1]);
-	}
-	/* sort received particles to cells, folding of coordinates also happens in here. */
-	if(dd_append_particles(&recv_buf_l, 2*dir  ) && dir == 2) finished = 0;
-	if(dd_append_particles(&recv_buf_r, 2*dir+1) && dir == 2) finished = 0; 
-	/* reset send/recv buffers */
-	send_buf_l.n = 0;
-	send_buf_r.n = 0;
-	recv_buf_l.n = 0;
-	recv_buf_r.n = 0;
-      }
-      else {
-	/* Single node direction case (no communication) */
-	/* Fold particles that have left the box */
-	/* particle loop */
-	for(c=0; c<local_cells.n; c++) {
-	  cell = local_cells.cell[c];
-	  for (p = 0; p < cell->n; p++) {
-	    part = &cell->part[p];
-		fold_coordinate(part->r.p, part->l.i, dir);
-	    if (dir==2) {
-	      sort_cell = dd_save_position_to_cell(part->r.p);
-	      if(sort_cell != cell) {
-		if(sort_cell==NULL) {
-		  CELL_TRACE(fprintf(stderr, "%d: dd_exchange_and_sort_particles: CP2 Particle %d (%f,%f,%f) not inside node domain.\n",
-				     this_node,part->p.identity,part->r.p[0],part->r.p[1],part->r.p[2]));
-		  finished=0;
-		  sort_cell = local_cells.cell[0];
-		  if(sort_cell != cell) {
-		    move_indexed_particle(sort_cell, cell, p);
-		    if(p < cell->n) p--;
-		  }      
-		}
-		else {
-		  CELL_TRACE(fprintf(stderr, "%d: dd_exchange_and_sort_particles: move particle id %d\n", this_node,part->p.identity));
-		  move_indexed_particle(sort_cell, cell, p);
-		  if(p < cell->n) p--;
-		}
-	      }
-	    }
-	  }
-	}
-      }
-    }
-
-    /* Communicate whether particle exchange is finished */
-    if(global_flag == CELL_GLOBAL_EXCHANGE) {
-      if(this_node==0) {
-        int sum;
-   
-        MPI_Reduce(&finished, &sum, 1, MPI_INT, MPI_SUM, 0, comm_cart);
-        if( sum < n_nodes ) finished=0; else finished=sum;
-        
-    fprintf(stderr, "domdec: %f , try %i , %i nodes have all particles in correct cells\n", lees_edwards_offset, count, sum);
-    
-    
-    
-      } else {
-	MPI_Reduce(&finished, NULL, 1, MPI_INT, MPI_SUM, 0, comm_cart);
-      }
-      MPI_Bcast(&finished, 1, MPI_INT, 0, comm_cart);
-      
-    
-      
-    } else {
-      if(finished == 0) {
-	char *errtext = runtime_error(128);
-	ERROR_SPRINTF(errtext,"{004 some particles moved more than min_local_box_l, reduce the time step} ");
-	/* the bad guys are all in cell 0, but probably their interactions are of no importance anyways.
-	   However, their positions have to be made valid again. */
-	finished = 1;
-	/* all out of range coordinates in the left overs cell are moved to (0,0,0) */
-	cell = local_cells.cell[0];
-	for (p = 0; p < cell->n; p++) {
-	  part = &cell->part[p];
-	  if(dir < 3 && dir >= 0 && (part->r.p[dir] < my_left[dir] || part->r.p[dir] > my_right[dir]))
-	    for (i = 0; i < 3; i++)
-	      part->r.p[i] = 0;
-	}
-      }
-    }
-    CELL_TRACE(fprintf(stderr,"%d: dd_exchange_and_sort_particles: finished value: %d\n",this_node,finished));
-  }
-
-  realloc_particlelist(&send_buf_l, 0);
-  realloc_particlelist(&send_buf_r, 0);
-  realloc_particlelist(&recv_buf_l, 0);
-  realloc_particlelist(&recv_buf_r, 0);
-
-#ifdef ADDITIONAL_CHECKS
-  check_particle_consistency();
-#endif
-
-  CELL_TRACE(fprintf(stderr,"%d: dd_exchange_and_sort_particles finished\n",this_node));
-}
 
 #endif //LEES_EDWARDS

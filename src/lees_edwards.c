@@ -20,6 +20,7 @@
 */
 #include "lees_edwards.h"
 #include "domain_decomposition.h"
+#include "lees_edwards_domain_decomposition.h"
 #include "grid.h"
 
 /* global state variables */
@@ -59,7 +60,7 @@ void lees_edwards_step_boundaries(){
  /* request a new verlet list */
  rebuild_verletlist    = 1;
 
-le_dd_update_communicators_w_boxl();
+ le_dd_update_communicators_w_boxl();
 
  return;
 }

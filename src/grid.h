@@ -416,17 +416,10 @@ MDINLINE double distance2(double pos1[3], double pos2[3])
 MDINLINE double distance2vec(double pos1[3], double pos2[3], double vec[3])
 {
 #ifdef LEES_EDWARDS
-  int x_img_count, y_img_count, x_img_new;
-  double dx, xprime;
-  
 
   vec[0] = pos1[0]-pos2[0];
   vec[1] = pos1[1]-pos2[1];
   vec[2] = pos1[2]-pos2[2];
-
-
-
-
 
   /* Imaging in x is needed because of LE offset, 
    * but should only need a maximum of one image.
@@ -440,11 +433,6 @@ MDINLINE double distance2vec(double pos1[3], double pos2[3], double vec[3])
           vec[0] -= box_l[0];
      }
    }
-   //}
-   //else if( pos2[1] > box_l[1] ) {
-   //  vec[0] -= lees_edwards_offset;
-   //  if( vec[0] < -0.5*box_l[0] ) vec[0] += box_l[0];
-   //}
 
   
 #else

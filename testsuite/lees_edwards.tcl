@@ -30,22 +30,17 @@ puts "------------------------------------------"
 
 
 # system setup
-set L                 10     ;#box size
+set L                 30     ;#box size
 set temperature        1.0   ;#temperature in reduced units
 set T                500     ;#temperature in Kelvin
+set n_part          1400     ;#number of particles
 
 set k_temp [expr $T * 0.00198721]
 set k_b    [expr $k_temp / $temperature]
-set mass  1.67e-27        ; # to convert mass from AMU to kg
-set fac   6.94e-21        ; # To convert energy from Kcal/mol to Joules
-
 set time_step              0.001
 set num_steps_equil 10000000
 set skin                   0.2
 
-set length_polymer  50
-set N_chains         5
-set n_part [expr $length_polymer * $N_chains]
 
 
 #############################################################
@@ -61,13 +56,10 @@ set lj_epsilon [expr  0.112/$k_temp]
 set sigma 4.01
 set lj1_sig 1.0
 set lj1_cut [expr 2.5*$lj1_sig]
-#set lj1_cut [expr 15.0-$skin]
 set cut [expr 1/$lj1_cut]
 set shift [expr 2* pow($cut, 6) - pow($cut, 12)]
 set lj1_shift [expr $shift]
 
-set harm_k [expr  18.0 / $k_temp]  
-set harm_r0 3.0
 set sigma   1.0
 
 # set up global parameters
@@ -101,15 +93,15 @@ for { set i 0 } { $i < $n_part } { incr i } {
 # simulation
 
 ##start by shearing the system, and see what happens
-set max_step_shear 1000000
+set max_step_shear  10000000
 set shear_equil       5000
 set mean_from         1000
 set shear_per            1
-set write_per          100
-set shear_rate           0.003
+set write_per         1000
+set shear_rate           0.005
 set offset               0.0
 
-set f [open "thermalising.vtf" w]
+set f [open "lees_edwards_thermalising.vtf" w]
 writevsf $f
 
 thermostat langevin $temperature 5.0
@@ -121,8 +113,7 @@ set mean_z2 0.0
 set count   0.0
 for { set step 0 } { $step < $shear_equil } { incr step $shear_per } {
     if { [expr $step % $write_per] == 0 } then {
-        writevcf $f 
-#folded
+        writevcf $f ;#folded
     }
 
     lees_edwards_offset  $offset
@@ -167,13 +158,17 @@ set mean_y2 [expr $mean_y2 / $count ]
 set mean_z2 [expr $mean_z2 / $count ] 
 puts "#means: $mean_x2 $mean_y2 $mean_z2"
 
-##Below is the loop for an extended test, to
+##Below is the loop for an extended test, use this to
 ##see if the code is stable without a forcecap for a long time.
 
-set f [open "noCap.vtf" w]
+puts "#Shear displacement   |  <vx^2>    <vy^2>   <vz^2>"
+set mean_x2 0.0
+set mean_y2 0.0
+set mean_z2 0.0
+set count   0.0
+set f [open "lees_edwards_noCap.vtf" w]
 writevsf $f
 inter forcecap  0
-##thermostat langevin $temperature 0.01
 for { set step 0 } { $step < $max_step_shear } { incr step $shear_per } {
     if { [expr $step % $write_per] == 0 } then {
         writevcf $f folded
@@ -199,15 +194,24 @@ for { set step 0 } { $step < $max_step_shear } { incr step $shear_per } {
         set KEy             [expr 2.0 * $vy2 / (3 * $n_part )]
         set KEz             [expr 2.0 * $vz2 / (3 * $n_part )]
 
-        puts "$offset     $KEx $KEy $KEz"
+            set mean_x2 [expr $mean_x2 + $KEx ] 
+            set mean_y2 [expr $mean_y2 + $KEy ] 
+            set mean_z2 [expr $mean_z2 + $KEz ] 
+            set count   [expr $count + 1.0 ] 
+
+    set mmX [expr $mean_x2 / $count]
+
+        puts "$offset     $KEx $KEy $KEz running mean vx^2:  $mmX"
         
     }
     set offset [expr $offset + $shear_rate * $shear_per]
+
+
 }
 
-
-
-
-
+set mean_x2 [expr $mean_x2 / $count ] 
+set mean_y2 [expr $mean_y2 / $count ] 
+set mean_z2 [expr $mean_z2 / $count ] 
+puts "#means: $mean_x2 $mean_y2 $mean_z2"
 exit
 

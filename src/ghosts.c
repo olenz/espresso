@@ -39,8 +39,6 @@
 /** Tag for communication in ghost_comm. */
 #define REQ_GHOST_SEND 100
 
-#define ADDITIONAL_CHECKS
-
 static int n_s_buffer = 0;
 static int max_s_buffer = 0;
 /** send buffer. Just grows, which should be ok */
@@ -156,21 +154,12 @@ void prepare_send_buffer(GhostCommunication *gc, int data_parts)
 	}
 	if (data_parts & GHOSTTRANS_POSSHFTD) {
 	  /* ok, this is not nice, but perhaps fast */
-	  ParticlePosition *pp = (ParticlePosition *)insert;
-	  int i;
-	  memcpy(pp, &pt->r, sizeof(ParticlePosition));
+	    ParticlePosition *pp = (ParticlePosition *)insert;
+        memcpy(pp, &pt->r, sizeof(ParticlePosition));
 	  
         pp->p[0] += gc->shift[0];
 	    pp->p[1] += gc->shift[1];
 	    pp->p[2] += gc->shift[2];
-
-      /* this mostly just for debug */
-      #ifdef LEES_EDWARDS
-        if( gc->shift[1] * gc->shift[0] != 0.0 ){
-            while(pp->p[0] > box_l[0]){pp->p[0]-=box_l[0];}
-            while(pp->p[0] < 0.0){pp->p[0]+=box_l[0];}
-        }
-      #endif
 
         insert +=  sizeof(ParticlePosition);
 
@@ -350,20 +339,12 @@ void cell_cell_transfer(GhostCommunication *gc, int data_parts)
 	  memcpy(&pt2->p, &pt1->p, sizeof(ParticleProperties));
 	if (data_parts & GHOSTTRANS_POSSHFTD) {
 	  /* ok, this is not nice, but perhaps fast */
-	  int i;
 	  memcpy(&pt2->r, &pt1->r, sizeof(ParticlePosition));
 
       pt2->r.p[0] += gc->shift[0];
       pt2->r.p[1] += gc->shift[1];
       pt2->r.p[2] += gc->shift[2];
 
-      /* this mostly just for debug */
-      #ifdef LEES_EDWARDS
-        if( gc->shift[1] * gc->shift[0] != 0.0 ){
-            while(pt2->r.p[0] > box_l[0]){pt2->r.p[0]-=box_l[0];}
-            while(pt2->r.p[0] < 0.0){pt2->r.p[0]+=box_l[0];}
-        }
-      #endif
 
 	}
 	else if (data_parts & GHOSTTRANS_POSITION)

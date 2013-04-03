@@ -141,22 +141,27 @@ void dd_create_cell_grid()
     /* It may be necessary to asymmetrically assign the scaling to the coordinates, which the above approach will not do.
        For a symmetric box, it gives a symmetric result. Here we correct that. */
     for (;;) {
-      n_local_cells = dd.cell_grid[0];
-      for (i = 1; i < 3; i++)
-	n_local_cells *= dd.cell_grid[i];
+
+      n_local_cells = dd.cell_grid[0] * dd.cell_grid[1] * dd.cell_grid[2];
 
       /* done */
       if (n_local_cells <= max_num_cells)
-	break;
+          break;
 
       /* find coordinate with the smallest cell range */
       min_ind = 0;
       min_size = cell_range[0];
-      for (i = 1; i < 3; i++)
-	if (dd.cell_grid[i] > 1 && cell_range[i] < min_size) {
-	  min_ind = i;
-	  min_size = cell_range[i];
-	}
+
+#ifdef LEES_EDWARDS
+      for (i = 2; i >= 1; i--) {/*preferably have thin slices in z or y... this is more efficient for Lees Edwards*/
+#else
+      for (i = 1; i < 3; i++) {
+#endif       
+          if (dd.cell_grid[i] > 1 && cell_range[i] < min_size) {
+	        min_ind = i;
+	        min_size = cell_range[i];
+	      }
+      }
       CELL_TRACE(fprintf(stderr, "%d: minimal coordinate %d, size %f, grid %d\n", this_node,min_ind, min_size, dd.cell_grid[min_ind]));
 
       dd.cell_grid[min_ind]--;
@@ -187,6 +192,7 @@ void dd_create_cell_grid()
     dd.inv_cell_size[i]   = 1.0 / dd.cell_size[i];
   }
   max_skin = dmin(dmin(dd.cell_size[0],dd.cell_size[1]),dd.cell_size[2]) - max_cut;
+
 #ifdef LEES_EDWARDS
   /* nodes on a y-border need more ghosts */  
   dd.ghost_cell_grid_le_extra[0] = 0;    
@@ -235,7 +241,6 @@ void dd_mark_cells()
 {
   int m,n,o,cnt_c=0,cnt_l=0,cnt_g=0;
 
-#ifdef LEES_EDWARDS
   DD_CELLS_LOOP(m,n,o){
     if( DD_IS_LOCAL_CELL(m,n,o) ){
         local_cells.cell[cnt_l++] = &cells[cnt_c++]; 
@@ -243,20 +248,14 @@ void dd_mark_cells()
         ghost_cells.cell[cnt_g++] = &cells[cnt_c++];
     }        
   }
+
+#ifdef LEES_EDWARDS
   for( m = 0; m < dd.ghost_cell_grid_le_extra[0]; m++){
     for( n = 0; n < dd.ghost_cell_grid_le_extra[1]; n++){
         for( o = 0; o < dd.ghost_cell_grid_le_extra[2]; o++){
             ghost_cells.cell[cnt_g++] = &cells[cnt_c++];
         }
     }
-  }
-#else
-  DD_CELLS_LOOP(m,n,o){
-    if( DD_IS_LOCAL_CELL(m,n,o) ){
-        local_cells.cell[cnt_l++] = &cells[cnt_c++]; 
-    }else{
-        ghost_cells.cell[cnt_g++] = &cells[cnt_c++];
-    }        
   }
 #endif
 
@@ -296,7 +295,6 @@ int dd_fill_comm_cell_lists(Cell **part_lists, int lc[3], int hc[3])
     for(n=lc[1]; n<=hc[1]; n++) 
       for(m=lc[2]; m<=hc[2]; m++) {
 	i = get_linear_index(o,n,m,dd.ghost_cell_grid);
-	//CELL_TRACE(fprintf(stderr,"%d: dd_fill_comm_cell_list: added ghost cell %d based on crds %i %i %i\n",this_node,i,o,n,m));
 	part_lists[c] = &cells[i];
 	c++;
       }
@@ -433,7 +431,6 @@ void  dd_prepare_comm(GhostCommunicator *comm, int data_parts)
       done[dir]=1;
     }
   }
-  //exit(8);
 }
 
 /** Revert the order of a communicator: After calling this the
@@ -502,25 +499,9 @@ void dd_update_communicators_w_boxl()
 	  {
 	    /* prepare folding of ghost positions */
 	    if(boundary[2*dir+lr] != 0) {
-#ifndef LEES_EDWARDS
 	      cell_structure.exchange_ghosts_comm.comm[cnt].shift[dir] = boundary[2*dir+lr]*box_l[dir]; 
 	      cell_structure.update_ghost_pos_comm.comm[cnt].shift[dir] = boundary[2*dir+lr]*box_l[dir]; 
-#else
-		cell_structure.exchange_ghosts_comm.comm[cnt].shift[dir] = boundary[2*dir+(1-lr)]*box_l[dir];
-		cell_structure.update_ghost_pos_comm.comm[cnt].shift[dir] = boundary[2*dir+(1-lr)]*box_l[dir];
-        if( dir == 1 ){
-		cell_structure.exchange_ghosts_comm.comm[cnt].shift[0]  = boundary[2+(1-lr)]*lees_edwards_offset;
-		cell_structure.update_ghost_pos_comm.comm[cnt].shift[0]  = boundary[2+(1-lr)]*lees_edwards_offset;
-        }
-#endif
 	    }
-        fprintf(stderr, "%d: Ghost_shift %i, dir %i: %f,%f,%f  %f,%f,%f \n",this_node,cnt,dir,
-                cell_structure.exchange_ghosts_comm.comm[cnt].shift[0], 
-                cell_structure.exchange_ghosts_comm.comm[cnt].shift[1],
-                cell_structure.exchange_ghosts_comm.comm[cnt].shift[2],
-                cell_structure.update_ghost_pos_comm.comm[cnt].shift[0], 
-                cell_structure.update_ghost_pos_comm.comm[cnt].shift[1],
-                cell_structure.update_ghost_pos_comm.comm[cnt].shift[2]);
 
 	    cnt++;
 	  }
@@ -534,25 +515,9 @@ void dd_update_communicators_w_boxl()
 	    if((node_pos[dir]+i)%2==0) {
 	      /* prepare folding of ghost positions */
 	      if(boundary[2*dir+lr] != 0) {
-#ifndef LEES_EDWARDS
 		cell_structure.exchange_ghosts_comm.comm[cnt].shift[dir] = boundary[2*dir+lr]*box_l[dir];
 		cell_structure.update_ghost_pos_comm.comm[cnt].shift[dir] = boundary[2*dir+lr]*box_l[dir];
-#else
-		cell_structure.exchange_ghosts_comm.comm[cnt].shift[dir] = boundary[2*dir+(1-lr)]*box_l[dir];
-		cell_structure.update_ghost_pos_comm.comm[cnt].shift[dir] = boundary[2*dir+(1-lr)]*box_l[dir];
-        if( dir == 1 ){
-		    cell_structure.exchange_ghosts_comm.comm[cnt].shift[0] = boundary[2+(1-lr)]*lees_edwards_offset;
-		    cell_structure.update_ghost_pos_comm.comm[cnt].shift[0] = boundary[2+(1-lr)]*lees_edwards_offset;
-        }
-#endif
 	      }
-        fprintf(stderr, "%d: Ghost_shift %i, dir %i: %f,%f,%f  %f,%f,%f \n",this_node,cnt,dir,
-                cell_structure.exchange_ghosts_comm.comm[cnt].shift[0], 
-                cell_structure.exchange_ghosts_comm.comm[cnt].shift[1],
-                cell_structure.exchange_ghosts_comm.comm[cnt].shift[2],
-                cell_structure.update_ghost_pos_comm.comm[cnt].shift[0], 
-                cell_structure.update_ghost_pos_comm.comm[cnt].shift[1],
-                cell_structure.update_ghost_pos_comm.comm[cnt].shift[2]);
 
 	      cnt++;
 	    }
@@ -560,14 +525,6 @@ void dd_update_communicators_w_boxl()
 	  if( PERIODIC(dir) || (boundary[2*dir+(1-lr)] == 0) ) 
 #endif
 	    if((node_pos[dir]+(1-i))%2==0) {
-        fprintf(stderr, "%d: Ghost_shift %i, dir %i: %f,%f,%f  %f,%f,%f \n",this_node,cnt,dir,
-                cell_structure.exchange_ghosts_comm.comm[cnt].shift[0], 
-                cell_structure.exchange_ghosts_comm.comm[cnt].shift[1],
-                cell_structure.exchange_ghosts_comm.comm[cnt].shift[2],
-                cell_structure.update_ghost_pos_comm.comm[cnt].shift[0], 
-                cell_structure.update_ghost_pos_comm.comm[cnt].shift[1],
-                cell_structure.update_ghost_pos_comm.comm[cnt].shift[2]);
-
 	      cnt++;
 	    }
 	}
@@ -610,7 +567,7 @@ void dd_init_cell_interactions()
 	            dd.cell_inter[c_cnt].nList[n_cnt].cell_ind = ind2;
 	            dd.cell_inter[c_cnt].nList[n_cnt].pList    = &cells[ind2];
 	            init_pairList(&dd.cell_inter[c_cnt].nList[n_cnt].vList);
-#ifdef LEES_EDWARDS
+#ifdef CELL_DEBUG
     dd.cell_inter[c_cnt].nList[n_cnt].my_pos[0] = my_left[0] + r * dd.cell_size[0];
     dd.cell_inter[c_cnt].nList[n_cnt].my_pos[1] = my_left[1] + q * dd.cell_size[1];
     dd.cell_inter[c_cnt].nList[n_cnt].my_pos[2] = my_left[2] + p * dd.cell_size[2];
@@ -626,7 +583,7 @@ void dd_init_cell_interactions()
     c_cnt++;
   }
 
-#ifdef LEES_EDWARDS
+#ifdef CELL_DEBUG
   FILE *cells_fp;
   char cLogName[64];
   int  c,nn,this_n;
@@ -696,8 +653,6 @@ Cell *dd_save_position_to_cell(double pos[3])
 	return NULL;
     }
   }
-
-
   i = get_linear_index(cpos[0],cpos[1],cpos[2], dd.ghost_cell_grid); 
 
   return &(cells[i]);  
@@ -868,7 +823,6 @@ void dd_topology_init(CellPList *old)
   cell_structure.position_to_node = map_position_node_array;
   cell_structure.position_to_cell = dd_position_to_cell;
 
-  
   /* set up new domain decomposition cell structure */
   dd_create_cell_grid();
   /* mark cells */
@@ -1084,12 +1038,12 @@ void  dd_exchange_and_sort_particles(int global_flag)
                 }
             }
     }
-
 #endif
 
 	/* sort received particles to cells, folding of coordinates also happens in here. */
 	if(dd_append_particles(&recv_buf_l, 2*dir  ) && dir == 2) finished = 0;
 	if(dd_append_particles(&recv_buf_r, 2*dir+1) && dir == 2) finished = 0; 
+
 	/* reset send/recv buffers */
 	send_buf_l.n = 0;
 	send_buf_r.n = 0;

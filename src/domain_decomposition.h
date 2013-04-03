@@ -71,9 +71,8 @@ typedef struct {
   /** Verlet list for non bonded interactions of a cell with a neighbor cell. */
   PairList vList;
 
-/* only really here for debug */
-#ifdef LEES_EDWARDS
-  double my_pos[3];
+#ifdef CELL_DEBUG
+  double my_pos[3];  /* position of the cell corner, only here for debug */
 #endif
 
 } IA_Neighbor;
