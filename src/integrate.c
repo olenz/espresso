@@ -806,22 +806,29 @@ void propagate_vel_pos()
                     if( delta_box != 0 ){  
                          p[i].m.v[0]     -= delta_box * lees_edwards_rate;   
                          p[i].r.p[0]     -= delta_box * lees_edwards_offset; 
-                         p[i].r.p[1]     -= delta_box * box_l[1]; 
-                      while( p[i].r.p[0] >  box_l[0] ) p[i].r.p[0] -= box_l[0];
-                      while( p[i].r.p[0] <  0.0 )      p[i].r.p[0] += box_l[0];
+                         p[i].r.p[1]     -= delta_box * box_l[1];
+                         p[i].l.i[1]     += delta_box; 
+            //          while( p[i].r.p[0] >  box_l[0] ) p[i].r.p[0] -= box_l[0];
+            //          while( p[i].r.p[0] <  0.0 )      p[i].r.p[0] += box_l[0];
                          resort_particles = 1;
                     }
       }
 #endif
 
-
       /* Verlet criterion check */
-      if(distance2(p[i].r.p,p[i].l.p_old) > skin2 ) resort_particles = 1;
+      if(SQR(p[i].r.p[0]-p[i].l.p_old[0]) 
+        +SQR(p[i].r.p[1]-p[i].l.p_old[1])
+        +SQR(p[i].r.p[2]-p[i].l.p_old[2]) > skin2) 
+            resort_particles=1;
 
 
     }
   }
+
+#ifdef LEES_EDWARDS /* would be nice to be more refined about this */
   resort_particles = 1;
+#endif
+
   announce_resort_particles();
   
 #ifdef ADDITIONAL_CHECKS

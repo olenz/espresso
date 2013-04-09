@@ -23,6 +23,10 @@ source "tests_common.tcl"
 require_feature "LENNARD_JONES"
 require_feature "ADRESS" off
 
+##Verlet reuse frequency is currently 
+##quite low in LE (there is none) which causes this test to fail with LE compiled in.
+require_feature "LEES_EDWARDS" off 
+
 puts "----------------------------------------"
 puts "- Testcase intpbc.tcl running on [format %02d [setmd n_nodes]] nodes: -"
 puts "----------------------------------------"
@@ -108,6 +112,7 @@ if { [catch {
     set maxdz 0
     set maxpz 0
     for { set i 0 } { $i <= [setmd max_part] } { incr i } {
+
 	set resF [part $i pr f]
 	set tgtF $F($i)
 	set dx [expr abs([lindex $resF 0] - [lindex $tgtF 0])]

@@ -187,7 +187,7 @@ void rescale_boxl(int dir, double d_new);
 */
 MDINLINE void get_mi_vector(double res[3], double a[3], double b[3])
 {
-#ifdef _LEES_EDWARDS
+#ifdef LEES_EDWARDS
   int y_img_count;
   double delta_x;
 
@@ -361,21 +361,7 @@ MDINLINE void unfold_position(double pos[3],int image_box[3])
 */
 MDINLINE double distance(double pos1[3], double pos2[3])
 {
-#ifndef _LEES_EDWARDS
   return sqrt( SQR(pos1[0]-pos2[0]) + SQR(pos1[1]-pos2[1]) + SQR(pos1[2]-pos2[2]) );
-#else
-  int    y_img_count;
-  double dx;
-  y_img_count = (int)floor(pos1[1]*box_l_i[1]) - (int)floor(pos2[1]*box_l_i[1]);
-  dx          = pos1[0]+y_img_count*lees_edwards_offset-pos2[0];
-  if( dx > 0.5 * box_l[0] ) dx -= box_l[0];
-  if( dx <-0.5 * box_l[0] ) dx += box_l[0];
- 
-  return( sqrt(SQR(dx) 
-             + SQR(pos1[1]-pos2[1]) 
-             + SQR(pos1[2]-pos2[2])) );
-  
-#endif
 }
 
 /** returns the distance between two positions squared.
@@ -384,17 +370,18 @@ MDINLINE double distance(double pos1[3], double pos2[3])
 */
 MDINLINE double distance2(double pos1[3], double pos2[3])
 {
-#ifndef _LEES_EDWARDS
+#ifndef LEES_EDWARDS
   return SQR(pos1[0]-pos2[0]) + SQR(pos1[1]-pos2[1]) + SQR(pos1[2]-pos2[2]);
 #else
   int y_img_count;
   double dx;
   
+  /* if there has been L-E imaging, then must use the nearset image only */
   y_img_count = (int)floor(pos1[1]*box_l_i[1]) - (int)floor(pos2[1]*box_l_i[1]);
-  dx          = pos1[0]+y_img_count*lees_edwards_offset-pos2[0];
-  if( dx > 0.5 * box_l[0] ) dx -= box_l[0];
-  if( dx <-0.5 * box_l[0] ) dx += box_l[0];
- 
+  if( y_img_count != 0 ){
+    while( dx > 0.5 * box_l[0] ) dx -= box_l[0];
+    while( dx <-0.5 * box_l[0] ) dx += box_l[0];
+  }
   
   return( SQR(dx) 
              + SQR(pos1[1]-pos2[1]) 
@@ -418,15 +405,14 @@ MDINLINE double distance2vec(double pos1[3], double pos2[3], double vec[3])
   vec[1] = pos1[1]-pos2[1];
   vec[2] = pos1[2]-pos2[2];
 
-  /* Imaging in x is needed because of LE offset, 
-   * but should only need a maximum of one image.
+  /* Imaging in x is needed because of LE offset.
    */
 
    if( pos2[1] > box_l[0] || pos2[1] < 0.0 ){
-     if( vec[0] < -0.5 * box_l[0] ){
+     while( vec[0] < -0.5 * box_l[0] ){
           vec[0] += box_l[0];
      }
-     else if( vec[0] > 0.5 * box_l[0] ){
+     while( vec[0] > 0.5 * box_l[0] ){
           vec[0] -= box_l[0];
      }
    }

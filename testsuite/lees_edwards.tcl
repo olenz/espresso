@@ -16,13 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 
-# 
-#
-# To generate the test system, use gen_lees_edwards.tcl.
-#
 source "tests_common.tcl"
 
-require_feature "LEES_EDWARDS" on
+require_feature "LEES_EDWARDS"  on
+require_feature "LENNARD_JONES" on
 
 puts "------------------------------------------"
 puts "- Testcase lees_edwards.tcl running on [format %02d [setmd n_nodes]] nodes: -"
@@ -40,8 +37,6 @@ set k_b    [expr $k_temp / $temperature]
 set time_step              0.001
 set num_steps_equil 10000000
 set skin                   0.2
-
-
 
 #############################################################
 # Energy Parameters                                         #
@@ -63,9 +58,9 @@ set lj1_shift [expr $shift]
 set sigma   1.0
 
 # set up global parameters
-setmd box_l $L $L $L
+setmd box_l     $L $L $L
 setmd time_step $time_step
-setmd skin $skin
+setmd skin      $skin
 
 # Seed the Random Number Generator
 set ran_seed 1902
@@ -92,27 +87,31 @@ for { set i 0 } { $i < $n_part } { incr i } {
 ##################################################
 # simulation
 
-##start by shearing the system, and see what happens
-set max_step_shear  10000000
-set shear_equil       5000
-set mean_from         1000
-set shear_per            1
-set write_per         1000
-set shear_rate           0.005
-set offset               0.0
+set max_step_shear     10000
+set shear_equil         5000
+set mean_from           5000
+set shear_per              1
+set write_per           1000
+set write_vcf_per      10000
+set shear_rate             0.005
+set offset                 0.0
 
+##start by shearing the system with a forcecap
+inter forcecap  10
+
+#write a trajectory
 set f [open "lees_edwards_thermalising.vtf" w]
 writevsf $f
 
+#modified Langevin thermostat assumes a linear flow profile
 thermostat langevin $temperature 5.0
-inter forcecap  10
 puts "#Shear displacement   |  <vx^2>    <vy^2>   <vz^2>"
 set mean_x2 0.0
 set mean_y2 0.0
 set mean_z2 0.0
 set count   0.0
 for { set step 0 } { $step < $shear_equil } { incr step $shear_per } {
-    if { [expr $step % $write_per] == 0 } then {
+    if { [expr $step % $write_vcf_per] == 0 } then {
         writevcf $f ;#folded
     }
 
@@ -148,15 +147,9 @@ for { set step 0 } { $step < $shear_equil } { incr step $shear_per } {
         
     }
 
-
     set offset [expr $offset + $shear_rate * $shear_per]
 }
 close $f
-
-set mean_x2 [expr $mean_x2 / $count ] 
-set mean_y2 [expr $mean_y2 / $count ] 
-set mean_z2 [expr $mean_z2 / $count ] 
-puts "#means: $mean_x2 $mean_y2 $mean_z2"
 
 ##Below is the loop for an extended test, use this to
 ##see if the code is stable without a forcecap for a long time.
@@ -170,7 +163,7 @@ set f [open "lees_edwards_noCap.vtf" w]
 writevsf $f
 inter forcecap  0
 for { set step 0 } { $step < $max_step_shear } { incr step $shear_per } {
-    if { [expr $step % $write_per] == 0 } then {
+    if { [expr $step % $write_vcf_per] == 0 } then {
         writevcf $f folded
     }
     lees_edwards_offset  $offset
@@ -199,19 +192,29 @@ for { set step 0 } { $step < $max_step_shear } { incr step $shear_per } {
             set mean_z2 [expr $mean_z2 + $KEz ] 
             set count   [expr $count + 1.0 ] 
 
-    set mmX [expr $mean_x2 / $count]
-
+        set mmX [expr $mean_x2 / $count]
         puts "$offset     $KEx $KEy $KEz running mean vx^2:  $mmX"
         
     }
     set offset [expr $offset + $shear_rate * $shear_per]
-
 
 }
 
 set mean_x2 [expr $mean_x2 / $count ] 
 set mean_y2 [expr $mean_y2 / $count ] 
 set mean_z2 [expr $mean_z2 / $count ] 
-puts "#means: $mean_x2 $mean_y2 $mean_z2"
+puts "#means:   $mean_x2 $mean_y2 $mean_z2"
+puts "#refvals: 2.05(pm0.05)  0.66(pm0.02) 0.66(pm0.02)"
+
+if { abs( $mean_x2 - 2.05) > 0.05 } {
+    error "Lees Edwards Test failed"
+}
+if { abs( $mean_y2 - 0.66) > 0.02 } {
+    error "Lees Edwards Test failed"
+}
+if { abs( $mean_z2 - 0.66) > 0.02 } {
+    error "Lees Edwards Test failed"
+}
+
 exit
 
