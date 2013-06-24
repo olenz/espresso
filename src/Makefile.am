@@ -233,6 +233,7 @@ libEspresso_a_SOURCES += \
 	tcl/angle_cossquare_tcl.c tcl/angle_cossquare_tcl.h \
 	tcl/angledist_tcl.c tcl/angledist_tcl.h \
 	tcl/dihedral_tcl.c tcl/dihedral_tcl.h \
+	tcl/dihedralcos_tcl.c tcl/dihedralcos_tcl.h \
 	tcl/endangledist_tcl.c tcl/endangledist_tcl.h \
 	tcl/fene_tcl.c tcl/fene_tcl.h \
 	tcl/harmonic_tcl.c tcl/harmonic_tcl.h \

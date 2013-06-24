@@ -60,6 +60,7 @@
 #include "angle_cossquare.h"
 #include "angledist.h"
 #include "dihedral.h"
+#include "dihedralcos.h"
 #include "debye_hueckel.h"
 #include "endangledist.h"
 #include "reaction_field.h"
@@ -364,6 +365,9 @@ MDINLINE void add_bonded_energy(Particle *p1)
 #endif
     case BONDED_IA_DIHEDRAL:
       bond_broken = dihedral_energy(p2, p1, p3, p4, iaparams, &ret);
+      break;
+    case BONDED_IA_DIHEDRALCOS:
+      bond_broken = dihedralcos_energy(p2, p1, p3, p4, iaparams, &ret);
       break;
 #ifdef BOND_CONSTRAINT
     case BONDED_IA_RIGID_BOND:

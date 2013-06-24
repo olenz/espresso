@@ -41,7 +41,7 @@
 /** Type of bonded interaction is a HARMONIC potential. */
 #define BONDED_IA_HARMONIC  1
 /** Type of bonded interaction is a bond angle potential. */
-#define BONDED_IA_ANGLE_OLD     2
+#define BONDED_IA_ANGLE_OLD  2
 /** Type of bonded interaction is a dihedral potential. */
 #define BONDED_IA_DIHEDRAL  3
 /** Type of tabulated bonded interaction potential, 
@@ -60,22 +60,24 @@
 /** Type of overlapped bonded interaction potential, 
     may be of bond length, of bond angle or of dihedral type. */
 #define BONDED_IA_OVERLAPPED 10
+/** Type of bonded interaction is a dihedral potential with cosine shape. */
+#define BONDED_IA_DIHEDRALCOS  11
 /** Type of bonded interaction is a bond angle cosine potential. */ 
-#define BONDED_IA_ANGLE_HARMONIC 11
+#define BONDED_IA_ANGLE_HARMONIC 12
 /** Type of bonded interaction is a bond angle cosine potential. */ 
-#define BONDED_IA_ANGLE_COSINE 12
+#define BONDED_IA_ANGLE_COSINE 13
 /** Type of bonded interaction is a bond angle cosine potential. */ 
-#define BONDED_IA_ANGLE_COSSQUARE 13
+#define BONDED_IA_ANGLE_COSSQUARE 14
 /** Type of bonded interaction is a stretching force. */
-#define BONDED_IA_STRETCHING_FORCE 14
+#define BONDED_IA_STRETCHING_FORCE 15
 /** Type of bonded interaction is a local area force. */
-#define BONDED_IA_AREA_FORCE_LOCAL 15 
+#define BONDED_IA_AREA_FORCE_LOCAL 16 
 /** Type of bonded interaction is a bending force. */
-#define BONDED_IA_BENDING_FORCE 16 
+#define BONDED_IA_BENDING_FORCE 17 
 /** Type of bonded interaction is a bending force. */
-#define BONDED_IA_VOLUME_FORCE 17 
+#define BONDED_IA_VOLUME_FORCE 18 
 /** Type of bonded interaction is a global area force. */
-#define BONDED_IA_AREA_FORCE_GLOBAL 18 
+#define BONDED_IA_AREA_FORCE_GLOBAL 19 
 
 /** Specify tabulated bonded interactions  */
 #define TAB_UNKNOWN          0
@@ -629,6 +631,12 @@ typedef struct {
       double bend;
       double phase;
     } dihedral;
+    /** Parameters for four body angular potential (dihedral-angle potentials). */
+    struct {
+      double bend;
+      double bend1;
+      double bend2;
+    } dihedralcos;
 #ifdef TABULATED
     /** Parameters for n-body tabulated potential (n=2,3,4). */
     struct {

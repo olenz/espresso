@@ -79,6 +79,7 @@
 #include "angle_cossquare_tcl.h"
 #include "angledist_tcl.h"
 #include "dihedral_tcl.h"
+#include "dihedralcos_tcl.h"
 #include "endangledist_tcl.h"
 #include "fene_tcl.h"
 #include "overlap_tcl.h"
@@ -313,13 +314,16 @@ int tclprint_to_result_BondedIA(Tcl_Interp *interp, int i)
   case BONDED_IA_ANGLE_OLD:
     return tclprint_to_result_angleIA(interp, params);
 #endif
-#ifdef BOND_ANGLE_
+#ifdef BOND_ANGLE
   case BONDED_IA_ANGLE_HARMONIC:
     return tclprint_to_result_angle_harmonicIA(interp, params);
   case BONDED_IA_ANGLE_COSINE:
     return tclprint_to_result_angle_cosineIA(interp, params);
   case BONDED_IA_ANGLE_COSSQUARE:
     return tclprint_to_result_angle_cossquareIA(interp, params);
+#else
+  case BONDED_IA_ANGLE_HARMONIC || BONDED_IA_ANGLE_COSINE || BONDED_IA_ANGLE_COSSQUARE:
+    exit(8);
 #endif
 #ifdef BOND_ANGLEDIST
   case BONDED_IA_ANGLEDIST:
@@ -327,6 +331,8 @@ int tclprint_to_result_BondedIA(Tcl_Interp *interp, int i)
 #endif
   case BONDED_IA_DIHEDRAL:
     return tclprint_to_result_dihedralIA(interp, params);
+  case BONDED_IA_DIHEDRALCOS:
+    return tclprint_to_result_dihedralcosIA(interp, params);
 #ifdef BOND_ENDANGLEDIST
   case BONDED_IA_ENDANGLEDIST:
     return tclprint_to_result_endangledistIA(interp, params);
@@ -360,7 +366,8 @@ int tclprint_to_result_BondedIA(Tcl_Interp *interp, int i)
   }
   /* if none of the above */
   Tcl_ResetResult(interp);
-  Tcl_AppendResult(interp, "unknown bonded interaction type",(char *) NULL);
+  fprintf(stderr,"Unknown type is: %i \n",params->type);
+  Tcl_AppendResult(interp, "unknown bonded interaction Type",(char *) NULL);
   return (TCL_ERROR);
 }
 
@@ -911,6 +918,7 @@ int tclcommand_inter_parse_bonded(Tcl_Interp *interp,
   REGISTER_BONDED("angledist", tclcommand_inter_parse_angledist);
 #endif
   REGISTER_BONDED("dihedral", tclcommand_inter_parse_dihedral);
+  REGISTER_BONDED("dihedralcos", tclcommand_inter_parse_dihedralcos);
 #ifdef BOND_ENDANGLEDIST
   REGISTER_BONDED("endangledist", tclcommand_inter_parse_endangledist);
 #endif
