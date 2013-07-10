@@ -370,9 +370,8 @@ MDINLINE double distance(double pos1[3], double pos2[3])
 */
 MDINLINE double distance2(double pos1[3], double pos2[3])
 {
-#ifndef LEES_EDWARDS
   return SQR(pos1[0]-pos2[0]) + SQR(pos1[1]-pos2[1]) + SQR(pos1[2]-pos2[2]);
-#else
+#ifdef _LEES_EDWARDS
   int y_img_count;
   double dx;
   

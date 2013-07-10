@@ -126,15 +126,19 @@ int calc_node_neighbors(int node)
         MPI_Cart_shift(comm_cart, dir, -1, &buf, &(node_neighbors[2*dir]));
         MPI_Cart_shift(comm_cart, dir, 1, &buf,  &(node_neighbors[2*dir + 1]));
 
+#ifdef LEES_EDWARDS
         node_neighbor_lr[2*dir]   = 0;
         node_neighbor_lr[2*dir+1] = 1;
+#endif
 
     }else{
         MPI_Cart_shift(comm_cart, dir, 1, &buf, &(node_neighbors[2*dir]));
         MPI_Cart_shift(comm_cart, dir, -1, &buf,  &(node_neighbors[2*dir + 1]));
 
+#ifdef LEES_EDWARDS
         node_neighbor_lr[2*dir]   = 1;
         node_neighbor_lr[2*dir+1] = 0;
+#endif
     }
 
     /* left boundary ? */
@@ -210,9 +214,9 @@ int calc_node_neighbors(int node)
   //GRID_TRACE(printf("%d: node_grid %d %d %d, pos %d %d %d, node_neighbors ", this_node, node_grid[0], node_grid[1], node_grid[2], node_pos[0], node_pos[1], node_pos[2]));
 #endif
 
-   my_neighbor_count = neighbor_count;/* set the global neighbor count */
 
 #ifdef LEES_EDWARDS
+  my_neighbor_count = neighbor_count;/* set the global neighbor count */
   for(neighbor_count = 0; neighbor_count < my_neighbor_count; neighbor_count++ ){
 
         if( neighbor_count < 6 ) dir = neighbor_count / 2;
@@ -228,11 +232,11 @@ int calc_node_neighbors(int node)
         }
 
   }
-#endif
-
    GRID_TRACE(
    for( dir=0; dir < my_neighbor_count; dir++){ fprintf(stderr, "%d: neighbour %d -->  %d lr: %i wrap: %i\n", this_node, dir,node_neighbors[dir],node_neighbor_lr[dir],node_neighbor_wrap[dir]);}
    );
+#endif
+
 
   return( neighbor_count );
   
