@@ -196,6 +196,19 @@ a friction coefficient for every particle individually. Consult the
 \texttt{part} commands reference (chapter \ref{chap:part}) for
 information on how to achieve this.
 
+\subsection{Langevin thermostat: z only}
+\begin{essyntax}
+  thermostat langevin\_z\_only \var{on/off}
+\end{essyntax}
+
+If the Langevin thermostat is already set, is is possible by activating this 
+switch to apply thermostatting only to movement in the z direction of the simulation box.
+
+The purpose of this is as a crude measure to thermostat systems which have some 
+flow in the xy plane but no symmetry-breaking in z.
+
+Treatment rotational degrees of freedom is not altered by this switch.
+
 \subsection{GHMC thermostat}
 
 \begin{essyntax}

@@ -113,6 +113,41 @@ int tclcommand_thermostat_parse_langevin(Tcl_Interp *interp, int argc, char **ar
   return (TCL_OK);
 }
 
+#ifdef LANGEVIN_Z_ONLY
+int tclcommand_thermostat_parse_langevin_z_only(Tcl_Interp *interp, int argc, char **argv) 
+{
+
+  /* check number of arguments */
+  if (argc < 3) {
+    Tcl_AppendResult(interp, "wrong # args:  should be \n\"",
+		     argv[0]," ",argv[1]," <0/1>\"", (char *)NULL);
+    return (TCL_ERROR);
+  }
+
+  /* check state */
+  if(  0 == (thermo_switch & THERMO_LANGEVIN) ){
+      Tcl_AppendResult(interp, argv[0]," ",argv[1],
+         " Cannot set langevin_z_only unless langevin is set first.", (char *)NULL);
+  }
+
+  /*  langevin_z_only is switched on or off*/
+  if ( ARG_IS_S(2, "on") ) {
+    thermo_switch = ( thermo_switch |  THERMO_LANGEVIN_Z_ONLY );
+  }else if( ARG_IS_S(2, "off") ){
+    thermo_switch = ( thermo_switch & ~THERMO_LANGEVIN_Z_ONLY );
+  }else {
+    Tcl_AppendResult(interp, argv[0]," ",argv[1],
+         " needs one argument, value 'on' or 'off'.", (char *)NULL);
+    return (TCL_ERROR);
+  }
+
+  /* broadcast parameters */
+  mpi_bcast_parameter(FIELD_THERMO_SWITCH);
+
+  return (TCL_OK);
+}
+#endif
+
 #ifdef NPT
 int tclcommand_thermostat_parse_npt_isotropic(Tcl_Interp *interp, int argc, char **argv) 
 {
@@ -214,7 +249,7 @@ int tclcommand_thermostat_parse_ghmc(Tcl_Interp *interp, int argc, char **argv)
 
 int tclcommand_thermostat_print_all(Tcl_Interp *interp)
 {
-  char buffer[TCL_DOUBLE_SPACE];
+  char buffer[3*TCL_DOUBLE_SPACE];
   /* thermostat not initialized */
   if(temperature == -1.0) {
     Tcl_AppendResult(interp,"{ not initialized } ", (char *)NULL);
@@ -232,6 +267,12 @@ int tclcommand_thermostat_print_all(Tcl_Interp *interp)
     Tcl_PrintDouble(interp, temperature, buffer);
     Tcl_AppendResult(interp,"{ langevin ",buffer, (char *)NULL);
     Tcl_PrintDouble(interp, langevin_gamma, buffer);
+#ifdef LANGEVIN_Z_ONLY
+    if(  thermo_switch & THERMO_LANGEVIN_Z_ONLY )
+      Tcl_PrintDouble(interp, 1, buffer);
+    else
+      Tcl_PrintDouble(interp, 0, buffer);
+#endif
     Tcl_AppendResult(interp," ",buffer," } ", (char *)NULL);
   }
     
@@ -315,6 +356,9 @@ int tclcommand_thermostat_print_usage(Tcl_Interp *interp, int argc, char **argv)
 #ifdef LB_GPU
   Tcl_AppendResult(interp, "'", argv[0], " set lb_gpu <temperature>" , (char *)NULL);
 #endif
+#ifdef LANGEVIN_Z_ONLY
+  Tcl_AppendResult(interp, "'", argv[0], " set langevin_z_only <0/1>" , (char *)NULL);
+#endif
   return (TCL_ERROR);
 }
 
@@ -339,6 +383,10 @@ int tclcommand_thermostat(ClientData data, Tcl_Interp *interp, int argc, char **
     err = tclcommand_thermostat_parse_off(interp, argc, argv);
   else if ( ARG1_IS_S("langevin"))
     err = tclcommand_thermostat_parse_langevin(interp, argc, argv);
+#ifdef LANGEVIN_Z_ONLY
+  else if ( ARG1_IS_S("langevin_z_only"))
+    err = tclcommand_thermostat_parse_langevin_z_only(interp, argc, argv);
+#endif
 #ifdef DPD
   else if ( ARG1_IS_S("dpd") )
     err = tclcommand_thermostat_parse_dpd(interp, argc, argv);

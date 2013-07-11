@@ -39,13 +39,14 @@
 /************************************************************/
 /*@{*/
 
-#define THERMO_OFF        0
-#define THERMO_LANGEVIN   1
-#define THERMO_DPD        2
-#define THERMO_NPT_ISO    4
-#define THERMO_LB         8
-#define THERMO_INTER_DPD  16
-#define THERMO_GHMC       32
+#define THERMO_OFF                0
+#define THERMO_LANGEVIN           1
+#define THERMO_DPD                2
+#define THERMO_NPT_ISO            4
+#define THERMO_LB                 8
+#define THERMO_INTER_DPD         16
+#define THERMO_GHMC              32
+#define THERMO_LANGEVIN_Z_ONLY   64
 
 /*@}*/
 
@@ -155,7 +156,15 @@ MDINLINE void friction_thermo_langevin(Particle *p)
  #endif
 #endif	  
 
+#ifdef LANGEVIN_Z_ONLY
+    if( thermo_switch & THERMO_LANGEVIN_Z_ONLY ){
+      p->f.f[0] = 0.0;
+      p->f.f[1] = 0.0;
+      p->f.f[2] = langevin_pref1*p->m.v[2]*PMASS(*p) + langevin_pref2*(d_random()-0.5)*massf;
+    }else
+#endif
   for ( j = 0 ; j < 3 ; j++) {
+
 #ifdef EXTERNAL_FORCES
     if (!(p->l.ext_flag & COORD_FIXED(j)))
 #endif
@@ -189,11 +198,13 @@ MDINLINE void friction_thermo_langevin(Particle *p)
       relV  = p->m.v[0] - relY * lees_edwards_rate;
       
       p->f.f[j] = langevin_pref1*relV*PMASS(*p) + langevin_pref2*(d_random()-0.5)*massf;
-    }else
+    }else{
       p->f.f[j] = langevin_pref1*p->m.v[j]*PMASS(*p) + langevin_pref2*(d_random()-0.5)*massf;
+    }
 #else
       p->f.f[j] = langevin_pref1*p->m.v[j]*PMASS(*p) + langevin_pref2*(d_random()-0.5)*massf;
 #endif
+
 #endif
     }
 #ifdef EXTERNAL_FORCES
