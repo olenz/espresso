@@ -60,10 +60,17 @@
 
 #endif
 
+#define Q6_MAX_NEIGHBOURS 500 //Max is 12 for hexagonal packing, but allow more to be safe.
+
 
 /************************************************
  * data types
  ************************************************/
+
+/** for mutually referential structs we need some pre-definitions up here
+ */
+typedef struct Particle *p_ptr;
+
 
 /** Properties of a particle which are not supposed to
     change during the integration, but have to be known
@@ -186,6 +193,24 @@ typedef struct {
 #endif
 
 } ParticleForce;
+
+
+/** structural information about the particle's local environment
+  * used for reaction coordinates etc. */
+typedef struct {
+  double q6r[7];
+  double q6i[7];
+  double q6;
+  unsigned int neb;
+  p_ptr  neighbours[Q6_MAX_NEIGHBOURS];
+  double r2_neighbour[Q6_MAX_NEIGHBOURS];
+  int   *bondQ6Q6;
+  int    solidBonds;
+  int    ce_cluster;
+  int    q6_cluster;
+  int    solid;
+} ParticleEnvironment;
+
 
 /** Momentum information on a particle. Information not contained in
     communication of ghost particles so far, but a communication would

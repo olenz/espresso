@@ -205,7 +205,13 @@ void tclcommand_part_print_position(Particle *part, char *buffer, Tcl_Interp *in
   int img[3];
   memcpy(ppos, part->r.p, 3*sizeof(double));
   memcpy(img, part->l.i, 3*sizeof(int));
+#ifdef LEES_EDWARDS
+  {double vv[3];
+   unfold_position_le(ppos, vv, img);
+  }
+#else
   unfold_position(ppos, img);
+#endif
   Tcl_PrintDouble(interp, ppos[0], buffer);
   Tcl_AppendResult(interp, buffer, " ", (char *)NULL);
   Tcl_PrintDouble(interp, ppos[1], buffer);

@@ -197,7 +197,11 @@ int tclcommand_analyze_parse_and_print_check_mol(Tcl_Interp *interp,int argc, ch
       if (!ifParticleIsVirtual(&partCfg[j])) continue;
       get_particle_data(j,&p);
       //dist=min_distance(partCfg[j].r.p,p.r.p);
+#ifdef LEES_EDWARDS
+      unfold_position_le(p.r.p,p.m.v,p.l.i);
+#else
       unfold_position(p.r.p,p.l.i);
+#endif
       dist=distance(partCfg[j].r.p,p.r.p);
       if (dist > 0.01){
          if (count==0) Tcl_AppendResult(interp,"BEGIN Particle Missmatch: \n", (char *)NULL);

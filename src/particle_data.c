@@ -294,8 +294,13 @@ void updatePartCfg(int bonds_flag)
   else
     mpi_get_particles(partCfg,&partCfg_bl);
 
-  for(j=0; j<n_total_particles; j++)
-    unfold_position(partCfg[j].r.p,partCfg[j].l.i);
+  for(j=0; j<n_total_particles; j++){
+#ifdef LEES_EDWARDS
+    unfold_position_le(partCfg[j].r.p, partCfg[j].m.v, partCfg[j].l.i);
+#else
+    unfold_position(partCfg[j].r.p, partCfg[j].l.i);
+#endif
+  }
   partCfgSorted = 0;
 #ifdef VIRTUAL_SITES
   if ((sortPartCfg()==0)||(update_mol_pos_cfg()==0)){
