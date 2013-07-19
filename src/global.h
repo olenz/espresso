@@ -42,7 +42,7 @@
     Note that the field is stored in whatever an integer is.
     I guess you can at least assume 16 bits...
 */
-#define TYPE_BOOL 2
+#define TYPE_BOOL   2
 
 /** Maximal size of an array in \ref Datafield. */
 #define MAX_DIMENSION 64
@@ -81,7 +81,7 @@ extern const Datafield fields[];
 /** index of \ref DomainDecomposition::cell_size in  \ref #fields */
 #define FIELD_CELLSIZE            2
 /** index of \ref dpd_gamma in  \ref #fields */
-#define FIELD_DPD_GAMMA          3
+#define FIELD_DPD_GAMMA           3
 /** index of \ref dpd_r_cut in  \ref #fields */
 #define FIELD_DPD_RCUT            4
 /** index of \ref langevin_gamma in  \ref #fields */
@@ -138,46 +138,48 @@ extern const Datafield fields[];
 #define FIELD_TEMPERATURE         30
 /** index of \ref thermo_switch in \ref #fields */
 #define FIELD_THERMO_SWITCH       31
+/** index of \ref thermo_rescaling_interval in \ref #fields */
+#define FIELD_THERMO_RESCALING_INTERVAL  32
 /** index of \ref sim_time in  \ref #fields */
-#define FIELD_SIMTIME             32
+#define FIELD_SIMTIME             33
 /** index of \ref time_step in \ref #fields */
-#define FIELD_TIMESTEP            33
+#define FIELD_TIMESTEP            34
 /** index of \ref timing_samples in  \ref #fields */
-#define FIELD_TIMINGSAMP          34
+#define FIELD_TIMINGSAMP          35
 /** index of \ref transfer_rate  in \ref #fields */
-#define FIELD_TRANSFERRATE        35
+#define FIELD_TRANSFERRATE        36
 /** index of \ref max_cut_nonbonded in \ref #fields */
-#define FIELD_MCUT_NONBONDED      36
+#define FIELD_MCUT_NONBONDED      37
 /** index of \ref verlet_reuse in  \ref #fields */
-#define FIELD_VERLETREUSE         37
+#define FIELD_VERLETREUSE         38
 /** index of \ref lattice_switch in \ref #fields */
-#define FIELD_LATTICE_SWITCH      38
+#define FIELD_LATTICE_SWITCH      39
 /** index of \ref dpd_tgamma in \ref #fields */
-#define FIELD_DPD_TGAMMA          39
+#define FIELD_DPD_TGAMMA          40
 /** index of \ref dpd_tr_cut in \ref #fields */
-#define FIELD_DPD_TRCUT           40
+#define FIELD_DPD_TRCUT           41
 /** index of \ref dpd_twf in \ref #fields */
-#define FIELD_DPD_TWF             41
+#define FIELD_DPD_TWF             42
 /** index of \ref dpd_wf in \ref #fields */
-#define FIELD_DPD_WF              42
+#define FIELD_DPD_WF              43
 /** index of address variable in \ref #fields */
-#define FIELD_ADRESS              43
+#define FIELD_ADRESS              44
 /** index of \ref max_cut_bonded in \ref #fields */
-#define FIELD_MCUT_BONDED         44
+#define FIELD_MCUT_BONDED         45
 /** index of \ref transfer_rate in \ref #fields */
-#define FIELD_TRANSFER_RATE       45
+#define FIELD_TRANSFER_RATE       46
 /** index of \ref min_global_cut in \ref #fields */
-#define FIELD_MIN_GLOBAL_CUT      46
+#define FIELD_MIN_GLOBAL_CUT      47
 /** index of \ref ghmc_nmd in \ref #fields */
-#define FIELD_GHMC_NMD            47
+#define FIELD_GHMC_NMD            48
 /** index of \ref ghmc_phi in \ref #fields */
-#define FIELD_GHMC_PHI            48
+#define FIELD_GHMC_PHI            49
 /** index of \ref ghmc_phi in \ref #fields */
-#define FIELD_GHMC_RES            49 
+#define FIELD_GHMC_RES            50 
 /** index of \ref ghmc_phi in \ref #fields */
-#define FIELD_GHMC_FLIP           50
+#define FIELD_GHMC_FLIP           51
 /** index of \ref ghmc_phi in \ref #fields */
-#define FIELD_GHMC_SCALE          51 
+#define FIELD_GHMC_SCALE          52 
 /*@}*/
 
 #endif

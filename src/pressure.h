@@ -164,7 +164,10 @@ MDINLINE void calc_bonded_force(Particle *p1, Particle *p2, Bonded_ia_parameters
   if (force_weight<ROUND_ERROR_PREC) return;
 #endif
 
-  /* Calculates the bonded force between two particles */
+  
+
+
+/* Calculates the bonded force between two particles */
     switch(iaparams->type) {
     case BONDED_IA_FENE:
       calc_fene_pair_force(p1,p2,iaparams,dx,force);
@@ -187,6 +190,8 @@ MDINLINE void calc_bonded_force(Particle *p1, Particle *p2, Bonded_ia_parameters
     case BONDED_IA_ANGLEDIST:
       (*i)++; force[0] = force[1] = force[2] = 0; break;
     case BONDED_IA_DIHEDRAL:
+      (*i)+=2; force[0] = force[1] = force[2] = 0; break;
+    case BONDED_IA_DIHEDRALCOS:
       (*i)+=2; force[0] = force[1] = force[2] = 0; break;
 
 #ifdef TABULATED
@@ -437,6 +442,9 @@ MDINLINE void add_three_body_bonded_stress(Particle *p1) {
     else if(type == BONDED_IA_DIHEDRAL) {
       i = i + 4;
     }
+    else if(type == BONDED_IA_DIHEDRALCOS) {
+      i = i + 4;
+    }
 #ifdef TABULATED
     else if(type == BONDED_IA_TABULATED) {
       if(iaparams->p.tab.type == TAB_BOND_LENGTH) {
@@ -513,7 +521,6 @@ MDINLINE void add_kinetic_virials(Particle *p1,int v_comp)
   else
     virials.data.e[0] += (SQR(p1->m.v[0]) + SQR(p1->m.v[1]) + SQR(p1->m.v[2]))*PMASS(*p1);
 
-
   /* ideal gas contribution (the rescaling of the velocities by '/=time_step' each will be done later) */
   for(k=0;k<3;k++)
     for(l=0;l<3;l++)
@@ -526,7 +533,6 @@ int local_stress_tensor_calc (DoubleList *TensorInBin, int bins[3], int periodic
 
 /** function to calculate stress tensor for the observables */
 int observable_compute_stress_tensor(int v_comp, double *A, unsigned int n_A);
-
 
 /*@}*/
 

@@ -201,7 +201,7 @@ void integrate_vv(int n_steps)
 #endif
 
    force_calc();
-   
+
    //VIRTUAL_SITES distribute forces
 #ifdef VIRTUAL_SITES
    ghost_communicator(&cell_structure.collect_ghost_force_comm);
@@ -271,6 +271,10 @@ void integrate_vv(int n_steps)
       propagate_vel();  propagate_pos(); }
     else
       propagate_vel_pos();
+
+#ifdef THERMOSTAT_RESCALING
+    thermostat_rescale();
+#endif
 
 #ifdef BOND_CONSTRAINT
     /**Correct those particle positions that participate in a rigid/constrained bond */

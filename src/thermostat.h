@@ -47,6 +47,7 @@
 #define THERMO_INTER_DPD         16
 #define THERMO_GHMC              32
 #define THERMO_LANGEVIN_Z_ONLY   64
+#define THERMO_RESCALING        128
 
 /*@}*/
 
@@ -73,9 +74,13 @@ extern double nptiso_gamma0;
 extern double nptiso_gammav;
 
 /** Number of NVE-MD steps in GHMC Cycle*/
-extern int ghmc_nmd;
+extern int    ghmc_nmd;
+
 /** Phi parameter for GHMC partial momenum update step */
 extern double ghmc_phi;
+
+/** Determine how often to apply velocity rescaling. */
+extern double thermo_rescaling_interval;
 
 /************************************************
  * functions
@@ -158,6 +163,7 @@ MDINLINE void friction_thermo_langevin(Particle *p)
 
 #ifdef LANGEVIN_Z_ONLY
     if( thermo_switch & THERMO_LANGEVIN_Z_ONLY ){
+
       p->f.f[0] = 0.0;
       p->f.f[1] = 0.0;
       p->f.f[2] = langevin_pref1*p->m.v[2]*PMASS(*p) + langevin_pref2*(d_random()-0.5)*massf;
@@ -202,8 +208,12 @@ MDINLINE void friction_thermo_langevin(Particle *p)
       p->f.f[j] = langevin_pref1*p->m.v[j]*PMASS(*p) + langevin_pref2*(d_random()-0.5)*massf;
     }
 #else
-      p->f.f[j] = langevin_pref1*p->m.v[j]*PMASS(*p) + langevin_pref2*(d_random()-0.5)*massf;
+
+    /* This line represents a "normal" Langevin thermostat with no customisations */
+    p->f.f[j] = langevin_pref1*p->m.v[j]*PMASS(*p) + langevin_pref2*(d_random()-0.5)*massf;
+
 #endif
+
 
 #endif
     }
@@ -258,5 +268,73 @@ MDINLINE void friction_thermo_langevin_rotation(Particle *p)
       THERMO_TRACE(fprintf(stderr,"%d: Thermo: P %d: force=(%.3e,%.3e,%.3e)\n",this_node,p->p.identity,p->f.f[0],p->f.f[1],p->f.f[2]));
 }
 #endif
+
+#ifdef THERMOSTAT_RESCALING
+MDINLINE void thermostat_rescale(){
+
+  Cell     *cell;
+  Particle *p;
+  int       c, i, np;
+  double    sum_buf, tot_mv2, meanKE, scale;
+
+  /* test if the rescaling thermostat is switched on*/
+  if( !(thermo_switch & THERMO_RESCALING) )
+    return;
+ 
+  /* test if we need to do it on this timestep */
+  if( fmod(sim_time,thermo_rescaling_interval) > time_step )
+    return;
+
+  /* Accumulate the sum of squared velocities */
+  sum_buf = 0.0;
+  for (c = 0; c < local_cells.n; c++) {
+    cell = local_cells.cell[c];
+    p  = cell->part;
+    np = cell->n;
+    for(i = 0; i < np; i++) {
+#ifdef VIRTUAL_SITES
+       if (ifParticleIsVirtual(&p[i])) continue;
+#endif
+       sum_buf += p[i].m.v[0]*p[i].m.v[0]*PMASS(*p);
+       sum_buf += p[i].m.v[1]*p[i].m.v[1]*PMASS(*p);
+       sum_buf += p[i].m.v[2]*p[i].m.v[2]*PMASS(*p);
+    }
+  }
+
+
+  /* total v2 including the rest of the system */
+  MPI_Allreduce(&sum_buf, &tot_mv2, 1, MPI_DOUBLE, MPI_SUM, comm_cart);
+  meanKE = ( 0.5 * tot_mv2 ) / ( n_total_particles * time_step * time_step );
+
+  /* if nothing in the system is moving, we have an error */
+  if( meanKE <= 0.0 ){
+    char *errtxt = runtime_error(128 + ES_DOUBLE_SPACE);
+    ERROR_SPRINTF(errtxt, "{thermostat_rescale: total KE of the system was %f\n}", meanKE);
+    return;
+  }
+
+  /* KE = 0.5 kbT per DOF */
+  scale  = sqrt( 1.5 * temperature / meanKE );
+
+
+  /* Apply the rescaling */
+  for (c = 0; c < local_cells.n; c++) {
+    cell = local_cells.cell[c];
+    p  = cell->part;
+    np = cell->n;
+    for(i = 0; i < np; i++) {
+      p[i].m.v[0] *= scale;
+      p[i].m.v[1] *= scale;
+      p[i].m.v[2] *= scale;
+    }
+  }
+
+
+
+  return;
+
+}
+#endif
+
 
 #endif

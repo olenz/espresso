@@ -71,26 +71,27 @@ const Datafield fields[] = {
   {&periodic,          TYPE_BOOL, 3, "periodicity",       1 },         /* 28 from grid.c */
   {&skin,            TYPE_DOUBLE, 1, "skin",              2 },         /* 29 from integrate.c */
   {&temperature,     TYPE_DOUBLE, 1, "temperature",       2 },         /* 30 from thermostat.c */
-  {&thermo_switch,      TYPE_INT, 1, "thermo_switch",     2 },         /* 31 from thermostat.c */
-  {&sim_time,        TYPE_DOUBLE, 1, "time",              4 },         /* 32 from integrate.c */
-  {&time_step,       TYPE_DOUBLE, 1, "time_step",         5 },         /* 33 from integrate.c */
-  {&timing_samples,     TYPE_INT, 1, "timings",           4 },         /* 34 from tuning.c */
-  {&transfer_rate,      TYPE_INT, 1, "transfer_rate",     2 },         /* 35 from imd.c */
-  {&max_cut_nonbonded,TYPE_DOUBLE, 1, "max_cut_nonbonded",9 },         /* 36 from interaction_data.c */
-  {&verlet_reuse,    TYPE_DOUBLE, 1, "verlet_reuse",      8 },         /* 37 from integrate.c */
-  {&lattice_switch,     TYPE_INT, 1, "lattice_switch",    2 },         /* 38 from lattice.c */
-  {&dpd_tgamma,      TYPE_DOUBLE, 1, "dpd_tgamma",        6 },         /* 39 from thermostat.c */
-  {&dpd_tr_cut,      TYPE_DOUBLE, 1, "dpd_tr_cut",        6 },         /* 40 from thermostat.c */
-  {&dpd_twf,            TYPE_INT, 1, "dpd_twf",           6 },         /* 41 from thermostat.c */
-  {&dpd_wf,             TYPE_INT, 1, "dpd_wf",            5 },         /* 42 from thermostat.c */
-  {adress_vars,      TYPE_DOUBLE, 7, "adress_vars",       1 },         /* 43  from adresso.c */
-  {&max_cut_bonded,  TYPE_DOUBLE, 1, "max_cut_bonded",    9 },         /* 44 from interaction_data.c */
-  {&transfer_rate,      TYPE_INT, 1, "vmd_transfer_rate", 5 },         /* 45 from imd_tcl.c */
-  {&min_global_cut,  TYPE_DOUBLE, 1, "min_global_cut",    5 },         /* 46 from interaction_data.c */
-  {&ghmc_nmd,           TYPE_INT, 1, "ghmc_nmd",          6 },         /* 47 from thermostat.c */
-  {&ghmc_phi,        TYPE_DOUBLE, 1, "ghmc_phi",          6 },         /* 48 from thermostat.c */
-  {&ghmc_mc_res,     TYPE_INT,    1, "ghmc_mc_res",       7 },         /* 49 from ghmc.c */
-  {&ghmc_mflip,      TYPE_INT,    1, "ghmc_mflip",        7 },         /* 50 from ghmc.c */
-  {&ghmc_tscale,     TYPE_INT,    1, "ghmc_tscale",       6 },         /* 51 from ghmc.c */
+  {&thermo_switch,      TYPE_INT, 1, "thermo_switch",     8 },         /* 31 from thermostat.c */
+  {&thermo_rescaling_interval, TYPE_DOUBLE, 1, "thermo_rescaling_interval", 8 }, /* 32 from thermostat.c */
+  {&sim_time,        TYPE_DOUBLE, 1, "time",              4 },         /* 33 from integrate.c */
+  {&time_step,       TYPE_DOUBLE, 1, "time_step",         5 },         /* 34 from integrate.c */
+  {&timing_samples,     TYPE_INT, 1, "timings",           4 },         /* 35 from tuning.c */
+  {&transfer_rate,      TYPE_INT, 1, "transfer_rate",     2 },         /* 36 from imd.c */
+  {&max_cut_nonbonded,TYPE_DOUBLE, 1, "max_cut_nonbonded",9 },         /* 37 from interaction_data.c */
+  {&verlet_reuse,    TYPE_DOUBLE, 1, "verlet_reuse",      8 },         /* 38 from integrate.c */
+  {&lattice_switch,     TYPE_INT, 1, "lattice_switch",    2 },         /* 39 from lattice.c */
+  {&dpd_tgamma,      TYPE_DOUBLE, 1, "dpd_tgamma",        6 },         /* 40 from thermostat.c */
+  {&dpd_tr_cut,      TYPE_DOUBLE, 1, "dpd_tr_cut",        6 },         /* 41 from thermostat.c */
+  {&dpd_twf,            TYPE_INT, 1, "dpd_twf",           6 },         /* 42 from thermostat.c */
+  {&dpd_wf,             TYPE_INT, 1, "dpd_wf",            5 },         /* 43 from thermostat.c */
+  {adress_vars,      TYPE_DOUBLE, 7, "adress_vars",       1 },         /* 44  from adresso.c */
+  {&max_cut_bonded,  TYPE_DOUBLE, 1, "max_cut_bonded",    9 },         /* 45 from interaction_data.c */
+  {&transfer_rate,      TYPE_INT, 1, "vmd_transfer_rate", 5 },         /* 46 from imd_tcl.c */
+  {&min_global_cut,  TYPE_DOUBLE, 1, "min_global_cut",    5 },         /* 47 from interaction_data.c */
+  {&ghmc_nmd,           TYPE_INT, 1, "ghmc_nmd",          6 },         /* 48 from thermostat.c */
+  {&ghmc_phi,        TYPE_DOUBLE, 1, "ghmc_phi",          6 },         /* 49 from thermostat.c */
+  {&ghmc_mc_res,     TYPE_INT,    1, "ghmc_mc_res",       7 },         /* 50 from ghmc.c */
+  {&ghmc_mflip,      TYPE_INT,    1, "ghmc_mflip",        7 },         /* 51 from ghmc.c */
+  {&ghmc_tscale,     TYPE_INT,    1, "ghmc_tscale",       6 },         /* 52 from ghmc.c */
   { NULL, 0, 0, NULL, 0 }
 };

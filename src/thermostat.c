@@ -55,6 +55,10 @@ double langevin_pref1, langevin_pref2, langevin_pref2_rotation;
     and require a magical heat up whenever reentering the integrator. */
 static double langevin_pref2_buffer, langevin_pref2_rotation_buffer;
 
+/* VELOCITY RESCALING THERMOSTAT */
+// time period (not number of timesteps!) between rescalings 
+double thermo_rescaling_interval;
+
 #ifdef NPT
 double nptiso_pref1;
 double nptiso_pref2;
@@ -62,6 +66,7 @@ double nptiso_pref3;
 double nptiso_pref4;
 #endif
 
+#define _THERMO_TRACE(x) x;
 
 void thermo_init_langevin() 
 {
@@ -73,7 +78,7 @@ void thermo_init_langevin()
   langevin_pref2_rotation = sqrt(24.0*temperature*langevin_gamma_rotation/time_step);
   THERMO_TRACE(fprintf(stderr,"%d: thermo_init_langevin: langevin_gamma_rotation=%f, langevin_pref2_rotation=%f",langevin_gamma_rotation,langevin_pref2_rotation));
 #endif
-  THERMO_TRACE(fprintf(stderr,"%d: thermo_init_langevin: langevin_pref1=%f, langevin_pref2=%f",this_node,langevin_pref1,langevin_pref2));  
+  THERMO_TRACE(fprintf(stderr,"%d: thermo_init_langevin: langevin_pref1=%f, langevin_pref2=%f\n", this_node,langevin_pref1,langevin_pref2));  
 }
 
 #ifdef NPT
