@@ -46,7 +46,7 @@
 #define THERMO_LB                 8
 #define THERMO_INTER_DPD         16
 #define THERMO_GHMC              32
-#define THERMO_LANGEVIN_Z_ONLY   64
+#define THERMO_Z_ONLY            64
 #define THERMO_RESCALING        128
 
 /*@}*/
@@ -161,8 +161,8 @@ MDINLINE void friction_thermo_langevin(Particle *p)
  #endif
 #endif	  
 
-#ifdef LANGEVIN_Z_ONLY
-    if( thermo_switch & THERMO_LANGEVIN_Z_ONLY ){
+#ifdef THERMOSTAT_Z_ONLY
+    if( thermo_switch & THERMO_Z_ONLY ){
 
       p->f.f[0] = 0.0;
       p->f.f[1] = 0.0;
@@ -287,17 +287,35 @@ MDINLINE void thermostat_rescale(){
 
   /* Accumulate the sum of squared velocities */
   sum_buf = 0.0;
-  for (c = 0; c < local_cells.n; c++) {
-    cell = local_cells.cell[c];
-    p  = cell->part;
-    np = cell->n;
-    for(i = 0; i < np; i++) {
+#ifdef THERMOSTAT_Z_ONLY
+  if( thermo_switch & THERMO_Z_ONLY ){
+    for (c = 0; c < local_cells.n; c++) {
+      cell = local_cells.cell[c];
+      p  = cell->part;
+      np = cell->n;
+      for(i = 0; i < np; i++) {
 #ifdef VIRTUAL_SITES
-       if (ifParticleIsVirtual(&p[i])) continue;
+        if (ifParticleIsVirtual(&p[i])) continue;
+#endif  
+        /* Z_ONLY: rescale everything, but only s.t. Tz is 1*/
+        sum_buf += p[i].m.v[2]*p[i].m.v[2]*PMASS(*p); 
+      }
+    }
+  }else 
 #endif
-       sum_buf += p[i].m.v[0]*p[i].m.v[0]*PMASS(*p);
-       sum_buf += p[i].m.v[1]*p[i].m.v[1]*PMASS(*p);
-       sum_buf += p[i].m.v[2]*p[i].m.v[2]*PMASS(*p);
+  {
+    for (c = 0; c < local_cells.n; c++) {
+      cell = local_cells.cell[c];
+      p  = cell->part;
+      np = cell->n;
+      for(i = 0; i < np; i++) {
+#ifdef VIRTUAL_SITES
+        if (ifParticleIsVirtual(&p[i])) continue;
+#endif
+        sum_buf += p[i].m.v[0]*p[i].m.v[0]*PMASS(*p);
+        sum_buf += p[i].m.v[1]*p[i].m.v[1]*PMASS(*p);
+        sum_buf += p[i].m.v[2]*p[i].m.v[2]*PMASS(*p);
+      }
     }
   }
 
@@ -313,8 +331,13 @@ MDINLINE void thermostat_rescale(){
     return;
   }
 
-  /* KE = 0.5 kbT per DOF */
-  scale  = sqrt( 1.5 * temperature / meanKE );
+  /* <KE> = 0.5 kbT per DOF */
+#ifdef THERMOSTAT_Z_ONLY
+  if( thermo_switch & THERMO_Z_ONLY )
+    scale  = sqrt( 0.5 * temperature / meanKE );
+  else
+#endif
+    scale  = sqrt( 1.5 * temperature / meanKE );
 
 
   /* Apply the rescaling */
