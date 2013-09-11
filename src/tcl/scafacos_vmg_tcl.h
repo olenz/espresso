@@ -1,7 +1,5 @@
 /*
-  Copyright (C) 2010,2011 The ESPResSo project
-  Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009,2010 
-    Max-Planck-Institute for Polymer Research, Theory Group
+  Copyright (C) 2012,2013 The ESPResSo project
   
   This file is part of ESPResSo.
   
@@ -19,13 +17,15 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 */
 
+#ifndef _TCL_SCAFACOS_VMG_TCL_H
+#define _TCL_SCAFACOS_VMG_TCL_H
+
 #include "config.h"
 #include <tcl.h>
 
-#include "interaction_data_tcl.h"
-
-#ifdef SCAFACOS
+#ifdef SCAFACOS_VMG
 int tclcommand_inter_coulomb_parse_scafacos_vmg(Tcl_Interp * interp, int argc, char ** argv);
 
 int tclprint_to_result_scafacos_vmg(Tcl_Interp *interp);
+#endif
 #endif

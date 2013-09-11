@@ -312,7 +312,7 @@ each node. functions include MPI_Bcast */
       mpi_scafacos_bcast_common_params();
       mpi_scafacos_bcast_solver_specific();
       mpi_scafacos_init();
-      mpi_scafacos_common_set();
+      mpi_scafacos_set_common();
       mpi_scafacos_solver_specific_set();
       break;
     }

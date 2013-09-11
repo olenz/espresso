@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2012 The ESPResSo project
+  Copyright (C) 2012,2013 The ESPResSo project
   
   This file is part of ESPResSo.
   
@@ -39,7 +39,7 @@
 #include "scafacos.h"
 #include "interaction_data.h"
 
-#ifdef SCAFACOS
+#ifdef SCAFACOS_P2NFFT
 
 int tclcommand_inter_coulomb_parse_scafacos_p2nfft(Tcl_Interp * interp, int argc, char ** argv){ 
   double tolerance_value = -1, alpha = -1, r_cut = -1;;

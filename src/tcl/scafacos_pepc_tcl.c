@@ -38,7 +38,7 @@
 #include "global_tcl.h"
 #include "scafacos.h"
 
-#ifdef SCAFACOS
+#ifdef SCAFACOS_PEPC
 
 
 int tclcommand_inter_coulomb_parse_scafacos_pepc(Tcl_Interp * interp, int argc, char ** argv)

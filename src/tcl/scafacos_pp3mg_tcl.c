@@ -38,7 +38,7 @@
 #include "global_tcl.h"
 #include "scafacos.h"
 
-#ifdef SCAFACOS
+#ifdef SCAFACOS_PP3MG
 
 int tclcommand_inter_coulomb_parse_scafacos_pp3mg(Tcl_Interp * interp, int argc, char ** argv){
   scafacos.virial = 0;

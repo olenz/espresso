@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "scafacos_direct_tcl.h"
+
 #include "utils.h"
 #include "integrate.h"
 #include "global.h"
@@ -30,7 +32,6 @@
 #include "communication.h"
 #include "fft.h"
 #include "thermostat.h"
-#include "scafacos_direct_tcl.h"
 #include "cells.h"
 #include "tuning.h"
 #include "elc.h"
@@ -39,7 +40,7 @@
 #include "scafacos.h"
 
 
-#ifdef SCAFACOS
+#ifdef SCAFACOS_DIRECT
 
 int tclcommand_inter_coulomb_parse_scafacos_direct_images(Tcl_Interp * interp, int argc, char ** argv);
 

@@ -19,13 +19,15 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 */
 
+#ifndef _TCL_SCAFACOS_PP3MG_TCL_H
+#define _TCL_SCAFACOS_PP3MG_TCL_H
+
 #include "config.h"
 #include <tcl.h>
 
-#include "interaction_data_tcl.h"
-
-#ifdef SCAFACOS
+#ifdef SCAFACOS_PP3MG
 int tclcommand_inter_coulomb_parse_scafacos_pp3mg(Tcl_Interp * interp, int argc, char ** argv);
 
 int tclprint_to_result_scafacos_pp3mg(Tcl_Interp *interp);
+#endif
 #endif

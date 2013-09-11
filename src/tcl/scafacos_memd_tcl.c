@@ -39,7 +39,7 @@
 #include "interaction_data.h"
 #include "scafacos.h"
 
-#ifdef SCAFACOS
+#ifdef SCAFACOS_MEMD
 int tclcommand_inter_coulomb_parse_scafacos_memd(Tcl_Interp * interp, int argc, char ** argv){
   double lightspeed = 0,permittivity = 0;
   int mesh_size =0, init_flag =0;

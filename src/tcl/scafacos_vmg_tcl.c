@@ -39,7 +39,7 @@
 #include "scafacos.h"
 #include "interaction_data.h"
 
-#ifdef SCAFACOS
+#ifdef SCAFACOS_VMG
 
 
 int tclcommand_inter_coulomb_parse_scafacos_vmg(Tcl_Interp * interp, int argc, char ** argv){

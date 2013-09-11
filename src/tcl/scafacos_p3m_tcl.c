@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2012 The ESPResSo project
+  Copyright (C) 2012,2013 The ESPResSo project
   
   This file is part of ESPResSo.
   
@@ -299,7 +299,7 @@ int tclcommand_inter_coulomb_parse_scafacos_p3m(Tcl_Interp * interp, int argc, c
   Tcl_AppendResult(interp,  buffer, " ", (char *) NULL);
   Tcl_AppendResult(interp,  buffer, " ", (char *) NULL);
   
-  sprintf(buffer,"%d", scafacos_p3m.params,cao);
+  sprintf(buffer,"%d", scafacos_p3m.params.cao);
   Tcl_AppendResult(interp, "cao ",buffer, " ", (char *) NULL);
   
   Tcl_PrintDouble(interp, scafacos_p3m.params.alpha, buffer);

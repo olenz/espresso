@@ -42,7 +42,8 @@ set eps 1.0; set shift [expr 0.25*$eps]
 inter 0 0 lennard-jones $eps $sig $cut $shift 0
 inter 1 0 lennard-jones $eps $sig $cut $shift 0
 inter 1 1 lennard-jones $eps $sig $cut $shift 0
-puts [inter coulomb 10.0 p3m tunev2 accuracy 1e-3 mesh 32]
+#puts [inter coulomb 10.0 p3m tunev2 accuracy 1e-3 mesh 32]
+puts [inter coulomb 10.0 scafacos_p3m cutoff 0.249 grid 32 cao 6 ]
 
 set p3m_params [inter coulomb]
 foreach f $p3m_params { eval inter $f }

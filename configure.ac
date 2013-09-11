@@ -410,7 +410,8 @@ AS_IF([test x$fftw_found = xyes],[
 # not given	  try to find a working SCAFACOS, continue if not found
 AC_MSG_CHECKING([whether to use SCAFACOS])
 AC_ARG_WITH([scafacos],
-	AS_HELP_STRING([--with-scafacos],[specify whether or not to use SCAFACOS]),
+	AS_HELP_STRING([--with-scafacos],
+        [specify whether or not to use SCAFACOS [guess]]),
 	, with_scafacos=guess)
 AC_MSG_RESULT($with_scafacos)
 
@@ -429,7 +430,11 @@ AS_IF([test x$scafacos_found = xno],[
     ])
   ])
 AS_IF([test x$scafacos_found = xyes],[
-  AC_DEFINE(SCAFACOS,[],[Whether SCAFACOS is available])])
+  AC_DEFINE(SCAFACOS,[],[Whether SCAFACOS is available])
+  AC_DEFINE(SCAFACOS_P3M,[],[Whether the ScaFaCoS solver p3m is available])
+  AC_DEFINE(SCAFACOS_EWALD,[],[Whether the ScaFaCoS solver ewald is available])
+])
+
 
 ##################################
 # check for CUDA

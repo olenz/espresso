@@ -1,7 +1,6 @@
 /*
-  Copyright (C) 2012 The ESPResSo project
+  Copyright (C) 2012,2013 The ESPResSo project
 
-  
   This file is part of ESPResSo.
   
   ESPResSo is free software: you can redistribute it and/or modify
@@ -34,62 +33,81 @@
 
 scafacos_data_structure scafacos;
 
+#ifdef SCAFACOS_DIRECT
 scafacos_direct_parameter_structure scafacos_direct;
+#endif
+#ifdef SCAFACOS_EWALD
 scafacos_ewald_parameter_structure scafacos_ewald;
+#endif
+#ifdef SCAFACOS_FMM
 scafacos_fmm_parameter_structure scafacos_fmm;
+#endif
+#ifdef SCAFACOS_MEMD
 scafacos_memd_parameter_structure scafacos_memd;
+#endif
+#ifdef SCAFACOS_MMM1D
 scafacos_mmm1d_parameter_structure scafacos_mmm1d;
+#endif
+#ifdef SCAFACOS_MMM2D
 scafacos_mmm2d_parameter_structure scafacos_mmm2d;
+#endif
+#ifdef SCAFACOS_P2NFFT
 scafacos_p2nfft_parameter_structure scafacos_p2nfft;
+#endif
+#ifdef SCAFACOS_PP3MG
 scafacos_pp3mg_parameter_structure scafacos_pp3mg;
+#endif
+#ifdef SCAFACOS_PEPC
 scafacos_pepc_parameter_structure scafacos_pepc;
+#endif
+#ifdef SCAFACOS_VMG
 scafacos_vmg_parameter_structure scafacos_vmg;
+#endif
+#ifdef SCAFACOS_P3M
 scafacos_p3m_data_struct scafacos_p3m;
-
+#endif
 
 int run_scafacos (){
-   
   Cell *cell;
   Particle *p;
   int np,c,i,j, dir;
   int count = 0, n_local_particles =0;
   
-// count local_particles
-   for (c = 0; c < local_cells.n; c++) {   
-        cell = local_cells.cell[c];
-        np = cell->n;
-	
-	n_local_particles += np;
-   }
+  // count local_particles
+  for (c = 0; c < local_cells.n; c++) {   
+    cell = local_cells.cell[c];
+    np = cell->n;
+    
+    n_local_particles += np;
+  }
   fcs_float positions[3*n_local_particles];
   fcs_float field[3*n_local_particles];
   fcs_float charges[n_local_particles];
   fcs_float potentials[n_local_particles];
   
   int image_box[3];
-//transform for ScaFaCoS's interface
+  //transform for ScaFaCoS's interface
   //loop over all cells
-      for (c = 0; c < local_cells.n; c++) {   
-        cell = local_cells.cell[c];
-        p  = cell->part;
-        np = cell->n;
+  for (c = 0; c < local_cells.n; c++) {   
+    cell = local_cells.cell[c];
+    p  = cell->part;
+    np = cell->n;
        
-         //loop over all particles in a cell
-        for(i=0;i<np;i++) {  
-	  //transform into arrays needed by ScaFaCoS
-          for (dir=0; dir<3; dir++) {
-	    //fold each coordinate of each particle back into primary box
-	    fold_coordinate(p[i].r.p , image_box, dir);
-            positions [3*(i+count) + dir] = p[i].r.p[dir];
-//            field [3*(i+count) + j] = p[i].f.f[j];
-          }
-          charges[i+count] = p[i].p.q;
-//          potentials[i+count] = 0;
-        }
-	count += np;
+    //loop over all particles in a cell
+    for(i=0;i<np;i++) {  
+      //transform into arrays needed by ScaFaCoS
+      for (dir=0; dir<3; dir++) {
+        //fold each coordinate of each particle back into primary box
+        fold_coordinate(p[i].r.p , image_box, dir);
+        positions [3*(i+count) + dir] = p[i].r.p[dir];
+        //            field [3*(i+count) + j] = p[i].f.f[j];
       }
-// end transform
-
+      charges[i+count] = p[i].p.q;
+      //          potentials[i+count] = 0;
+    }
+    count += np;
+  }
+  // end transform
 
  // fprintf(stderr, "scafacos.c: run_scafacos(): fcs_run is being called \n");
   
@@ -160,13 +178,13 @@ void scafacos_tune(){
 }
 
 
-void mpi_scafacos_common_set(){
-
-
-  if(fcs_common_set(fcs_handle, (fcs_int)scafacos.short_range_flag, scafacos.box_a, scafacos.box_b, scafacos.box_c, scafacos.offset, scafacos.periodicity, 
-    (fcs_int)scafacos.n_total_particles) != NULL){
+void mpi_scafacos_set_common(){
+  if (fcs_set_common(fcs_handle, scafacos.short_range_flag, 
+                     scafacos.box_a, scafacos.box_b, scafacos.box_c, 
+                     scafacos.offset, scafacos.periodicity, 
+                     scafacos.n_total_particles) != 0){
     char *errtext = runtime_error(128);
-    ERROR_SPRINTF(errtext,"{scafacos.c : scafacos_common_set : fcs_common_set has failed} \n");
+    ERROR_SPRINTF(errtext,"{scafacos.c : scafacos_set_common : fcs_set_common has failed} \n");
   }
 
   return;
@@ -239,39 +257,61 @@ void mpi_scafacos_bcast_common_params(){
 void mpi_scafacos_bcast_solver_specific(){
  // fprintf(stderr, "mpi_scafacos_bcast_solver_specific is running %d\n", this_node);
   switch(coulomb.method){
+#ifdef SCAFACOS_DIRECT
     case COULOMB_SCAFACOS_DIRECT:
       MPI_Bcast(&scafacos_direct, sizeof(scafacos_direct_parameter_structure), MPI_BYTE, 0, comm_cart);
       break;
+#endif
+#ifdef SCAFACOS_EWALD
     case COULOMB_SCAFACOS_EWALD:
       MPI_Bcast(&scafacos_ewald, sizeof(scafacos_ewald_parameter_structure), MPI_BYTE, 0, comm_cart);
       break;
+#endif
+#ifdef SCAFACOS_FMM
     case COULOMB_SCAFACOS_FMM:
       MPI_Bcast(&scafacos_fmm, sizeof(scafacos_fmm_parameter_structure), MPI_BYTE, 0, comm_cart);
       break;
+#endif
+#ifdef SCAFACOS_MEMD
     case COULOMB_SCAFACOS_MEMD:
       MPI_Bcast(&scafacos_memd, sizeof(scafacos_memd_parameter_structure), MPI_BYTE, 0, comm_cart);
       break;
+#endif
+#ifdef SCAFACOS_MMM1D
     case COULOMB_SCAFACOS_MMM1D:
       MPI_Bcast(&scafacos_mmm1d, sizeof(scafacos_mmm1d_parameter_structure), MPI_BYTE, 0, comm_cart);
       break;
+#endif
+#ifdef SCAFACOS_MMM2D
     case COULOMB_SCAFACOS_MMM2D:
       MPI_Bcast(&scafacos_mmm2d, sizeof(scafacos_mmm2d_parameter_structure), MPI_BYTE, 0, comm_cart);
       break;
+#endif
+#ifdef SCAFACOS_P2NFFT
     case COULOMB_SCAFACOS_P2NFFT:
       MPI_Bcast(&scafacos_p2nfft, sizeof(scafacos_p2nfft_parameter_structure), MPI_BYTE, 0, comm_cart);
       break;
+#endif
+#ifdef SCAFACOS_P3M
     case COULOMB_SCAFACOS_P3M:
       MPI_Bcast(&scafacos_p3m.params, sizeof(scafacos_p3m_data_struct), MPI_BYTE, 0, comm_cart);
       break;
+#endif
+#ifdef SCAFACOS_PP3MG
     case COULOMB_SCAFACOS_PP3MG:
       MPI_Bcast(&scafacos_pp3mg, sizeof(scafacos_pp3mg_parameter_structure), MPI_BYTE, 0, comm_cart);
       break;
+#endif
+#ifdef SCAFACOS_VMG
     case COULOMB_SCAFACOS_VMG:
       MPI_Bcast(&scafacos_vmg, sizeof(scafacos_vmg_parameter_structure), MPI_BYTE, 0, comm_cart);
       break;
+#endif
+#ifdef SCAFACOS_PEPC
     case COULOMB_SCAFACOS_PEPC:
       MPI_Bcast(&scafacos_pepc, sizeof(scafacos_pepc_parameter_structure), MPI_BYTE, 0, comm_cart);
       break;
+#endif
 /*    case COULOMB_SCAFACOS_DIRECT:
       MPI_Bcast(&scafacos_direct.cutoff, 1, MPI_DOUBLE, 0, comm_cart);
       MPI_Bcast(scafacos_direct.periodic_images, 3, MPI_INT, 0, comm_cart);
@@ -375,13 +415,14 @@ void mpi_scafacos_solver_specific_set(){
   
  // printf("mpi_scafacos_solver_specific_set is running \n");
   switch(coulomb.method){
+#ifdef SCAFACOS_DIRECT
     case COULOMB_SCAFACOS_DIRECT:
-      
       fcs_direct_set_cutoff(fcs_handle, (fcs_float) scafacos_direct.cutoff);
       fcs_direct_set_periodic_images(fcs_handle, scafacos_direct.periodic_images);
       break;
+#endif
+#ifdef SCAFACOS_EWALD
     case COULOMB_SCAFACOS_EWALD:
-      
       if(scafacos_ewald.cutoff == 0){
         fcs_ewald_set_r_cut_tune(fcs_handle);
       }
@@ -415,9 +456,9 @@ void mpi_scafacos_solver_specific_set(){
       if(scafacos.virial != 0)
         fcs_require_virial(fcs_handle, 1); 
       break;
+#endif
+#ifdef SCAFACOS_FMM
     case COULOMB_SCAFACOS_FMM:
-
-
       fcs_fmm_set_absrel(fcs_handle, (fcs_int)scafacos_fmm.absrel);
       fcs_fmm_set_tolerance_energy(fcs_handle, (fcs_float)scafacos_fmm.tolerance_energy);
       fcs_fmm_set_dipole_correction(fcs_handle, (fcs_int)scafacos_fmm.dipole_correction);
@@ -432,6 +473,8 @@ void mpi_scafacos_solver_specific_set(){
       if(scafacos.virial != 0)
         fcs_require_virial(fcs_handle, 1);
       break;
+#endif
+#ifdef SCAFACOS_MEMD
     case COULOMB_SCAFACOS_MEMD:
 /*
       fcs_memd_set_box_size(fcs_handle, box_l[0],  box_l[1], box_l[2]);
@@ -461,6 +504,8 @@ void mpi_scafacos_solver_specific_set(){
         
 */
       break; 
+#endif
+#ifdef SCAFACOS_MMM1D
     case COULOMB_SCAFACOS_MMM1D:
 
       if(scafacos_mmm1d.far_switch_radius != 0){
@@ -475,6 +520,8 @@ void mpi_scafacos_solver_specific_set(){
       if(scafacos.virial != 0)
         fcs_require_virial(fcs_handle, 1);
       break;
+#endif
+#ifdef SCAFACOS_MMM2D
     case COULOMB_SCAFACOS_MMM2D:
 
       if(scafacos_mmm2d.far_cutoff != 0){
@@ -499,6 +546,8 @@ void mpi_scafacos_solver_specific_set(){
         fcs_require_virial(fcs_handle, 1);
 
       break;
+#endif
+#ifdef SCAFACOS_P2NFFT
     case COULOMB_SCAFACOS_P2NFFT:
 
       if(scafacos_p2nfft.tolerance_type != 0){
@@ -543,6 +592,8 @@ void mpi_scafacos_solver_specific_set(){
         fcs_p2nfft_set_oversampled_gridsize_tune(fcs_handle);
       }
       break;
+#endif
+#ifdef SCAFACOS_P3M
     case COULOMB_SCAFACOS_P3M:
 
       if(scafacos_p3m.params.cutoff == 0){
@@ -578,8 +629,9 @@ void mpi_scafacos_solver_specific_set(){
       if(scafacos.virial != 0)
         fcs_require_virial(fcs_handle, 1);
       break;
+#endif
+#ifdef SCAFACOS_PEPC
     case COULOMB_SCAFACOS_PEPC:
-
       if(scafacos_pepc.epsilon != 0){
        fcs_pepc_set_epsilon(fcs_handle, (fcs_float)scafacos_pepc.epsilon);
       }
@@ -590,9 +642,9 @@ void mpi_scafacos_solver_specific_set(){
         fcs_require_virial(fcs_handle, 1);
 
       break;
+#endif
+#ifdef SCAFACOS_PP3MG
     case COULOMB_SCAFACOS_PP3MG:
-
-
       if(scafacos_pp3mg.cells_x != 0){
         fcs_pp3mg_set_cells_x(fcs_handle, (fcs_int) scafacos_pp3mg.cells_x);
       }
@@ -620,9 +672,9 @@ void mpi_scafacos_solver_specific_set(){
       if(scafacos.virial != 0)
         fcs_require_virial(fcs_handle, 1);
       break;
-      
+#endif
+#ifdef SCAFACOS_VMG
     case COULOMB_SCAFACOS_VMG:
-
       if(scafacos_vmg.max_level != 0) {
         fcs_vmg_set_max_level( fcs_handle, (fcs_int)scafacos_vmg.max_level );
       }
@@ -645,6 +697,7 @@ void mpi_scafacos_solver_specific_set(){
       if(scafacos.virial != 0)
         fcs_require_virial(fcs_handle, 1);
       break;
+#endif
     default:
       break;
   }

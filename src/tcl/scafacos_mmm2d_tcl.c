@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2012 The ESPResSo project
+  Copyright (C) 2012,2013 The ESPResSo project
   
   This file is part of ESPResSo.
   
@@ -38,7 +38,7 @@
 #include "global_tcl.h"
 #include "scafacos.h"
 
-#ifdef SCAFACOS
+#ifdef SCAFACOS_MMM2D
 int tclcommand_inter_coulomb_parse_scafacos_mmm2d(Tcl_Interp * interp, int argc, char ** argv)
 {
   double far_cutoff = -1, maxPWerror = -1, delta_bot = -1, delta_top = -1, skin = -1;
@@ -146,10 +146,10 @@ int tclprint_to_result_scafacos_mmm2d(Tcl_Interp *interp){
   Tcl_PrintDouble(interp, scafacos_mmm2d.skin, buffer);  
   Tcl_AppendResult(interp,"skin ", buffer, " ", (char *) NULL);
   
-  Tcl_PrintDouble(interp, scafacos_mmm2d.total_energy, buffer);   
-  Tcl_AppendResult(interp, "total_energy ", buffer, " ", (char *) NULL);
+  Tcl_PrintDouble(interp, scafacos_mmm2d.require_total_energy, buffer);   
+  Tcl_AppendResult(interp, "require_total_energy ", buffer, " ", (char *) NULL);
 
-  sprintf(buffer,"%d",virial);
+  sprintf(buffer,"%d", scafacos.virial);
   Tcl_AppendResult(interp, "virial ", buffer, " ", (char *) NULL);
  
   return TCL_OK;

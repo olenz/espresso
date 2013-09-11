@@ -39,9 +39,9 @@
 #include "interaction_data.h"
 #include "scafacos.h"
 
-#ifdef SCAFACOS
+#ifdef SCAFACOS_FMM
 int tclcommand_inter_coulomb_parse_scafacos_fmm(Tcl_Interp * interp, int argc, char ** argv){
-  double tolerance_energy = 0.001, cuspradius =0;
+  double tolerance_energy = 0.001, cuspradius = 0;
   int absrel = 0, dipole_correction = 0, potential = 0, internal_tuning = 0;
   scafacos.short_range_flag = 1;
   scafacos.virial = 0;
@@ -67,7 +67,7 @@ int tclcommand_inter_coulomb_parse_scafacos_fmm(Tcl_Interp * interp, int argc, c
 
 #ifdef PARTIAL_PERIODIC
     if(PERIODIC(0) == 0 || PERIODIC(1) == 0 || PERIODIC(2) == 0)    {
-      Tcl_AppendResult(interp, "Coulomb scafacos_fmm needs periodic boundaries \n", (char *) NULL);
+      Tcl_AppendResult(interp, "Coulomb scafacos_fmm needs periodic boundaries!\n", (char *) NULL);
       return TCL_ERROR;  
     } 
 #endif 
@@ -159,7 +159,7 @@ int tclprint_to_result_scafacos_fmm(Tcl_Interp *interp){
   Tcl_PrintDouble(interp, scafacos_fmm.cuspradius, buffer);
   Tcl_AppendResult(interp, "cuspradius", buffer, " ", (char *) NULL);
   
-  sprintf(buffer,"%d",internal_tuning);
+  sprintf(buffer,"%d", scafacos_fmm.internal_tuning);
   Tcl_AppendResult(interp, "internal_tuning " ,buffer, " ",(char *) NULL);
   
   sprintf(buffer,"%d",(int)scafacos.virial);

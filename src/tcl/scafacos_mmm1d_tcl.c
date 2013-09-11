@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2012 The ESPResSo project
+  Copyright (C) 2012,2013 The ESPResSo project
   
   This file is part of ESPResSo.
   
@@ -38,7 +38,7 @@
 #include "global_tcl.h"
 #include "scafacos.h"
 
-#ifdef SCAFACOS
+#ifdef SCAFACOS_MMM1D
 int tclcommand_inter_coulomb_parse_scafacos_mmm1d(Tcl_Interp * interp, int argc, char ** argv)
 {
   double far_switch_radius = 0, maxPWerror = 0;

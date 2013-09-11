@@ -1,7 +1,5 @@
 /*
-  Copyright (C) 2010,2011 The ESPResSo project
-  Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009,2010 
-    Max-Planck-Institute for Polymer Research, Theory Group
+  Copyright (C) 2012,2013 The ESPResSo project
   
   This file is part of ESPResSo.
   
@@ -25,8 +23,7 @@
 
 #include "interaction_data_tcl.h"
 
-
-#ifdef SCAFACOS
+#ifdef SCAFACOS_FMM
 
 /// parse the basic fmm parameters
 int tclcommand_inter_coulomb_parse_scafacos_fmm(Tcl_Interp * interp, int argc, char ** argv);

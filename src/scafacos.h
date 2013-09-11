@@ -40,15 +40,22 @@ typedef struct{
   double box_c[3]; 
   double box_b[3]; 
   double offset[3];
-  int periodicity[3];
+  int periodicity[3];   
+
   int n_total_particles;
 } scafacos_data_structure;
+extern scafacos_data_structure scafacos;
 
+#ifdef SCAFACOS_DIRECT
 typedef struct{
   double cutoff;
   int periodic_images[3];
 } scafacos_direct_parameter_structure;
 
+extern scafacos_direct_parameter_structure scafacos_direct;
+#endif
+
+#ifdef SCAFACOS_EWALD
 typedef struct{
   double cutoff;
   int kmax;
@@ -57,6 +64,10 @@ typedef struct{
   double tolerance_field;
 } scafacos_ewald_parameter_structure;
 
+extern scafacos_ewald_parameter_structure scafacos_ewald;
+#endif
+
+#ifdef SCAFACOS_FMM
 typedef struct{
   int absrel;
   double tolerance_energy;
@@ -66,6 +77,10 @@ typedef struct{
   int potential; 
 } scafacos_fmm_parameter_structure;
 
+extern scafacos_fmm_parameter_structure scafacos_fmm;
+#endif
+
+#ifdef SCAFACOS_MEMD
 typedef struct{
   double length_x;
   double length_y;
@@ -80,12 +95,20 @@ typedef struct{
   
 } scafacos_memd_parameter_structure;
 
+extern scafacos_memd_parameter_structure scafacos_memd;
+#endif
+
+#ifdef SCAFACOS_MMM1D
 typedef struct{
   double far_switch_radius; 
   int besselcutoff;
   double maxPWerror;
 } scafacos_mmm1d_parameter_structure;
 
+extern scafacos_mmm1d_parameter_structure scafacos_mmm1d;
+#endif
+
+#ifdef SCAFACOS_MMM2D
 typedef struct{
   double maxPWerror;
   double far_cutoff;
@@ -96,7 +119,10 @@ typedef struct{
   int require_total_energy;
 } scafacos_mmm2d_parameter_structure;
 
+extern scafacos_mmm2d_parameter_structure scafacos_mmm2d;
+#endif
 
+#ifdef SCAFACOS_P2NFFT
 typedef struct{
   double cutoff;
   int tolerance_type;
@@ -111,12 +137,20 @@ typedef struct{
   int n2;
 } scafacos_p2nfft_parameter_structure;
 
+extern scafacos_p2nfft_parameter_structure scafacos_p2nfft;
+#endif
+
+#ifdef SCAFACOS_PEPC
 typedef struct{
   double epsilon; 
   double theta;  
   int dipole_correction;
-}scafacos_pepc_parameter_structure;
+} scafacos_pepc_parameter_structure;
 
+extern scafacos_pepc_parameter_structure scafacos_pepc;
+#endif
+
+#ifdef SCAFACOS_PP3MG
 typedef struct{
   int cells_x; 
   int cells_y; 
@@ -128,6 +162,10 @@ typedef struct{
   double tolerance;
 } scafacos_pp3mg_parameter_structure;
 
+extern scafacos_pp3mg_parameter_structure scafacos_pp3mg;
+#endif
+
+#ifdef SCAFACOS_VMG
 typedef struct{
   int max_level;
   int max_iterations;
@@ -139,7 +177,10 @@ typedef struct{
   int cycle_type;
 } scafacos_vmg_parameter_structure;
 
+extern scafacos_vmg_parameter_structure scafacos_vmg;
+#endif
 
+#ifdef SCAFACOS_EWALD
 typedef struct {
 /** Ewald splitting parameter (0<alpha<1), rescaled to alpha_L = alpha * box_l. */
   double alpha_L;
@@ -155,7 +196,6 @@ typedef struct {
   double alpha;
   /** unscaled \ref r_cut_iL for use with fast inline functions only */
   double cutoff;
-  
 } scafacos_p3m_parameter_struct;
 
 typedef struct {
@@ -168,21 +208,9 @@ typedef struct {
   double square_sum_q;
 
 } scafacos_p3m_data_struct;
-
-/** P3M parameters. */
 extern scafacos_p3m_data_struct scafacos_p3m;
-extern scafacos_direct_parameter_structure scafacos_direct;
-extern scafacos_ewald_parameter_structure scafacos_ewald;
-extern scafacos_fmm_parameter_structure scafacos_fmm;
-extern scafacos_mmm1d_parameter_structure scafacos_mmm1d;
-extern scafacos_mmm2d_parameter_structure scafacos_mmm2d;
-extern scafacos_memd_parameter_structure scafacos_memd;
-extern scafacos_p2nfft_parameter_structure scafacos_p2nfft;
-extern scafacos_pepc_parameter_structure scafacos_pepc;
-extern scafacos_vmg_parameter_structure scafacos_vmg;
-extern scafacos_pp3mg_parameter_structure scafacos_pp3mg;
+#endif
 
-extern scafacos_data_structure scafacos;
 
 
 double global_r_cut_fcs;
@@ -194,7 +222,7 @@ void mpi_bcast_coulomb_method();
 void mpi_scafacos_bcast_common_params();
 void mpi_scafacos_bcast_solver_specific();
 void mpi_scafacos_init();
-void mpi_scafacos_common_set();
+void mpi_scafacos_set_common();
 void mpi_scafacos_solver_specific_set();
 
 void fcs_p3m_count_charged_particles();
