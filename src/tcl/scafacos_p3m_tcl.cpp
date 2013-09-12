@@ -231,31 +231,31 @@ int tclcommand_inter_coulomb_parse_scafacos_p3m(Tcl_Interp * interp, int argc, c
     //   return tclcommand_inter_coulomb_parse_scafacos_p3m_tune(interp, argc-1, argv+1);
 
     if(ARG0_IS_S("cutoff")) {
-      if (! (argc > 1 && ARG1_IS_D(scafacos_p3m.params.cutoff) && scafacos_p3m.params.cutoff > 0)) {
+      if (! (argc > 1 && ARG1_IS_D(scafacos_p3m.cutoff) && scafacos_p3m.cutoff > 0)) {
 	Tcl_AppendResult(interp, "cutoff expects a positive double",
 			 (char *) NULL);
 	return TCL_ERROR;
       }
     } else if(ARG0_IS_S("grid")) {
-      if(! (argc > 1 && ARG1_IS_I(scafacos_p3m.params.grid) && scafacos_p3m.params.grid >= -1)) {
+      if(! (argc > 1 && ARG1_IS_I(scafacos_p3m.grid) && scafacos_p3m.grid >= -1)) {
 	Tcl_AppendResult(interp, "grid expects an integer >= -1",
 			 (char *) NULL);
 	return TCL_ERROR;
       }
     } else if(ARG0_IS_S("cao")) {
-      if(! (argc > 1 && ARG1_IS_I(scafacos_p3m.params.cao) && scafacos_p3m.params.cao >= -1 && scafacos_p3m.params.cao <= 7)) {
+      if(! (argc > 1 && ARG1_IS_I(scafacos_p3m.cao) && scafacos_p3m.cao >= -1 && scafacos_p3m.cao <= 7)) {
 	Tcl_AppendResult(interp, "cao expects an integer between -1 and 7",
 			 (char *) NULL);
 	return TCL_ERROR;
       } 
     } else if(ARG0_IS_S("tolerance_field")) {
-      if(! (argc > 1 && ARG1_IS_D(scafacos_p3m.params.tolerance_field) && scafacos_p3m.params.tolerance_field > 0)) {
+      if(! (argc > 1 && ARG1_IS_D(scafacos_p3m.tolerance_field) && scafacos_p3m.tolerance_field > 0)) {
 	Tcl_AppendResult(interp, "tolerance_field expects a positive double",
 			 (char *) NULL);
 	return TCL_ERROR;
       }
     } else if (ARG0_IS_S("alpha")) {
-      if (! (argc > 1 && ARG1_IS_D(scafacos_p3m.params.alpha) && scafacos_p3m.params.alpha_L >= 0 && scafacos_p3m.params.alpha_L <= 1)) {
+      if (! (argc > 1 && ARG1_IS_D(scafacos_p3m.alpha) && scafacos_p3m.alpha_L >= 0 && scafacos_p3m.alpha_L <= 1)) {
 	Tcl_AppendResult(interp, "alpha expects a double between 0 and 1", (char *) NULL);
 	return TCL_ERROR;
       }
@@ -285,31 +285,29 @@ int tclcommand_inter_coulomb_parse_scafacos_p3m(Tcl_Interp * interp, int argc, c
 {
   char buffer[TCL_DOUBLE_SPACE];
 
-  Tcl_PrintDouble(interp, scafacos_p3m.params.cutoff, buffer);
+  Tcl_PrintDouble(interp, scafacos_p3m.cutoff, buffer);
   Tcl_AppendResult(interp, "scafacos_p3m cutoff ", buffer, "  ", (char *) NULL);
   
 
-  sprintf(buffer,"%d",scafacos_p3m.params.grid);
+  sprintf(buffer,"%d",scafacos_p3m.grid);
   Tcl_AppendResult(interp, "grid ", buffer, " ", (char *) NULL);
   Tcl_AppendResult(interp,  buffer, " ", (char *) NULL);
   Tcl_AppendResult(interp,  buffer, " ", (char *) NULL);
   
-  sprintf(buffer,"%d", scafacos_p3m.params.cao);
+  sprintf(buffer,"%d", scafacos_p3m.cao);
   Tcl_AppendResult(interp, "cao ",buffer, " ", (char *) NULL);
   
-  Tcl_PrintDouble(interp, scafacos_p3m.params.alpha, buffer);
+  Tcl_PrintDouble(interp, scafacos_p3m.alpha, buffer);
   Tcl_AppendResult(interp, "alpha ",buffer, " ", (char *) NULL);
 
-  Tcl_PrintDouble(interp, scafacos_p3m.params.tolerance_field, buffer);
+  Tcl_PrintDouble(interp, scafacos_p3m.tolerance_field, buffer);
   Tcl_AppendResult(interp, "tolerance_field ", buffer, " ", (char *) NULL);
-
 
   sprintf(buffer,"%d",scafacos.short_range_flag);
   Tcl_AppendResult(interp, "srf ", buffer, " ", (char *) NULL);
   
   sprintf(buffer,"%d", scafacos.virial);
   Tcl_AppendResult(interp, "virial ", buffer, " ", (char *) NULL);
-
 
   return TCL_OK;
 } 

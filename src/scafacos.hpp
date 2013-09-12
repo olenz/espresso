@@ -196,19 +196,9 @@ typedef struct {
   double alpha;
   /** unscaled \ref r_cut_iL for use with fast inline functions only */
   double cutoff;
-} scafacos_p3m_parameter_struct;
+} scafacos_p3m_parameter_structure;
 
-typedef struct {
-  scafacos_p3m_parameter_struct params;
-  /** number of charged particles (only on master node). */
-  int sum_qpart;
-  /** Sum of square of charges (only on master node). */
-  double sum_q2;
-  /** square of sum of charges (only on master node). */
-  double square_sum_q;
-
-} scafacos_p3m_data_struct;
-extern scafacos_p3m_data_struct scafacos_p3m;
+extern scafacos_p3m_parameter_structure scafacos_p3m;
 #endif
 
 int run_scafacos();

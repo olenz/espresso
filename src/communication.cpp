@@ -1861,7 +1861,7 @@ void mpi_bcast_coulomb_params_slave(int node, int parm)
 #endif
 #ifdef SCAFACOS_P3M
   case COULOMB_SCAFACOS_P3M:
-    MPI_Bcast(&scafacos_p3m.params, sizeof(scafacos_p3m_data_struct), MPI_BYTE, 0, comm_cart);
+    MPI_Bcast(&scafacos_p3m, sizeof(scafacos_p3m_parameter_structure), MPI_BYTE, 0, comm_cart);
     break;
 #endif
 #ifdef SCAFACOS_PP3MG

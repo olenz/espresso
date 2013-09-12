@@ -64,7 +64,7 @@ scafacos_pepc_parameter_structure scafacos_pepc;
 scafacos_vmg_parameter_structure scafacos_vmg;
 #endif
 #ifdef SCAFACOS_P3M
-scafacos_p3m_data_struct scafacos_p3m;
+scafacos_p3m_parameter_structure scafacos_p3m;
 #endif
 
 int run_scafacos (){
@@ -293,7 +293,7 @@ void mpi_scafacos_bcast_solver_specific(){
 #endif
 #ifdef SCAFACOS_P3M
     case COULOMB_SCAFACOS_P3M:
-      MPI_Bcast(&scafacos_p3m.params, sizeof(scafacos_p3m_data_struct), MPI_BYTE, 0, comm_cart);
+      MPI_Bcast(&scafacos_p3m, sizeof(scafacos_p3m_parameter_structure), MPI_BYTE, 0, comm_cart);
       break;
 #endif
 #ifdef SCAFACOS_PP3MG
@@ -595,35 +595,35 @@ void mpi_scafacos_solver_specific_set(){
 #ifdef SCAFACOS_P3M
     case COULOMB_SCAFACOS_P3M:
 
-      if(scafacos_p3m.params.cutoff == 0){
+      if(scafacos_p3m.cutoff == 0){
         fcs_p3m_set_r_cut_tune(fcs_handle);
       }
-      if(scafacos_p3m.params.cutoff!= 0){
-       fcs_p3m_set_r_cut(fcs_handle, (fcs_float)scafacos_p3m.params.cutoff);
+      if(scafacos_p3m.cutoff!= 0){
+       fcs_p3m_set_r_cut(fcs_handle, (fcs_float)scafacos_p3m.cutoff);
       }
-      if(scafacos_p3m.params.alpha == 0){
+      if(scafacos_p3m.alpha == 0){
         fcs_p3m_set_alpha_tune(fcs_handle);
       }
-      if(scafacos_p3m.params.alpha != 0){
-        fcs_p3m_set_alpha(fcs_handle, (fcs_float)scafacos_p3m.params.alpha);
+      if(scafacos_p3m.alpha != 0){
+        fcs_p3m_set_alpha(fcs_handle, (fcs_float)scafacos_p3m.alpha);
       }
-      if(scafacos_p3m.params.grid == 0){
+      if(scafacos_p3m.grid == 0){
         fcs_p3m_set_grid_tune(fcs_handle);
       }
-      if(scafacos_p3m.params.grid != 0){
-        fcs_p3m_set_grid(fcs_handle, (fcs_int)scafacos_p3m.params.grid);
+      if(scafacos_p3m.grid != 0){
+        fcs_p3m_set_grid(fcs_handle, (fcs_int)scafacos_p3m.grid);
       }
-      if(scafacos_p3m.params.cao == 0){
+      if(scafacos_p3m.cao == 0){
         fcs_p3m_set_cao_tune(fcs_handle);
       }
-      if(scafacos_p3m.params.cao != 0){
-        fcs_p3m_set_cao(fcs_handle, (fcs_int)scafacos_p3m.params.cao);
+      if(scafacos_p3m.cao != 0){
+        fcs_p3m_set_cao(fcs_handle, (fcs_int)scafacos_p3m.cao);
       }
-      if(scafacos_p3m.params.tolerance_field == 0){
+      if(scafacos_p3m.tolerance_field == 0){
         fcs_p3m_set_tolerance_field_tune(fcs_handle);
       }
-      if(scafacos_p3m.params.tolerance_field != 0){
-        fcs_p3m_set_tolerance_field(fcs_handle, (fcs_float)scafacos_p3m.params.tolerance_field);
+      if(scafacos_p3m.tolerance_field != 0){
+        fcs_p3m_set_tolerance_field(fcs_handle, (fcs_float)scafacos_p3m.tolerance_field);
       }
       if(scafacos.virial != 0)
         fcs_require_virial(fcs_handle, 1);
