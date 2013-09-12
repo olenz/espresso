@@ -193,7 +193,6 @@ void mpi_scafacos_set_common(){
 
 void mpi_bcast_coulomb_method(){
   MPI_Bcast(&coulomb.method, 1, MPI_INT, 0, comm_cart);
-  fprintf(stderr, "coulomb.method is: %d \n", coulomb.method);
   return; 
 }
 
@@ -766,38 +765,5 @@ void mpi_scafacos_init(){
       break;
   }
   return;
-}
-
-void fcs_p3m_count_charged_particles() //TODO
-{  
-  Cell *cell;
-  Particle *part;
-  int i,c,np;
-  double node_sums[3], tot_sums[3];
-
-  P3M_TRACE(fprintf(stderr,"%d: p3m_count_charged_particles\n",this_node));
-
-  for(i=0;i<3;i++)
-    { node_sums[i]=0.0; tot_sums[i]=0.0;}
-
-  for (c = 0; c < local_cells.n; c++) {
-    cell = local_cells.cell[c];
-    part = cell->part;
-    np   = cell->n;
-    for(i=0;i<np;i++) {
-      if( part[i].p.q != 0.0 ) {
-	node_sums[0] += 1.0;
-	node_sums[1] += SQR(part[i].p.q);
-	node_sums[2] += part[i].p.q;
-      }
-    }
-  }
-  
-  MPI_Allreduce(node_sums, tot_sums, 3, MPI_DOUBLE, MPI_SUM, comm_cart);
-  scafacos_p3m.sum_qpart    = (int)(tot_sums[0]+0.1);
-  scafacos_p3m.sum_q2       = tot_sums[1];
-  scafacos_p3m.square_sum_q = SQR(tot_sums[2]);
-  
-  P3M_TRACE(fprintf(stderr, "%d: p3m.sum_qpart: %d, p3m.sum_q2: %lf, total_charge %lf\n", this_node, p3m.sum_qpart, p3m.sum_q2, sqrt(p3m.square_sum_q)));
 }
 #endif /*ifdef SCAFACOS */
