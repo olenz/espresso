@@ -51,6 +51,7 @@
 #include "constraint.hpp"
 #include "lbgpu.hpp"
 #include "iccp3m.hpp"
+#include "cuda_interface.hpp"
 #include "p3m_gpu.hpp"
 #include "scafacos.hpp"
 
