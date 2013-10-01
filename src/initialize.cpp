@@ -279,7 +279,8 @@ if(this_node == 0){
     gpu_change_number_of_part_to_comm();
     reinit_particle_comm_gpu = 0;
   }
-  MPI_Bcast(gpu_get_global_particle_vars_pointer_host(), sizeof(CUDA_global_part_vars), MPI_BYTE, 0, comm_cart);
+  MPI_Bcast(gpu_get_global_particle_vars_pointer_host(), 
+            sizeof(CUDA_global_part_vars), MPI_BYTE, 0, comm_cart);
 #endif
 
 
@@ -319,8 +320,8 @@ if(reaction.ct_rate != 0.0) {
   integrate_ensemble_init();
   
 #ifdef SCAFACOS
-/* initialize Scafacos, set up the system and solver specific parameters, all on
-each node. functions include MPI_Bcast */
+/* initialize ScaFaCoS, set up the system and solver specific
+parameters, all on each node. */
 
   mpi_bcast_coulomb_method();
   
@@ -346,8 +347,10 @@ each node. functions include MPI_Bcast */
     default: 
       break;
   }
-/* tune in order to generate at least defaults for cutoff, transfer the cutoff back
-to Espresso and generate new cell system on each node*/
+
+/* Tune in order to generate at least defaults for cutoff, transfer
+the cutoff back to Espresso and generate new cell system on each
+node. */
   switch(coulomb.method){
     case COULOMB_SCAFACOS_P2NFFT:
       if( scafacos.short_range_flag == 0 ){

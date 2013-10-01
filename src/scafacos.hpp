@@ -43,16 +43,16 @@ typedef struct{
   int periodicity[3];   
 
   int n_total_particles;
-} scafacos_data_structure;
-extern scafacos_data_structure scafacos;
+} scafacos_data_struct;
+extern scafacos_data_struct scafacos;
 
 #ifdef SCAFACOS_DIRECT
 typedef struct{
   double cutoff;
   int periodic_images[3];
-} scafacos_direct_parameter_structure;
+} scafacos_direct_parameter_struct;
 
-extern scafacos_direct_parameter_structure scafacos_direct;
+extern scafacos_direct_parameter_struct scafacos_direct;
 #endif
 
 #ifdef SCAFACOS_EWALD
@@ -62,9 +62,9 @@ typedef struct{
   int maxkmax;
   double alpha;
   double tolerance_field;
-} scafacos_ewald_parameter_structure;
+} scafacos_ewald_parameter_struct;
 
-extern scafacos_ewald_parameter_structure scafacos_ewald;
+extern scafacos_ewald_parameter_struct scafacos_ewald;
 #endif
 
 #ifdef SCAFACOS_FMM
@@ -75,9 +75,9 @@ typedef struct{
   int internal_tuning;
   double cuspradius;
   int potential; 
-} scafacos_fmm_parameter_structure;
+} scafacos_fmm_parameter_struct;
 
-extern scafacos_fmm_parameter_structure scafacos_fmm;
+extern scafacos_fmm_parameter_struct scafacos_fmm;
 #endif
 
 #ifdef SCAFACOS_MEMD
@@ -93,9 +93,9 @@ typedef struct{
   double permittivity;
   int init_flag;
   
-} scafacos_memd_parameter_structure;
+} scafacos_memd_parameter_struct;
 
-extern scafacos_memd_parameter_structure scafacos_memd;
+extern scafacos_memd_parameter_struct scafacos_memd;
 #endif
 
 #ifdef SCAFACOS_MMM1D
@@ -103,9 +103,9 @@ typedef struct{
   double far_switch_radius; 
   int besselcutoff;
   double maxPWerror;
-} scafacos_mmm1d_parameter_structure;
+} scafacos_mmm1d_parameter_struct;
 
-extern scafacos_mmm1d_parameter_structure scafacos_mmm1d;
+extern scafacos_mmm1d_parameter_struct scafacos_mmm1d;
 #endif
 
 #ifdef SCAFACOS_MMM2D
@@ -117,9 +117,9 @@ typedef struct{
   int layers_per_node;
   double skin;
   int require_total_energy;
-} scafacos_mmm2d_parameter_structure;
+} scafacos_mmm2d_parameter_struct;
 
-extern scafacos_mmm2d_parameter_structure scafacos_mmm2d;
+extern scafacos_mmm2d_parameter_struct scafacos_mmm2d;
 #endif
 
 #ifdef SCAFACOS_P2NFFT
@@ -135,9 +135,9 @@ typedef struct{
   int n0;
   int n1;
   int n2;
-} scafacos_p2nfft_parameter_structure;
+} scafacos_p2nfft_parameter_struct;
 
-extern scafacos_p2nfft_parameter_structure scafacos_p2nfft;
+extern scafacos_p2nfft_parameter_struct scafacos_p2nfft;
 #endif
 
 #ifdef SCAFACOS_PEPC
@@ -145,9 +145,9 @@ typedef struct{
   double epsilon; 
   double theta;  
   int dipole_correction;
-} scafacos_pepc_parameter_structure;
+} scafacos_pepc_parameter_struct;
 
-extern scafacos_pepc_parameter_structure scafacos_pepc;
+extern scafacos_pepc_parameter_struct scafacos_pepc;
 #endif
 
 #ifdef SCAFACOS_PP3MG
@@ -160,9 +160,9 @@ typedef struct{
   int max_particles; 
   int max_iterations; 
   double tolerance;
-} scafacos_pp3mg_parameter_structure;
+} scafacos_pp3mg_parameter_struct;
 
-extern scafacos_pp3mg_parameter_structure scafacos_pp3mg;
+extern scafacos_pp3mg_parameter_struct scafacos_pp3mg;
 #endif
 
 #ifdef SCAFACOS_VMG
@@ -175,9 +175,9 @@ typedef struct{
   int interpolation_order;
   int discretization_order;
   int cycle_type;
-} scafacos_vmg_parameter_structure;
+} scafacos_vmg_parameter_struct;
 
-extern scafacos_vmg_parameter_structure scafacos_vmg;
+extern scafacos_vmg_parameter_struct scafacos_vmg;
 #endif
 
 #ifdef SCAFACOS_EWALD
@@ -196,12 +196,12 @@ typedef struct {
   double alpha;
   /** unscaled \ref r_cut_iL for use with fast inline functions only */
   double cutoff;
-} scafacos_p3m_parameter_structure;
+} scafacos_p3m_parameter_struct;
 
-extern scafacos_p3m_parameter_structure scafacos_p3m;
+extern scafacos_p3m_parameter_struct scafacos_p3m;
 #endif
 
-int run_scafacos();
+int scafacos_run();
 void scafacos_tune();
 void mpi_bcast_coulomb_method();
 void mpi_scafacos_bcast_common_params();

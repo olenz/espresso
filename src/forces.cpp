@@ -222,7 +222,7 @@ void calc_long_range_forces()
     case COULOMB_SCAFACOS_PEPC:
     case COULOMB_SCAFACOS_PP3MG:
     case COULOMB_SCAFACOS_VMG:
-      run_scafacos();
+      scafacos_run();
       break;
 #endif /* ifdef SCAFACOS */
     }

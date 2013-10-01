@@ -31,43 +31,43 @@
 #include "tcl/global_tcl.hpp"
 
 FCS fcs_handle;
-scafacos_data_structure scafacos;
+scafacos_data_struct scafacos;
 
 #ifdef SCAFACOS_DIRECT
-scafacos_direct_parameter_structure scafacos_direct;
+scafacos_direct_parameter_struct scafacos_direct;
 #endif
 #ifdef SCAFACOS_EWALD
-scafacos_ewald_parameter_structure scafacos_ewald;
+scafacos_ewald_parameter_struct scafacos_ewald;
 #endif
 #ifdef SCAFACOS_FMM
-scafacos_fmm_parameter_structure scafacos_fmm;
+scafacos_fmm_parameter_struct scafacos_fmm;
 #endif
 #ifdef SCAFACOS_MEMD
-scafacos_memd_parameter_structure scafacos_memd;
+scafacos_memd_parameter_struct scafacos_memd;
 #endif
 #ifdef SCAFACOS_MMM1D
-scafacos_mmm1d_parameter_structure scafacos_mmm1d;
+scafacos_mmm1d_parameter_struct scafacos_mmm1d;
 #endif
 #ifdef SCAFACOS_MMM2D
-scafacos_mmm2d_parameter_structure scafacos_mmm2d;
+scafacos_mmm2d_parameter_struct scafacos_mmm2d;
 #endif
 #ifdef SCAFACOS_P2NFFT
-scafacos_p2nfft_parameter_structure scafacos_p2nfft;
+scafacos_p2nfft_parameter_struct scafacos_p2nfft;
 #endif
 #ifdef SCAFACOS_PP3MG
-scafacos_pp3mg_parameter_structure scafacos_pp3mg;
+scafacos_pp3mg_parameter_struct scafacos_pp3mg;
 #endif
 #ifdef SCAFACOS_PEPC
-scafacos_pepc_parameter_structure scafacos_pepc;
+scafacos_pepc_parameter_struct scafacos_pepc;
 #endif
 #ifdef SCAFACOS_VMG
-scafacos_vmg_parameter_structure scafacos_vmg;
+scafacos_vmg_parameter_struct scafacos_vmg;
 #endif
 #ifdef SCAFACOS_P3M
-scafacos_p3m_parameter_structure scafacos_p3m;
+scafacos_p3m_parameter_struct scafacos_p3m;
 #endif
 
-int run_scafacos (){
+int scafacos_run (){
   Cell *cell;
   Particle *p;
   int np,c,i,j, dir;
@@ -248,7 +248,7 @@ void mpi_scafacos_bcast_common_params(){
   MPI_Bcast(&scafacos.global_r_cut_fcs, 1, MPI_DOUBLE, 0 ,comm_cart);
 
   MPI_Bcast(&coulomb.bjerrum, 1 ,MPI_DOUBLE, 0, comm_cart);*/
-  MPI_Bcast(&scafacos, sizeof(scafacos_data_structure), MPI_BYTE, 0, comm_cart);
+  MPI_Bcast(&scafacos, sizeof(scafacos_data_struct), MPI_BYTE, 0, comm_cart);
   return;
 }
 
@@ -258,57 +258,57 @@ void mpi_scafacos_bcast_solver_specific(){
   switch(coulomb.method){
 #ifdef SCAFACOS_DIRECT
     case COULOMB_SCAFACOS_DIRECT:
-      MPI_Bcast(&scafacos_direct, sizeof(scafacos_direct_parameter_structure), MPI_BYTE, 0, comm_cart);
+      MPI_Bcast(&scafacos_direct, sizeof(scafacos_direct_parameter_struct), MPI_BYTE, 0, comm_cart);
       break;
 #endif
 #ifdef SCAFACOS_EWALD
     case COULOMB_SCAFACOS_EWALD:
-      MPI_Bcast(&scafacos_ewald, sizeof(scafacos_ewald_parameter_structure), MPI_BYTE, 0, comm_cart);
+      MPI_Bcast(&scafacos_ewald, sizeof(scafacos_ewald_parameter_struct), MPI_BYTE, 0, comm_cart);
       break;
 #endif
 #ifdef SCAFACOS_FMM
     case COULOMB_SCAFACOS_FMM:
-      MPI_Bcast(&scafacos_fmm, sizeof(scafacos_fmm_parameter_structure), MPI_BYTE, 0, comm_cart);
+      MPI_Bcast(&scafacos_fmm, sizeof(scafacos_fmm_parameter_struct), MPI_BYTE, 0, comm_cart);
       break;
 #endif
 #ifdef SCAFACOS_MEMD
     case COULOMB_SCAFACOS_MEMD:
-      MPI_Bcast(&scafacos_memd, sizeof(scafacos_memd_parameter_structure), MPI_BYTE, 0, comm_cart);
+      MPI_Bcast(&scafacos_memd, sizeof(scafacos_memd_parameter_struct), MPI_BYTE, 0, comm_cart);
       break;
 #endif
 #ifdef SCAFACOS_MMM1D
     case COULOMB_SCAFACOS_MMM1D:
-      MPI_Bcast(&scafacos_mmm1d, sizeof(scafacos_mmm1d_parameter_structure), MPI_BYTE, 0, comm_cart);
+      MPI_Bcast(&scafacos_mmm1d, sizeof(scafacos_mmm1d_parameter_struct), MPI_BYTE, 0, comm_cart);
       break;
 #endif
 #ifdef SCAFACOS_MMM2D
     case COULOMB_SCAFACOS_MMM2D:
-      MPI_Bcast(&scafacos_mmm2d, sizeof(scafacos_mmm2d_parameter_structure), MPI_BYTE, 0, comm_cart);
+      MPI_Bcast(&scafacos_mmm2d, sizeof(scafacos_mmm2d_parameter_struct), MPI_BYTE, 0, comm_cart);
       break;
 #endif
 #ifdef SCAFACOS_P2NFFT
     case COULOMB_SCAFACOS_P2NFFT:
-      MPI_Bcast(&scafacos_p2nfft, sizeof(scafacos_p2nfft_parameter_structure), MPI_BYTE, 0, comm_cart);
+      MPI_Bcast(&scafacos_p2nfft, sizeof(scafacos_p2nfft_parameter_struct), MPI_BYTE, 0, comm_cart);
       break;
 #endif
 #ifdef SCAFACOS_P3M
     case COULOMB_SCAFACOS_P3M:
-      MPI_Bcast(&scafacos_p3m, sizeof(scafacos_p3m_parameter_structure), MPI_BYTE, 0, comm_cart);
+      MPI_Bcast(&scafacos_p3m, sizeof(scafacos_p3m_parameter_struct), MPI_BYTE, 0, comm_cart);
       break;
 #endif
 #ifdef SCAFACOS_PP3MG
     case COULOMB_SCAFACOS_PP3MG:
-      MPI_Bcast(&scafacos_pp3mg, sizeof(scafacos_pp3mg_parameter_structure), MPI_BYTE, 0, comm_cart);
+      MPI_Bcast(&scafacos_pp3mg, sizeof(scafacos_pp3mg_parameter_struct), MPI_BYTE, 0, comm_cart);
       break;
 #endif
 #ifdef SCAFACOS_VMG
     case COULOMB_SCAFACOS_VMG:
-      MPI_Bcast(&scafacos_vmg, sizeof(scafacos_vmg_parameter_structure), MPI_BYTE, 0, comm_cart);
+      MPI_Bcast(&scafacos_vmg, sizeof(scafacos_vmg_parameter_struct), MPI_BYTE, 0, comm_cart);
       break;
 #endif
 #ifdef SCAFACOS_PEPC
     case COULOMB_SCAFACOS_PEPC:
-      MPI_Bcast(&scafacos_pepc, sizeof(scafacos_pepc_parameter_structure), MPI_BYTE, 0, comm_cart);
+      MPI_Bcast(&scafacos_pepc, sizeof(scafacos_pepc_parameter_struct), MPI_BYTE, 0, comm_cart);
       break;
 #endif
 /*    case COULOMB_SCAFACOS_DIRECT:

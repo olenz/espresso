@@ -198,7 +198,7 @@ int tclcommand_inter_coulomb_parse_scafacos_p3m(Tcl_Interp * interp, int argc, c
   scafacos.virial = 0;
   scafacos.short_range_flag = 1 ;
   
-  switch(coulomb.method){
+  switch (coulomb.method){
     case COULOMB_SCAFACOS_DIRECT:
     case COULOMB_SCAFACOS_EWALD:
     case COULOMB_SCAFACOS_FMM:
@@ -216,17 +216,16 @@ int tclcommand_inter_coulomb_parse_scafacos_p3m(Tcl_Interp * interp, int argc, c
       break;
   }
   coulomb.method = COULOMB_SCAFACOS_P3M;
-    
   
   
 #ifdef PARTIAL_PERIODIC
-  if(PERIODIC(0) == 0 || PERIODIC(1) == 0 || PERIODIC(2) == 0) {
-      Tcl_AppendResult(interp, "Need periodicity (1,1,1) with Coulomb scafacos_P3M", (char *) NULL);
+  if (PERIODIC(0) == 0 || PERIODIC(1) == 0 || PERIODIC(2) == 0) {
+      Tcl_AppendResult(interp, "ScaFaCoS P3M requires periodicity (1,1,1)", (char *) NULL);
       return TCL_ERROR;  
-   }
+  }
 #endif
 
-  while(argc > 0) {
+  while (argc > 0) {
     // if (ARG0_IS_S("tune"))
     //   return tclcommand_inter_coulomb_parse_scafacos_p3m_tune(interp, argc-1, argv+1);
 
@@ -243,25 +242,29 @@ int tclcommand_inter_coulomb_parse_scafacos_p3m(Tcl_Interp * interp, int argc, c
 	return TCL_ERROR;
       }
     } else if(ARG0_IS_S("cao")) {
-      if(! (argc > 1 && ARG1_IS_I(scafacos_p3m.cao) && scafacos_p3m.cao >= -1 && scafacos_p3m.cao <= 7)) {
+      if(! (argc > 1 && ARG1_IS_I(scafacos_p3m.cao) && scafacos_p3m.cao >= -1 && 
+            scafacos_p3m.cao <= 7)) {
 	Tcl_AppendResult(interp, "cao expects an integer between -1 and 7",
 			 (char *) NULL);
 	return TCL_ERROR;
       } 
     } else if(ARG0_IS_S("tolerance_field")) {
-      if(! (argc > 1 && ARG1_IS_D(scafacos_p3m.tolerance_field) && scafacos_p3m.tolerance_field > 0)) {
+      if(! (argc > 1 && ARG1_IS_D(scafacos_p3m.tolerance_field) && 
+            scafacos_p3m.tolerance_field > 0)) {
 	Tcl_AppendResult(interp, "tolerance_field expects a positive double",
 			 (char *) NULL);
 	return TCL_ERROR;
       }
     } else if (ARG0_IS_S("alpha")) {
-      if (! (argc > 1 && ARG1_IS_D(scafacos_p3m.alpha) && scafacos_p3m.alpha_L >= 0 && scafacos_p3m.alpha_L <= 1)) {
+      if (! (argc > 1 && ARG1_IS_D(scafacos_p3m.alpha) && scafacos_p3m.alpha_L >= 0 && 
+             scafacos_p3m.alpha_L <= 1)) {
 	Tcl_AppendResult(interp, "alpha expects a double between 0 and 1", (char *) NULL);
 	return TCL_ERROR;
       }
     }
     else if(ARG0_IS_S("srf")) {
-      if(! (argc > 1 && ARG1_IS_I(scafacos.short_range_flag) && (scafacos.short_range_flag ==1 || scafacos.short_range_flag == 0))) {
+      if(! (argc > 1 && ARG1_IS_I(scafacos.short_range_flag) && 
+            (scafacos.short_range_flag == 1 || scafacos.short_range_flag == 0))) {
 	Tcl_AppendResult(interp, "srf expects 0 or 1",	 (char *) NULL);
 	return TCL_ERROR;
       }

@@ -72,7 +72,8 @@ p3m_data_struct p3m;
 
 #ifdef P3M_DEBUG
 static void p3m_print(void) {
-  fprintf(stderr, "general information: \n\t node: %d \n\t box_l: (%lf, %lf, %lf)\n", this_node, box_l[0], box_l[1], box_l[2]);
+  fprintf(stderr, "general information: \n\t node: %d \n\t box_l: (%lf, %lf, %lf)\n", 
+          this_node, box_l[0], box_l[1], box_l[2]);
 
   fprintf(stderr, "p3m parameters:\n\t alpha_L: %lf\n\t r_cut_iL: %lf\n\t \
                    mesh: (%d, %d, %d)\n\t mesh_off: (%lf, %lf, %lf)\n\t \
@@ -80,9 +81,17 @@ static void p3m_print(void) {
                    cao_cut: (%lf, %lf, %lf)\n\t a: (%lf,%lf,%lf)\n\t \
                    ai: (%lf,%lf,%lf)\n\t alpha: %lf\n\t r_cut: %lf\n\t \
                    inter2: %d\n\t cao3: %d\n\t additional_mesh: (%lf,%lf,%lf)\n", \
-	  p3m.params.alpha_L,p3m.params.r_cut_iL, p3m.params.mesh[0], p3m.params.mesh[1], p3m.params.mesh[2], p3m.params.mesh_off[0], p3m.params.mesh_off[1], p3m.params.mesh_off[2], \
-          p3m.params.cao, p3m.params.inter, p3m.params.accuracy, p3m.params.epsilon, p3m.params.cao_cut[0], p3m.params.cao_cut[1], p3m.params.cao_cut[2], p3m.params.a[0], p3m.params.a[1], p3m.params.a[2], p3m.params.ai[0], p3m.params.ai[1], p3m.params.ai[2], \
-          p3m.params.alpha, p3m.params.r_cut, p3m.params.inter2, p3m.params.cao3, p3m.params.additional_mesh[0], p3m.params.additional_mesh[1], p3m.params.additional_mesh[2]);
+	  p3m.params.alpha_L,p3m.params.r_cut_iL, 
+          p3m.params.mesh[0], p3m.params.mesh[1], p3m.params.mesh[2], 
+          p3m.params.mesh_off[0], p3m.params.mesh_off[1], p3m.params.mesh_off[2], 
+          p3m.params.cao, p3m.params.inter, p3m.params.accuracy, p3m.params.epsilon, 
+          p3m.params.cao_cut[0], p3m.params.cao_cut[1], p3m.params.cao_cut[2], 
+          p3m.params.a[0], p3m.params.a[1], p3m.params.a[2],
+          p3m.params.ai[0], p3m.params.ai[1], p3m.params.ai[2],
+          p3m.params.alpha, p3m.params.r_cut, p3m.params.inter2, p3m.params.cao3, 
+          p3m.params.additional_mesh[0], 
+          p3m.params.additional_mesh[1], 
+          p3m.params.additional_mesh[2]);
 }
 
 #endif
@@ -101,9 +110,10 @@ static void p3m_calc_send_mesh();
 static void p3m_init_a_ai_cao_cut(void);
 
 
-/** Calculate the spacial position of the left down mesh point of the local mesh, to be
-    stored in \ref p3m_local_mesh::ld_pos; function called by \ref p3m_calc_local_ca_mesh once
-    and by \ref p3m_scaleby_box_l whenever the \ref box_l changed. */
+/** Calculate the spacial position of the left down mesh point of the
+    local mesh, to be stored in \ref p3m_local_mesh::ld_pos; function
+    called by \ref p3m_calc_local_ca_mesh once and by \ref
+    p3m_scaleby_box_l whenever the \ref box_l changed. */
 static void p3m_calc_lm_ld_pos(void);
 
 
@@ -128,12 +138,14 @@ static void p3m_spread_force_grid(double* mesh);
 static void p3m_realloc_ca_fields(int newsize);
 #endif
 
-/** checks for correctness for charges in P3M of the cao_cut, necessary when the box length changes */
+/** checks for correctness for charges in P3M of the cao_cut,
+    necessary when the box length changes */
 static int p3m_sanity_checks_boxl(void);
 
-/** Calculate the spacial position of the left down mesh point of the local mesh, to be
-    stored in \ref p3m_local_mesh::ld_pos; function called by \ref p3m_calc_local_ca_mesh once
-    and by \ref p3m_scaleby_box_l whenever the \ref box_l changed. */
+/** Calculate the spacial position of the left down mesh point of the
+    local mesh, to be stored in \ref p3m_local_mesh::ld_pos; function
+    called by \ref p3m_calc_local_ca_mesh once and by \ref
+    p3m_scaleby_box_l whenever the \ref box_l changed. */
 static void p3m_calc_lm_ld_pos(void);
 
 /** Calculates properties of the local FFT mesh for the 
@@ -199,7 +211,8 @@ double p3m_perform_aliasing_sums_energy(int n[3]);
    \param alpha_L  rescaled ewald splitting parameter.
    \return real space error
 */
-static double p3m_real_space_error(double prefac, double r_cut_iL, int n_c_part, double sum_q2, double alpha_L);
+static double p3m_real_space_error(double prefac, double r_cut_iL, 
+                                   int n_c_part, double sum_q2, double alpha_L);
 
 /** Calculate the analytic expression of the error estimate for the
     P3M method in the book of Hockney and Eastwood (Eqn. 8.23) in
@@ -288,15 +301,13 @@ void p3m_set_bjerrum() {
   p3m.params.cao      = 0;
 }
 
-void   p3m_init() {
+void p3m_init() {
   if(coulomb.bjerrum == 0.0) {       
     p3m.params.r_cut    = 0.0;
     p3m.params.r_cut_iL = 0.0;
 
-
-
-    if(this_node==0) 
-      P3M_TRACE(fprintf(stderr,"0: P3M_init: Bjerrum length is zero.\n");
+    if (this_node==0) 
+      P3M_TRACE(fprintf(stderr,"0: p3m_init: Bjerrum length is zero.\n");
 
       fprintf(stderr,"   Electrostatics switched off!\n"));
   } else {  
@@ -397,7 +408,9 @@ void p3m_set_tune_params(double r_cut, int mesh[3], int cao,
 int p3m_set_params(double r_cut, int *mesh, int cao,
 		   double alpha, double accuracy)
 {
-  if (coulomb.method != COULOMB_P3M && coulomb.method != COULOMB_ELC_P3M && coulomb.method != COULOMB_P3M_GPU)
+  if (coulomb.method != COULOMB_P3M && 
+      coulomb.method != COULOMB_ELC_P3M && 
+      coulomb.method != COULOMB_P3M_GPU)
     coulomb.method = COULOMB_P3M;
     
   if(r_cut < 0)
