@@ -62,8 +62,11 @@ Features can be activated in the configuration header
   particle has rotational degrees of freedom.
 \item \newfeature{LANGEVIN\_PER\_PARTICLE} Allows to choose the
   Langevin temperature and friction coefficient per particle.
-\item \newfeature{LANGEVIN\_Z\_ONLY} Thermostats movement in the Z direction only. 
-  Requires the langevin thermostat to be set.
+\item \newfeature{LANGEVIN\_Z\_ONLY} Thermostats movement in the Z direction 
+ only. Requires the langevin thermostat to be set. This feature has not yet been
+ used for any serious application.
+\item \newfeature{LEES\_EDWARDS} Permits the application of shear strain to the 
+ system by moving boundary conditions. 
 \item \newfeature{ROTATIONAL\_INERTIA}
 \item \newfeature{EXTERNAL\_FORCES} Allows to define an arbitrary
   constant force for each particle individually. Also allows to fix
