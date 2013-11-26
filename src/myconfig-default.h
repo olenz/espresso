@@ -32,6 +32,7 @@
 #define COMFIXED
 #define NPT
 #define LEES_EDWARDS
+#define DPD
 
 /* potentials */
 #define TABULATED

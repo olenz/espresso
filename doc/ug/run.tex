@@ -75,13 +75,13 @@ the deformed simulation box.
 
 \end{essyntax}
 
-Lees-Edwards Periodic Boundary Conditions are used to impose a shear flow of speed $\gamma$ on the system relative to its periodic images by moving the PBC wrap such that:  $v\_x_{unfolded} =  v\_x_{folded} + \gamma y_{img}$ (where $v\_x_{unfolded}$ is the $x$-component of the velocity of an image particle outside the main simulation box, and $y_{img}$ is the count of PBC boundaries crossed in the $y$-direction).  The absolute value of the shear offset is set using this command; with the shear flow rate $\gamma$ then determined internally as the difference between successive offsets.  A typical usage would be to integrate by 1 md timestep and then to reset the offset using this command; this usage pattern is intended to allow for arbitrary shear flow time profiles, such as an oscillatory shear.
+Lees-Edwards Periodic Boundary Conditions are used to impose a shear flow of speed $\gamma$ on the system relative to its periodic images by moving the PBC wrap such that:  $v\_x_{unfolded} =  v\_x_{folded} + \gamma y_{img}$ (where $v\_x_{unfolded}$ is the $x$-component of the velocity of an image particle outside the main simulation box, and $y_{img}$ is the count of PBC boundaries crossed in the $y$-direction).  The absolute value of the shear offset is set using this command; with the shear flow rate $\gamma$ then determined internally as the difference between successive offsets.  A typical usage would be to integrate by 1 md timestep and then to increase the offset to a new value using this command; this usage pattern is intended to allow for arbitrary shear flow time profiles, such as an oscillatory shear.
 
 When the shear flow rate $\gamma$ is non-zero, the Langevin thermostat will treat $v\_x_{folded}$ as being relative to a flow field which changes smoothly from $-\gamma/2$ at the bottom of the periodic box to $\gamma/2$ at the top.  This is provided more for the convenience of equilibration of a flowing system than as a serious physical model - correct thermostatting of systems under shear flow remains a matter of discussion.  
 
 The function returns the old value of the offset.
 
-
+Use caution when writing folded coordinates (see Section~\ref{analyze:folded}) for Lees-Edwards trajectories, as imaging in space also alters the velocity. 
 
 \section{Stopping particles}
 
