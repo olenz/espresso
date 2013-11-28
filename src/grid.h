@@ -262,6 +262,12 @@ MDINLINE void fold_coordinate(double pos[3], int image_box[3], int dir)
 {
   int tmp;
 
+#ifdef LEES_EDWARDS
+  char *errtext = runtime_error(128);
+  fprintf(stderr,"Non Lees-Edwards coordinate fold called, even though LE is active.");
+  exit(8);
+#endif
+  
 #ifdef PARTIAL_PERIODIC
   if (PERIODIC(dir))
 #endif
