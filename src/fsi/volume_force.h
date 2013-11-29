@@ -33,6 +33,11 @@
 #include "grid.h"
 
 
+//use a !locally defined only! macro for the imaging call, just for tidiness.
+#ifdef LEES_EDWARDS
+#define fold_position(a, b) fold_position(a, vvle, b)
+#endif
+
 /** set parameters for the VOLUME_FORCE potential. 
 */
 int volume_force_set_params(int bond_type, double V0, double kv);
@@ -56,6 +61,9 @@ MDINLINE void calc_volume(double *volume, int molType){ //first-fold-then-the-sa
 	Cell *cell;
 	Particle *p, *p1, *p2, *p3;
 	double p11[3],p22[3],p33[3];
+#ifdef LEES_EDWARDS
+    double vvle[3];
+#endif
 	int img[3];
 	
 	Bonded_ia_parameters *iaparams;
@@ -137,6 +145,9 @@ MDINLINE void add_volume_force(double volume, int molType){  //first-fold-then-t
 	Cell *cell;
 	Particle *p, *p1, *p2, *p3;
 	double p11[3],p22[3],p33[3];
+#ifdef LEES_EDWARDS
+    double vvle[3];
+#endif
 	Bonded_ia_parameters *iaparams;
 	int type_num, type, n_partners, id;
 	char *errtxt;
@@ -182,17 +193,15 @@ MDINLINE void add_volume_force(double volume, int molType){  //first-fold-then-t
 					memcpy(p11, p1->r.p, 3*sizeof(double));
 					memcpy(img, p1->l.i, 3*sizeof(int));
 					fold_position(p11, img);
-									
+                    
 					memcpy(p22, p2->r.p, 3*sizeof(double));
 					memcpy(img, p2->l.i, 3*sizeof(int));
-					fold_position(p22, img);
+                    fold_position(p22, img);
 				
 					memcpy(p33, p3->r.p, 3*sizeof(double));
 					memcpy(img, p3->l.i, 3*sizeof(int));
-					fold_position(p33, img);
+                    fold_position(p33, img);
 				
-
-					
 					get_n_triangle(p11,p22,p33,norm);
 					dn=normr(norm);
 					A=area_triangle(p11,p22,p33);
@@ -218,5 +227,6 @@ MDINLINE void add_volume_force(double volume, int molType){  //first-fold-then-t
 	
 }
 
+#undef fold_position
 
 #endif

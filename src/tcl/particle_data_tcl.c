@@ -210,7 +210,7 @@ void tclcommand_part_print_position(Particle *part, char *buffer, Tcl_Interp *in
 #ifdef LEES_EDWARDS
 //  {double vv[3];
 /*For LE position and velocity are linked, so do nothing in case vel has been requested as well */
-   //unfold_position_le(ppos, vv, img);
+   //unfold_position(ppos, vv, img);
 //  }
 #else
   unfold_position(ppos, img);
@@ -233,7 +233,7 @@ void tclcommand_part_print_folded_position(Particle *part, char *buffer, Tcl_Int
 #ifdef LEES_EDWARDS
   double pvel[3];
   memcpy(pvel, part->m.v, 3*sizeof(double));
-  fold_position_le(ppos, pvel, img);
+  fold_position(ppos, pvel, img);
 #else
   fold_position(ppos, img);
 #endif

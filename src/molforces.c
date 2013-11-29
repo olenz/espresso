@@ -203,7 +203,7 @@ void calc_local_mol_info (IntList *local_trapped_mols)
 
 	/* Unfold the particle */
 #ifdef LEES_EDWARDS
-    unfold_position_le(p[i].r.p, p[i].m.v, p[i].l.i);
+    unfold_position(p[i].r.p, p[i].m.v, p[i].l.i);
 #else
 	unfold_position(p[i].r.p,p[i].l.i);
 #endif

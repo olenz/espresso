@@ -296,7 +296,7 @@ void updatePartCfg(int bonds_flag)
 
   for(j=0; j<n_total_particles; j++){
 #ifdef LEES_EDWARDS
-    unfold_position_le(partCfg[j].r.p, partCfg[j].m.v, partCfg[j].l.i);
+    unfold_position(partCfg[j].r.p, partCfg[j].m.v, partCfg[j].l.i);
 #else
     unfold_position(partCfg[j].r.p, partCfg[j].l.i);
 #endif
@@ -1096,7 +1096,7 @@ void local_place_particle(int part, double p[3], int new)
 
 #ifdef LEES_EDWARDS
   double vv[3]={0.,0.,0.};
-  fold_position_le(pp, vv, i);
+  fold_position(pp, vv, i);
 #else
   fold_position(pp, i);
 #endif 

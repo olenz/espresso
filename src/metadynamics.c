@@ -125,7 +125,7 @@ void meta_perform()
            {
             double pv[3];
             memcpy(pv, part[i].m.v, 3*sizeof(double));
-            unfold_position_le(ppos1, pv, img1);
+            unfold_position(ppos1, pv, img1);
            }
 #else
             unfold_position(ppos1, img1);
@@ -145,7 +145,7 @@ void meta_perform()
            {
             double pv[3];
             memcpy(pv, part[i].m.v, 3*sizeof(double));
-            unfold_position_le(ppos2, pv, img2);
+            unfold_position(ppos2, pv, img2);
            }
 #else
             unfold_position(ppos2, img2);

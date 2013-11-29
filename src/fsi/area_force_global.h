@@ -54,6 +54,9 @@ MDINLINE void calc_area_global(double *area, int molType){ //first-fold-then-the
 	Cell *cell;
 	Particle *p, *p1, *p2, *p3;
 	double p11[3],p22[3],p33[3];
+#ifdef LEES_EDWARDS
+    double vv[3];
+#endif
 	int img[3];
 	Bonded_ia_parameters *iaparams;
 	int type_num, type, n_partners,id;
@@ -100,15 +103,27 @@ MDINLINE void calc_area_global(double *area, int molType){ //first-fold-then-the
 					}
 					memcpy(p11, p1->r.p, 3*sizeof(double));
 					memcpy(img, p1->l.i, 3*sizeof(int));
-					fold_position(p11, img);
-									
+#ifdef LEES_EDWARDS
+					fold_position(p11, vv, img);
+#else
+                    fold_position(p11, img);
+#endif	
+                    
 					memcpy(p22, p2->r.p, 3*sizeof(double));
 					memcpy(img, p2->l.i, 3*sizeof(int));
-					fold_position(p22, img);
+#ifdef LEES_EDWARDS
+                    fold_position(p22, vv, img);
+#else
+                    fold_position(p22, img);
+#endif  
 				
 					memcpy(p33, p3->r.p, 3*sizeof(double));
 					memcpy(img, p3->l.i, 3*sizeof(int));
-					fold_position(p33, img);
+#ifdef LEES_EDWARDS
+                    fold_position(p33, vv, img);
+#else
+                    fold_position(p33, img);
+#endif  
 				
 					
 					get_n_triangle(p11,p22,p33,norm);
@@ -135,6 +150,9 @@ MDINLINE void add_area_global_force(double area, int molType){  //first-fold-the
 	Cell *cell;
 	Particle *p, *p1, *p2, *p3;
 	double p11[3],p22[3],p33[3];
+#ifdef LEES_EDWARDS
+    double vv[3];
+#endif
 	int img[3];
 
 	Bonded_ia_parameters *iaparams;
@@ -184,15 +202,27 @@ MDINLINE void add_area_global_force(double area, int molType){  //first-fold-the
 					}
 					memcpy(p11, p1->r.p, 3*sizeof(double));
 					memcpy(img, p1->l.i, 3*sizeof(int));
-					fold_position(p11, img);
+#ifdef LEES_EDWARDS
+                    fold_position(p11, vv, img);
+#else
+                    fold_position(p11, img);
+#endif  
 									
 					memcpy(p22, p2->r.p, 3*sizeof(double));
 					memcpy(img, p2->l.i, 3*sizeof(int));
-					fold_position(p22, img);
+#ifdef LEES_EDWARDS
+                    fold_position(p22, vv, img);
+#else
+                    fold_position(p22, img);
+#endif  
 				
 					memcpy(p33, p3->r.p, 3*sizeof(double));
 					memcpy(img, p3->l.i, 3*sizeof(int));
-					fold_position(p33, img);
+#ifdef LEES_EDWARDS
+                    fold_position(p33, vv, img);
+#else
+                    fold_position(p33, img);
+#endif  
 				
 	
 					

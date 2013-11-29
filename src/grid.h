@@ -204,6 +204,7 @@ MDINLINE void get_mi_vector(double res[3], double a[3], double b[3])
 
 
 
+#ifdef LEES_EDWARDS
 /** fold a coordinate to primary simulation box.
     \param pos         the position...
     \param vel         the velocity...
@@ -213,8 +214,7 @@ MDINLINE void get_mi_vector(double res[3], double a[3], double b[3])
     Both pos and image_box are I/O,
     i. e. a previously folded position will be folded correctly.
 */
-#ifdef LEES_EDWARDS
-MDINLINE void fold_coordinate_le(double pos[3], double vel[3], int image_box[3], int dir)
+MDINLINE void fold_coordinate(double pos[3], double vel[3], int image_box[3], int dir)
 {
       if( dir != 1 ){ 
         int tmp;
@@ -248,7 +248,7 @@ MDINLINE void fold_coordinate_le(double pos[3], double vel[3], int image_box[3],
       
     }
 }
-#endif
+#else
 
 /** fold a coordinate to primary simulation box.
     \param pos         the position...
@@ -262,11 +262,6 @@ MDINLINE void fold_coordinate(double pos[3], int image_box[3], int dir)
 {
   int tmp;
 
-#ifdef LEES_EDWARDS
-  char *errtext = runtime_error(128);
-  fprintf(stderr,"Non Lees-Edwards coordinate fold called, even though LE is active.");
-  exit(8);
-#endif
   
 #ifdef PARTIAL_PERIODIC
   if (PERIODIC(dir))
@@ -284,7 +279,26 @@ MDINLINE void fold_coordinate(double pos[3], int image_box[3], int dir)
       }
     }
 }
+#endif
 
+
+/** fold particle coordinates to primary simulation box.
+    \param pos the position...
+    \param vel the velocity...
+    \param image_box and the box
+
+    Pos, vel and image_box are I/O,
+    i. e. a previously folded position will be folded correctly.
+*/
+#ifdef LEES_EDWARDS
+MDINLINE void fold_position(double pos[3], double vel[3], int image_box[3])
+{
+
+  int i;
+  for(i=0;i<3;i++)
+    fold_coordinate(pos, vel, image_box, i);
+}
+#else
 /** fold particle coordinates to primary simulation box.
     \param pos the position...
     \param image_box and the box
@@ -299,25 +313,32 @@ MDINLINE void fold_position(double pos[3],int image_box[3])
   for(i=0;i<3;i++)
     fold_coordinate(pos, image_box, i);
 }
-
-/** fold particle coordinates to primary simulation box.
-    \param pos the position...
-    \param vel the velocity...
-    \param image_box and the box
-
-    Pos, vel and image_box are I/O,
-    i. e. a previously folded position will be folded correctly.
-*/
-#ifdef LEES_EDWARDS
-MDINLINE void fold_position_le(double pos[3], double vel[3], int image_box[3])
-{
-
-  int i;
-  for(i=0;i<3;i++)
-    fold_coordinate_le(pos, vel, image_box, i);
-}
 #endif
 
+#ifdef LEES_EDWARDS
+/** unfold coordinates to physical position.
+    \param pos the position...
+    \param image_box and the box
+
+    Both pos and image_box are I/O, i.e. image_box will be (0,0,0)
+    afterwards.
+*/
+MDINLINE void unfold_position(double pos[3], double vel[3], int image_box[3])
+{
+  int y_img_count;
+  y_img_count   = (int)floor( pos[1]*box_l_i[1] + image_box[1] );
+
+  pos[0] += image_box[0]*box_l[0] + y_img_count*lees_edwards_offset;
+  pos[1] += image_box[1]*box_l[1];
+  pos[2] += image_box[2]*box_l[2];
+
+  vel[0] += y_img_count * lees_edwards_rate;
+
+  image_box[0] = image_box[1] = image_box[2] = 0;
+
+
+}
+#else
 /** unfold coordinates to physical position.
     \param pos the position...
     \param image_box and the box
@@ -333,30 +354,6 @@ MDINLINE void unfold_position(double pos[3],int image_box[3])
     pos[i]       = pos[i] + image_box[i]*box_l[i];    
     image_box[i] = 0;
   }
-}
-
-#ifdef LEES_EDWARDS
-/** unfold coordinates to physical position.
-    \param pos the position...
-    \param image_box and the box
-
-    Both pos and image_box are I/O, i.e. image_box will be (0,0,0)
-    afterwards.
-*/
-MDINLINE void unfold_position_le(double pos[3], double vel[3], int image_box[3])
-{
-  int y_img_count;
-  y_img_count   = (int)floor( pos[1]*box_l_i[1] + image_box[1] );
-
-  pos[0] += image_box[0]*box_l[0] + y_img_count*lees_edwards_offset;
-  pos[1] += image_box[1]*box_l[1];
-  pos[2] += image_box[2]*box_l[2];
-
-  vel[0] += y_img_count * lees_edwards_rate;
-
-  image_box[0] = image_box[1] = image_box[2] = 0;
-
-
 }
 #endif
 

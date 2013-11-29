@@ -88,7 +88,7 @@ int map_position_node_array(double pos[3])
 
 #ifdef LEES_EDWARDS  
   double vel_scratch[3]={0.,0.,0.};  
-  fold_position_le(f_pos, vel_scratch, im);
+  fold_position(f_pos, vel_scratch, im);
 #else
   fold_position(f_pos, im);
 #endif

@@ -150,7 +150,7 @@ int tclcommand_writemd(ClientData data, Tcl_Interp *interp,
     Particle data;
     if (get_particle_data(p, &data)) {
 #ifdef LEES_EDWARDS
-      unfold_position_le(data.r.p, data.m.v, data.l.i);
+      unfold_position(data.r.p, data.m.v, data.l.i);
 #else
       unfold_position(data.r.p, data.l.i);
 #endif

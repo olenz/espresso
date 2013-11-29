@@ -704,7 +704,7 @@ int dd_append_particles(ParticleList *pl, int fold_dir)
   for(p=0; p<pl->n; p++) {
     if(boundary[fold_dir] != 0){
 #ifdef LEES_EDWARDS
-      fold_coordinate_le(pl->part[p].r.p, pl->part[p].m.v, pl->part[p].l.i, fold_coord);
+      fold_coordinate(pl->part[p].r.p, pl->part[p].m.v, pl->part[p].l.i, fold_coord);
 #else
       fold_coordinate(pl->part[p].r.p, pl->part[p].l.i, fold_coord);
 #endif
@@ -1063,7 +1063,7 @@ void  dd_exchange_and_sort_particles(int global_flag)
 #endif
 	      {
 #ifdef LEES_EDWARDS   
-        fold_coordinate_le(part->r.p, part->m.v, part->l.i, dir);
+        fold_coordinate(part->r.p, part->m.v, part->l.i, dir);
 #else
 		fold_coordinate(part->r.p, part->l.i, dir);
 #endif

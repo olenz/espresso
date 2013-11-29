@@ -116,7 +116,7 @@ void local_system_CMS( double *sdata ) {
 {
       double pv[3];
       memcpy(pv, part[i].m.v, 3*sizeof(double));
-      unfold_position_le(ppos, pv, img);
+      unfold_position(ppos, pv, img);
 }
 #else
       unfold_position(ppos, img);
@@ -151,7 +151,7 @@ void local_system_CMS( double *sdata ) {
 {
       double pv[3];
       memcpy(pv, part[i].m.v, 3*sizeof(double));
-      unfold_position_le(ppos, pv, img);
+      unfold_position(ppos, pv, img);
 }
 #else
       unfold_position(ppos, img);
