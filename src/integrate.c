@@ -810,8 +810,8 @@ void propagate_vel_pos()
                     if( delta_box != 0 ){  
                          p[i].m.v[0]     -= delta_box * lees_edwards_rate;   
                          p[i].r.p[0]     -= delta_box * lees_edwards_offset; 
-                        // p[i].r.p[1]     -= delta_box * box_l[1];
-                        // p[i].l.i[1]     += delta_box; 
+                         p[i].r.p[1]     -= delta_box * box_l[1];
+                         p[i].l.i[1]     += delta_box; 
             //          while( p[i].r.p[0] >  box_l[0] ) p[i].r.p[0] -= box_l[0];
             //          while( p[i].r.p[0] <  0.0 )      p[i].r.p[0] += box_l[0];
                          resort_particles = 1;
