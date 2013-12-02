@@ -228,7 +228,7 @@ set mean_x2 [expr $mean_x2 / $count ]
 set mean_y2 [expr $mean_y2 / $count ] 
 set mean_z2 [expr $mean_z2 / $count ] 
 puts "#means:   $mean_x2 $mean_y2 $mean_z2"
-puts "#refvals: 2.05(pm0.15)  0.66(pm0.05) 0.66(pm0.02)"
+puts "#refvals: 2.05(pm0.15)  0.66(pm0.05) 0.66(pm0.08)"
 
 if { abs( $mean_x2 - 2.05) > 0.15 } {
     error "Lees Edwards Test failed"
