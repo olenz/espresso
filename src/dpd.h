@@ -62,6 +62,30 @@ void thermo_init_dpd();
 void dpd_heat_up();
 void dpd_cool_down();
 
+#ifdef LEES_EDWARDS
+/** Calculate relative x-velocity between two particles
+    potentially in boxes moving at different speeds,
+    and subtract from this the laminar
+    flow velocity. */
+MDINLINE double lees_edwards_rel_vx(Particle *p1, Particle *p2){
+  double vBox, vLam, relVx;
+
+   /* box motion */
+   vBox  = floor(p1->r.p[1]*box_l_i[1]) - floor(p2->r.p[1]*box_l_i[1]);
+   vBox *= lees_edwards_rate;
+
+   /* laminar flow field */
+   vLam  = (p1->r.p[1] - p2->r.p[1]) * box_l_i[1] * lees_edwards_rate;
+
+   relVx = (p1->m.v[0] + vBox) - p2->m.v[0];
+   relVx = relVx - vLam;
+
+   return( relVx );
+
+}
+#endif
+
+
 /** Calculate Random Force and Friction Force acting between particle
     p1 and p2 and add them to their forces. */
 MDINLINE void add_dpd_thermo_pair_force(Particle *p1, Particle *p2, double d[3], double dist, double dist2)
@@ -128,7 +152,12 @@ MDINLINE void add_dpd_thermo_pair_force(Particle *p1, Particle *p2, double d[3],
     omega2   = SQR(omega);
     //DPD part
     // friction force prefactor
+#ifdef LEES_EDWARDS
+    vel12_dot_d12 += lees_edwards_rel_vx(p1, p2) * d[0];
+    for(j=1; j<3; j++)  vel12_dot_d12 += (p1->m.v[j] - p2->m.v[j]) * d[j];
+#else
     for(j=0; j<3; j++)  vel12_dot_d12 += (p1->m.v[j] - p2->m.v[j]) * d[j];
+#endif
     friction = dpd_pref1 * omega2 * vel12_dot_d12;
     // random force prefactor
     noise    = dpd_pref2 * omega      * (d_random()-0.5);
@@ -165,7 +194,16 @@ MDINLINE void add_dpd_thermo_pair_force(Particle *p1, Particle *p2, double d[3],
         f_D[i]=0;
         //Random force
         f_R[i]=0;
-        for (j=0;j<3;j++){
+
+#ifdef LEES_EDWARDS
+	{
+	 f_D[i]  += P_times_dist_sqr[i][0] * lees_edwards_rel_vx(p1, p2);
+	 f_R[i]  += P_times_dist_sqr[i][0] * noise_vec[0];
+	}
+        for(j=1; j<3; j++){
+#else
+        for(j=0; j<3; j++){
+#endif
           f_D[i]+=P_times_dist_sqr[i][j]*(p1->m.v[j] - p2->m.v[j]);
           f_R[i]+=P_times_dist_sqr[i][j]*noise_vec[j];
         }
@@ -249,7 +287,15 @@ MDINLINE void add_inter_dpd_pair_force(Particle *p1, Particle *p2, IA_parameters
     omega2   = SQR(omega);
     //DPD part
        // friction force prefactor
-    for(j=0; j<3; j++)  vel12_dot_d12 += (p1->m.v[j] - p2->m.v[j]) * d[j];
+#ifdef LEES_EDWARDS
+    vel12_dot_d12 += lees_edwards_rel_vx(p1, p2) * d[0];
+    for(j=1; j<3; j++){
+#else
+    for(j=0; j<3; j++){
+#endif 
+      vel12_dot_d12 += (p1->m.v[j] - p2->m.v[j]) * d[j];
+    }
+
     friction = ia_params->dpd_pref1 * omega2 * vel12_dot_d12;
     // random force prefactor
     noise    = ia_params->dpd_pref2 * omega      * (d_random()-0.5);
@@ -285,7 +331,13 @@ MDINLINE void add_inter_dpd_pair_force(Particle *p1, Particle *p2, IA_parameters
         f_D[i]=0;
         //Random force
         f_R[i]=0;
-        for (j=0;j<3;j++){
+#ifdef LEES_EDWARDS
+	f_D[i]  += P_times_dist_sqr[i][0] * lees_edwards_rel_vx(p1,p2);
+	f_R[i]  += P_times_dist_sqr[i][0] * noise_vec[0];
+        for(j=1; j<3; j++){
+#else
+        for(j=0; j<3; j++){
+#endif
           f_D[i]+=P_times_dist_sqr[i][j]*(p1->m.v[j] - p2->m.v[j]);
           f_R[i]+=P_times_dist_sqr[i][j]*noise_vec[j];
         }

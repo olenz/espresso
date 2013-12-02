@@ -812,10 +812,15 @@ void propagate_vel_pos()
                          p[i].r.p[0]     -= delta_box * lees_edwards_offset; 
                          p[i].r.p[1]     -= delta_box * box_l[1];
                          p[i].l.i[1]     += delta_box; 
-            //          while( p[i].r.p[0] >  box_l[0] ) p[i].r.p[0] -= box_l[0];
-            //          while( p[i].r.p[0] <  0.0 )      p[i].r.p[0] += box_l[0];
+                         while( p[i].r.p[1] >  box_l[1] ) {p[i].r.p[1] -= box_l[1]; p[i].l.i[1]++;}
+                         while( p[i].r.p[1] <  0.0 )      {p[i].r.p[1] += box_l[1]; p[i].l.i[1]--;}
                          resort_particles = 1;
                     }
+                    /* Branch prediction on most systems should mean there is minimal cost here */ 
+                    while( p[i].r.p[0] >  box_l[0] ) {p[i].r.p[0] -= box_l[0]; p[i].l.i[0]++;}
+                    while( p[i].r.p[0] <  0.0 )      {p[i].r.p[0] += box_l[0]; p[i].l.i[0]--;}
+                    while( p[i].r.p[2] >  box_l[2] ) {p[i].r.p[2] -= box_l[2]; p[i].l.i[2]++;}
+                    while( p[i].r.p[2] <  0.0 )      {p[i].r.p[2] += box_l[2]; p[i].l.i[2]--;}
       }
 #endif
 
