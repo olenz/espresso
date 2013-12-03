@@ -60,10 +60,17 @@
 
 #endif
 
+#define Q6_MAX_NEIGHBOURS 500 //Max is 12 for hexagonal packing, but allow more to be safe.
+
 
 /************************************************
  * data types
  ************************************************/
+
+/** for mutually referential structs we need some pre-definitions up here
+ */
+struct Particle;
+typedef Particle *p_ptr;
 
 /** Properties of a particle which are not supposed to
     change during the integration, but have to be known
@@ -71,7 +78,7 @@
     needed in the interaction calculation, but are just copies of
     particles stored on different nodes.
 */
-typedef struct {
+struct ParticleProperties {
   /** unique identifier for the particle. */
   int    identity;
   /** Molecule identifier. */
@@ -144,13 +151,20 @@ typedef struct {
 #ifdef CATALYTIC_REACTIONS
   int catalyzer_count;
 #endif
-} ParticleProperties;
+};
+
 
 /** Positional information on a particle. Information that is
     communicated to calculate interactions with ghost particles. */
-typedef struct {
+struct ParticlePosition {
   /** periodically folded position. */
   double p[3];
+
+/* debug stuff */
+#ifdef LEES_EDWARDS_DEBUG
+  int neighbor_count_out;
+  int neighbor_count_in;
+#endif
 
 #ifdef ROTATION
   /** quaternions to define particle orientation */
@@ -173,11 +187,11 @@ typedef struct {
   double composition[LB_COMPONENTS];
 #endif
 
-} ParticlePosition;
+};
 
 /** Force information on a particle. Forces of ghost particles are
     collected and added up to the force of the original particle. */
-typedef struct {
+struct ParticleForce {
   /** force. */
   double f[3];
 
@@ -186,12 +200,29 @@ typedef struct {
   double torque[3];
 #endif
 
-} ParticleForce;
+};
+
+
+/** structural information about the particle's local environment
+  * used for reaction coordinates etc. */
+struct ParticleEnvironment {
+  double q6r[7];
+  double q6i[7];
+  double q6;
+  unsigned int neb;
+  p_ptr  neighbours[Q6_MAX_NEIGHBOURS];
+  double r2_neighbour[Q6_MAX_NEIGHBOURS];
+  int   *bondQ6Q6;
+  int    solidBonds;
+  int    ce_cluster;
+  int    q6_cluster;
+  int    solid;
+};
 
 /** Momentum information on a particle. Information not contained in
     communication of ghost particles so far, but a communication would
     be necessary for velocity dependend potentials. */
-typedef struct {
+struct ParticleMomentum {
   /** velocity. */
   double v[3];
 
@@ -200,11 +231,11 @@ typedef struct {
       ALWAYS IN PARTICLE FIXEXD, I.E., CO-ROTATING COORDINATE SYSTEM */
   double omega[3];
 #endif
-} ParticleMomentum;
+};
 
 /** Information on a particle that is needed only on the
     node the particle belongs to */
-typedef struct {
+struct ParticleLocal {
   /** position in the last time step befor last Verlet list update. */
   double p_old[3];
   /** index of the simulation box image where the particle really sits. */
@@ -241,18 +272,18 @@ typedef struct {
   ParticlePosition r_ls;
   ParticleMomentum m_ls;
 #endif
-} ParticleLocal;
+};
 
 #ifdef LB
 /** Data related to the Lattice Boltzmann hydrodynamic coupling */
-typedef struct {
+struct ParticleLatticeCoupling {
   /** fluctuating part of the coupling force */
   double f_random[3];
-} ParticleLatticeCoupling;
+};
 #endif
 
 /** Struct holding all information for one particle. */
-typedef struct {
+struct Particle {
   ///
   ParticleProperties p;
   ///
@@ -277,20 +308,20 @@ typedef struct {
   IntList el;
 #endif
 
-} Particle;
+};
 
 /** List of particles. The particle array is resized using a sophisticated
     (we hope) algorithm to avoid unnecessary resizes.
     Access using \ref realloc_particlelist, \ref got_particle,...
 */
-typedef struct {
+struct ParticleList {
   /** The particles payload */
   Particle *part;
   /** Number of particles contained */
   int n;
   /** Number of particles that fit in until a resize is needed */
   int max;
-} ParticleList;
+};
 
 /************************************************
  * exported variables

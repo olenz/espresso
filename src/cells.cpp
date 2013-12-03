@@ -47,6 +47,9 @@
 Cell *cells = NULL;
 /** size of \ref cells */
 int n_cells = 0;
+#ifdef LEES_EDWARDS
+int n_le_extra_cells = 0;
+#endif
 /** list of pointers to all cells containing particles physically on the local node. */
 CellPList local_cells = { NULL, 0, 0 };
 /** list of pointers to all cells containing ghosts. */
@@ -182,6 +185,7 @@ void cells_re_init(int new_cs)
 
   CELL_TRACE(fprintf(stderr, "%d: cells_re_init: convert type (%d->%d)\n", this_node, cell_structure.type, new_cs));
 
+  
   invalidate_ghosts();
 
   /* 
@@ -310,6 +314,7 @@ void cells_resort_particles(int global_flag)
   CELL_TRACE(fprintf(stderr, "%d: entering cells_resort_particles %d\n", this_node, global_flag));
 
   invalidate_ghosts();
+  CELL_TRACE(fprintf(stderr, "%d: invalidated ghosts\n", this_node));
 
   particle_invalidate_part_node();
   n_verlet_updates++;
@@ -338,7 +343,6 @@ void cells_resort_particles(int global_flag)
   rebuild_verletlist = 1;
 
   on_resort_particles();
-
   CELL_TRACE(fprintf(stderr, "%d: leaving cells_resort_particles\n", this_node));
 }
 
@@ -404,12 +408,21 @@ void cells_update_ghosts()
     resort_particles = 1;
 
   if (resort_particles) {
+#ifdef LEES_EDWARDS
+    /* Lees Edwards BCs include occasional sudden jumps of position. 
+       Domdec global exchange doesn't seem to be much slower in practice than 
+       neighbours-only, so call it every time. */
+    cells_resort_particles(CELL_GLOBAL_EXCHANGE);
+#else
     /* Communication step:  number of ghosts and ghost information */
     cells_resort_particles(CELL_NEIGHBOR_EXCHANGE);
+#endif
   }
-  else
+  else {
     /* Communication step: ghost information */
     ghost_communicator(&cell_structure.update_ghost_pos_comm);
+    
+  }
 }
 
 /*************************************************/
@@ -418,18 +431,24 @@ void print_ghost_positions()
 {
   Cell *cell;
   int c,i,np,cnt=0;
-  Particle *part;
+  Particle *part, pReal;
 
   for (c = 0; c < ghost_cells.n; c++) {
     cell = ghost_cells.cell[c];
     part = cell->part;
     np   = cell->n;
     for(i=0 ; i < np; i++) {
-      fprintf(stderr,"%d: local cell %d contains ghost id=%d pos=(%f,%f,%f)\n",
+          
+      fprintf(stderr,"%d: local cell %d contains ghost id=%d pos=(%f,%f,%f) ...\n",
+
 	      this_node, c, part[i].p.identity,
-	      part[i].r.p[0], part[i].r.p[1], part[i].r.p[2]);
+	      part[i].r.p[0], part[i].r.p[1], part[i].r.p[2]); 
+          get_particle_data( part[i].p.identity, &pReal);    
+          
+      fprintf(stderr, "real_pos: (%f,%f,%f) ...\n", pReal.r.p[0], pReal.r.p[1], pReal.r.p[2]); 
+          
       cnt++;
     }
   }
-  fprintf(stderr,"%d: found %d ghosts\n",this_node,cnt);
+  fprintf(stderr,"%d: found %d ghosts in %d ghost cells\n",this_node,cnt,ghost_cells.n);
 }

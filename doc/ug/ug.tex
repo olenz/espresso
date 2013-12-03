@@ -70,12 +70,12 @@ index=totoc,                    % add the index to the TOC
 %%%%%%%%% New Commands and Environments %%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newcommand{\es}{\mbox{\textsf{ESPResSo}}\xspace}
-\newcommand{\ie}{\textit{i.e.}\xspace}
-\newcommand{\eg}{\textit{e.g.}\xspace}
-\newcommand{\etal}{\textit{et al.}\xspace}
+\DeclareRobustCommand{\es}{\mbox{\textsf{ESPResSo}}\xspace}
+\DeclareRobustCommand{\ie}{\textit{i.e.}\xspace}
+\DeclareRobustCommand{\eg}{\textit{e.g.}\xspace}
+\DeclareRobustCommand{\etal}{\textit{et al.}\xspace}
 
-\newcommand{\warning}[1]{
+\DeclareRobustCommand{\warning}[1]{
   \begin{center}%
     \fcolorbox{black}{yellow}{%
       \parbox{\linewidth-5em}{%
@@ -84,7 +84,7 @@ index=totoc,                    % add the index to the TOC
   \end{center}%
 }
 
-\newcommand{\codebox}[1]%
+\DeclareRobustCommand{\codebox}[1]%
 {\texttt{#1}}
 
 \DefineVerbatimEnvironment{code}{Verbatim}%
@@ -111,7 +111,7 @@ index=totoc,                    % add the index to the TOC
 
 % required so that we can set index numbers bold
 % \index{Some example|mainindex}
-\newcommand*{\mainindex}[1]{\textbf{\hyperpage{#1}}}
+\DeclareRobustCommand*{\mainindex}[1]{\textbf{\hyperpage{#1}}}
 
 \makeatletter
 \renewcommand{\minisec}[1]{\@afterindentfalse \vskip 1.5ex
@@ -136,7 +136,7 @@ index=totoc,                    % add the index to the TOC
   \end{center}
 }
 
-\newcommand{\citewbibkey}[1]{%
+\DeclareRobustCommand{\citewbibkey}[1]{%
   \cite{#1} (\textsc{BibTeX}-key \texttt{#1} in file \texttt{doc/ug/citations.bib})}
 
 %%%%%%%%%%%%%% Syntax Description %%%%%%%%%%%%%%%
@@ -146,33 +146,34 @@ index=totoc,                    % add the index to the TOC
 %% syntax of a Tcl command.
 % typesetting inside a command definition
 % keywords/literals
-\newcommand{\lit}[1]{\mbox{\texttt{#1}}}
-\newcommand{\keyword}[1]{\mbox{\texttt{#1}}}
+\DeclareRobustCommand{\lit}[1]{\mbox{\texttt{#1}}}
+\DeclareRobustCommand{\keyword}[1]{\mbox{\texttt{#1}}}
 % variables
-\newcommand{\var}[1]{\ensuremath{\mathrm{\mathit{#1}}}}
+\DeclareRobustCommand{\var}[1]{\ensuremath{\mathrm{\mathit{#1}}}}
 % option
-\newcommand{\opt}[1]{\mbox{\textrm{[}#1\textrm{]}}}
-\newcommand{\optlong}[1]{\textrm{[}#1\textrm{]}}
+\DeclareRobustCommand{\opt}[1]{\mbox{\textrm{[}#1\textrm{]}}}
+\DeclareRobustCommand{\optlong}[1]{\textrm{[}#1\textrm{]}}
 % alternatives
-\newcommand{\alt}[1]{\textrm{(} #1 \textrm{)}}
-\newcommand{\asep}{$|$\xspace}
+\DeclareRobustCommand{\alt}[1]{\textrm{(} #1 \textrm{)}}
+\DeclareRobustCommand{\asep}{$|$\xspace}
 % variant
 % \rawvariant is required, as the command is changed during the
 % essyntax environment
-\newcommand{\rawvariant}[1]{\mbox{\textnormal{(#1)}}\xspace}
-\newcommand{\variant}[1]{\rawvariant{#1}}
-\newcommand{\fmark}[1]{%
+\DeclareRobustCommand{\rawvariant}[1]{\mbox{\textnormal{(#1)}}\xspace}
+\DeclareRobustCommand{\variant}[1]{\rawvariant{#1}}
+\DeclareRobustCommand{\fmark}[1]{%
   \raisebox{1ex}{%
     \textrm{\footnotesize #1}%
   }%
 }
 % feature
-\newcommand{\feature}[1]{\texttt{\MakeUppercase{#1}}}
+%\DeclareRobustCommand{\feature}[1]{\texttt{\MakeUppercase{#1}}}
+\DeclareRobustCommand{\feature}[1]{\texttt{\MakeUppercase{#1}}}
 
-\newcommand{\require}[2]{%
+\DeclareRobustCommand{\require}[2]{%
   \mbox{#2\,\fmark{#1}}%
 }
-\newcommand{\required}[2][]{%
+\DeclareRobustCommand{\required}[2][]{%
   \ifthenelse{\equal{#1}{}}{#2}{%
     \mbox{\fmark{#1}\,\feature{#2}}%
   }
@@ -247,13 +248,13 @@ index=totoc,                    % add the index to the TOC
 %%% Declare new features/commands/analyze subcommands
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Feature declaration
-\newcommand{\newfeature}[1]{%
+\DeclareRobustCommand{\newfeature}[1]{%
   \index{features!#1|mainindex}%
   \hypertarget{#1}{\texttt{\textbf{#1}}}%
 }
 
 % Create label and index entries for an Espresso tcl command
-\newcommand{\newescommand}[2][NONE]{%
+\DeclareRobustCommand{\newescommand}[2][NONE]{%
   \ifthenelse{\equal{#1}{NONE}}%
   {\label{tcl:#2}}%
   {\label{tcl:#1}}%
@@ -262,7 +263,7 @@ index=totoc,                    % add the index to the TOC
 }
 
 % Create index entries for analysis functions
-\newcommand{\analyzeindex}[1]{%
+\DeclareRobustCommand{\analyzeindex}[1]{%
   \index{#1|mainindex}%
   \index{analysis!#1|mainindex}%
 }

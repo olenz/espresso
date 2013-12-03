@@ -575,10 +575,10 @@ AC_MSG_CHECKING([whether the variable MYCONFIG is set])
 AS_IF([test "x$MYCONFIG" != "x"], [
   AC_MSG_RESULT(yes)
   AC_MSG_CHECKING([whether file $MYCONFIG exists])
-  if ! test -f $MYCONFIG; then
+  AS_IF([! test -f $MYCONFIG], [
     AC_MSG_RESULT(no)
     AC_MSG_ERROR([MYCONFIG file $MYCONFIG does not exist!])
-  fi
+  ])
 ],[
   AC_MSG_RESULT(no)
   MYCONFIG="myconfig.hpp"

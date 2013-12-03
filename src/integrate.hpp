@@ -18,8 +18,8 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 */
-#ifndef INTEGRATE_H
-#define INTEGRATE_H
+#ifndef _INTEGRATE_HPP
+#define _INTEGRATE_HPP
 
 /** \file integrate.hpp    Molecular dynamics integrator.
  *

@@ -312,8 +312,13 @@ void updatePartCfg(int bonds_flag)
   else
     mpi_get_particles(partCfg,&partCfg_bl);
 
-  for(j=0; j<n_total_particles; j++)
-    unfold_position(partCfg[j].r.p,partCfg[j].l.i);
+  for(j=0; j<n_total_particles; j++){
+#ifdef LEES_EDWARDS
+    unfold_position(partCfg[j].r.p, partCfg[j].m.v, partCfg[j].l.i);
+#else
+    unfold_position(partCfg[j].r.p, partCfg[j].l.i);
+#endif
+  }
   partCfgSorted = 0;
 #ifdef VIRTUAL_SITES
   if ((sortPartCfg()==0)||(update_mol_pos_cfg()==0)){
@@ -506,11 +511,12 @@ Particle *move_indexed_particle(ParticleList *dl, ParticleList *sl, int i)
     //fprintf(stderr, "%d: m_i_p: update loc_part entry for moved particle (id %d)\n",this_node,dst->p.identity);
     local_particles[dst->p.identity] = dst;
   }
+
   if ( src != end ) {
     //fprintf(stderr, "%d: m_i_p: copy end particle in source list (id %d)\n",this_node,end->p.identity);
     memcpy(src, end, sizeof(Particle));
-
   }
+
   if (realloc_particlelist(sl, --sl->n)) {
     //fprintf(stderr, "%d: m_i_p: update source list after realloc\n",this_node);
     update_local_particles(sl); }
@@ -1192,7 +1198,13 @@ void local_place_particle(int part, double p[3], int _new)
   pp[0] = p[0];
   pp[1] = p[1];
   pp[2] = p[2];
+
+#ifdef LEES_EDWARDS
+  double vv[3]={0.,0.,0.};
+  fold_position(pp, vv, i);
+#else
   fold_position(pp, i);
+#endif
   
   if (_new) {
     /* allocate particle anew */
@@ -1217,6 +1229,12 @@ void local_place_particle(int part, double p[3], int _new)
 
   PART_TRACE(fprintf(stderr, "%d: local_place_particle: got particle id=%d @ %f %f %f\n",
 		     this_node, part, p[0], p[1], p[2]));
+
+#ifdef LEES_EDWARDS
+  pt->m.v[0] += vv[0];  
+  pt->m.v[1] += vv[1];  
+  pt->m.v[2] += vv[2];  
+#endif
 
   memcpy(pt->r.p, pp, 3*sizeof(double));
   memcpy(pt->l.i, i, 3*sizeof(int));

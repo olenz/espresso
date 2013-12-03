@@ -48,6 +48,7 @@ libEspressoTcl_la_SOURCES = \
 	interaction_data_tcl.cpp interaction_data_tcl.hpp \
 	lb-boundaries_tcl.cpp lb-boundaries_tcl.hpp \
 	lb_tcl.cpp lb_tcl.hpp \
+	lees_edwards_tcl.cpp lees_edwards_tcl.hpp \
 	metadynamics_tcl.cpp metadynamics_tcl.hpp \
 	nemd_tcl.cpp \
 	mol_cut_tcl.cpp mol_cut_tcl.hpp \
@@ -101,6 +102,7 @@ libEspressoTcl_la_SOURCES += \
 	angle_cossquare_tcl.cpp angle_cossquare_tcl.hpp \
 	angledist_tcl.cpp angledist_tcl.hpp \
 	dihedral_tcl.cpp dihedral_tcl.hpp \
+	dihedralcos_tcl.cpp dihedralcos_tcl.hpp \
 	endangledist_tcl.cpp endangledist_tcl.hpp \
 	fene_tcl.cpp fene_tcl.hpp \
 	harmonic_tcl.cpp harmonic_tcl.hpp \

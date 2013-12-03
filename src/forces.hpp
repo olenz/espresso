@@ -18,8 +18,8 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 */
-#ifndef _FORCES_H
-#define _FORCES_H
+#ifndef _FORCES_HPP
+#define _FORCES_HPP
 /** \file forces.hpp Force calculation. 
  *
  *  \todo Preprocessor switches for all forces (Default: everything is turned on).
@@ -71,6 +71,7 @@
 #include "angle_cossquare.hpp"
 #include "angledist.hpp"
 #include "dihedral.hpp"
+#include "dihedralcos.hpp"
 #include "debye_hueckel.hpp"
 #include "endangledist.hpp"
 #include "reaction_field.hpp"
@@ -538,6 +539,9 @@ inline void add_bonded_force(Particle *p1)
 #endif
     case BONDED_IA_DIHEDRAL:
       bond_broken = calc_dihedral_force(p1, p2, p3, p4, iaparams, force, force2, force3);
+      break;
+    case BONDED_IA_DIHEDRALCOS:
+      bond_broken = calc_dihedralcos_force(p1, p2, p3, p4, iaparams, force, force2, force3);
       break;
 #ifdef BOND_CONSTRAINT
     case BONDED_IA_RIGID_BOND:

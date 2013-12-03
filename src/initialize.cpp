@@ -109,7 +109,7 @@ void on_program_start()
   init_node_grid();
   /* calculate initial minimimal number of cells (see tclcallback_min_num_cells) */
   min_num_cells = calc_processor_min_num_cells();
-
+  
   /* initially go for domain decomposition */
   dd_topology_init(&local_cells);
 
@@ -677,6 +677,11 @@ void on_parameter_change(int field)
     on_temperature_change();
     reinit_thermo = 1;
     break;
+#ifdef LEES_EDWARDS
+  case FIELD_LEES_EDWARDS_OFFSET:
+    lees_edwards_step_boundaries();
+    break;
+#endif
   case FIELD_TIMESTEP:
 #ifdef LB_GPU
     if(this_node == 0) {

@@ -51,6 +51,7 @@
 #include "nsquare.hpp"
 #include "domain_decomposition.hpp"
 #include "layered.hpp"
+#include "lees_edwards.hpp"
 #include "nemd.hpp"
 #include "rattle.hpp"
 #include "errorhandling.hpp"
@@ -201,7 +202,7 @@ void integrate_vv(int n_steps)
 #endif
 
    force_calc();
-   
+
    //VIRTUAL_SITES distribute forces
 #ifdef VIRTUAL_SITES
    ghost_communicator(&cell_structure.collect_ghost_force_comm);
@@ -271,6 +272,10 @@ void integrate_vv(int n_steps)
       propagate_vel();  propagate_pos(); }
     else
       propagate_vel_pos();
+
+#ifdef THERMOSTAT_RESCALING
+    thermostat_rescale();
+#endif
 
 #ifdef BOND_CONSTRAINT
     /**Correct those particle positions that participate in a rigid/constrained bond */
@@ -724,7 +729,8 @@ void propagate_vel()
 }
 
 void propagate_pos()
-{
+{  
+    
   INTEG_TRACE(fprintf(stderr,"%d: propagate_pos:\n",this_node));
   if(integ_switch == INTEG_METHOD_NPT_ISO)
     /* Special propagator for NPT ISOTROPIC */
@@ -771,8 +777,8 @@ void propagate_vel_pos()
   Particle *p;
   int c, i, j, np;
 
-  INTEG_TRACE(fprintf(stderr,"%d: propagate_vel_pos:\n",this_node));
-
+  INTEG_TRACE(fprintf(stderr,"%d: propagate_vel_pos:\n",this_node));   
+    
 #ifdef ADDITIONAL_CHECKS
   db_max_force = db_max_vel = 0;
   db_maxf_id = db_maxv_id = -1;
@@ -809,13 +815,45 @@ void propagate_vel_pos()
       propagate_omega_quat_particle(&p[i]);
 #endif
 
+#ifdef LEES_EDWARDS
+      /* test for crossing of a y-pbc: requires adjustment of velocity.*/
+      {
+                    int   b1, delta_box;
+                    b1           = (int)floor( p[i].r.p[1]*box_l_i[1]);
+                    delta_box    = b1 - (int)floor(( p[i].r.p[1] - p[i].m.v[1])*box_l_i[1] );
+                    if( delta_box != 0 ){  
+                         p[i].m.v[0]     -= delta_box * lees_edwards_rate;   
+                         p[i].r.p[0]     -= delta_box * lees_edwards_offset; 
+                         p[i].r.p[1]     -= delta_box * box_l[1];
+                         p[i].l.i[1]     += delta_box; 
+                         while( p[i].r.p[1] >  box_l[1] ) {p[i].r.p[1] -= box_l[1]; p[i].l.i[1]++;}
+                         while( p[i].r.p[1] <  0.0 )      {p[i].r.p[1] += box_l[1]; p[i].l.i[1]--;}
+                         resort_particles = 1;
+                    }
+                    /* Branch prediction on most systems should mean there is minimal cost here */ 
+                    while( p[i].r.p[0] >  box_l[0] ) {p[i].r.p[0] -= box_l[0]; p[i].l.i[0]++;}
+                    while( p[i].r.p[0] <  0.0 )      {p[i].r.p[0] += box_l[0]; p[i].l.i[0]--;}
+                    while( p[i].r.p[2] >  box_l[2] ) {p[i].r.p[2] -= box_l[2]; p[i].l.i[2]++;}
+                    while( p[i].r.p[2] <  0.0 )      {p[i].r.p[2] += box_l[2]; p[i].l.i[2]--;}
+      }
+#endif
+
       /* Verlet criterion check */
-      if(distance2(p[i].r.p,p[i].l.p_old) > skin2 ) resort_particles = 1;
+      if(SQR(p[i].r.p[0]-p[i].l.p_old[0]) 
+        +SQR(p[i].r.p[1]-p[i].l.p_old[1])
+        +SQR(p[i].r.p[2]-p[i].l.p_old[2]) > skin2) 
+            resort_particles=1;
+
+
     }
   }
 
-  announce_resort_particles();
+#ifdef LEES_EDWARDS /* would be nice to be more refined about this */
+  resort_particles = 1;
+#endif
 
+  announce_resort_particles();
+  
 #ifdef ADDITIONAL_CHECKS
   force_and_velocity_display();
 #endif

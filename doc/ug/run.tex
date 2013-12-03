@@ -78,6 +78,28 @@ box-length \var{L_\mathrm{new}}, and isotropically adjusts the
 particles coordinates as well. The function returns the new volume of
 the deformed simulation box.
 
+\section{\texttt{lees_edwards_offset}: Applying shear between periodic images}
+\label{sec:lees_edwards}
+\index{Lees-Edwards Boundaries|mainindex}
+
+\newescommand[lees-edwards-offset]{lees_edwards_offset}
+
+\begin{essyntax}
+  \variant{1} lees_edwards_offset \var{offset_\mathrm{new}}  
+  \begin{features}
+    \required{LEES_EDWARDS}
+  \end{features}
+
+\end{essyntax}
+
+Lees-Edwards Periodic Boundary Conditions are used to impose a shear flow of speed $\gamma$ on the system relative to its periodic images by moving the PBC wrap such that:  $v\_x_{unfolded} =  v\_x_{folded} + \gamma y_{img}$ (where $v\_x_{unfolded}$ is the $x$-component of the velocity of an image particle outside the main simulation box, and $y_{img}$ is the count of PBC boundaries crossed in the $y$-direction).  The absolute value of the shear offset is set using this command; with the shear flow rate $\gamma$ then determined internally as the difference between successive offsets.  A typical usage would be to integrate by 1 md timestep and then to increase the offset to a new value using this command; this usage pattern is intended to allow for arbitrary shear flow time profiles, such as an oscillatory shear.
+
+When the shear flow rate $\gamma$ is non-zero, the Langevin thermostat will treat $v\_x_{folded}$ as being relative to a flow field which changes smoothly from $-\gamma/2$ at the bottom of the periodic box to $\gamma/2$ at the top.  This is provided more for the convenience of equilibration of a flowing system than as a serious physical model - correct thermostatting of systems under shear flow remains a matter of discussion.  
+
+The function returns the old value of the offset.
+
+Use caution when writing folded coordinates (see Section~\ref{analyze:folded}) for Lees-Edwards trajectories, as imaging in space also alters the velocity. 
+
 \section{Stopping particles}
 
 Use the following functions, also see Section~\ref{sec:Galilei}:
@@ -200,43 +222,53 @@ networking, but the number of processors can be smaller than the number of tempe
 
 \subsubsection{Introduction}
 
-The basic idea of parallel tempering is to run $N$ simulations with configurations $C_i$ in
-parallel at different temperatures $T_1<T_2<\hdots<T_N$, and exchange configurations between
-neighboring temperatures. This is done according to the Boltzmann rule, \ie the swap probability
-for two configurations A and B at two different parameters $T_1$ and $T_2$ is given by
+The basic idea of parallel tempering is to run $N$ simulations with
+configurations $C_i$ in parallel at different temperatures
+$T_1<T_2<\hdots<T_N$, and exchange configurations between neighboring
+temperatures. This is done according to the Boltzmann rule, \ie the
+swap probability for two configurations A and B at two different
+parameters $T_1$ and $T_2$ is given by
 \begin{equation}
   \label{eq:ptacceptance}
   \min\left(1,\exp -\left[\beta(T_2)U_\text{A}(T_2) + \beta(T_1)U_\text{B}(T_1) -
     \beta(T_1)U_\text{A}(T_1) - \beta(T_2)U_\text{B}(T_2)\right]\right),
 \end{equation}
-where $U_C(T)$ denotes the potential energy of configuration $C$ at parameter $T$ and $\beta(T)$
-the corresponding inverse temperature. If $T$ is the temperature, $U_C$ is indepedent of $T$, and
-$\beta(T)=1/(k_BT)$. In this case, the swap probability reduces to the textbook result
+where $U_C(T)$ denotes the potential energy of configuration $C$ at
+parameter $T$ and $\beta(T)$ the corresponding inverse temperature. If
+$T$ is the temperature, $U_C$ is indepedent of $T$, and
+$\beta(T)=1/(k_BT)$. In this case, the swap probability reduces to the
+textbook result
 \begin{equation}
   \min(1,\exp -\left[\left(1/T_2 - 1/T_1\right)\left(U_\text{A} - U_\text{B}\right)/k_B\right].
 \end{equation}
-However, $T$ can also be chosen to be any other parameter, for example the Bjerrum length, \ie the
-the strength of the electrostatic interaction. In this case, $\beta(T)=\beta$ is a constant, but
-the energy $U_C(T)$ of a configuration $C$ depends on $T$, and one needs the full
-expression~\eqref{eq:ptacceptance}. \es{} always uses this expression.
+However, $T$ can also be chosen to be any other parameter, for example
+the Bjerrum length, \ie the the strength of the electrostatic
+interaction. In this case, $\beta(T)=\beta$ is a constant, but the
+energy $U_C(T)$ of a configuration $C$ depends on $T$, and one needs
+the full expression~\eqref{eq:ptacceptance}. \es{} always uses this
+expression.
 
-In practice, one does not swap configurations, but temperatures, simply because exchanging
-temperatures requires much less communication than exchanging the properties of all particles.
+In practice, one does not swap configurations, but temperatures,
+simply because exchanging temperatures requires much less
+communication than exchanging the properties of all particles.
 
-Th \es{} implementation of parallel tempering repeatedly propagates all configurations $C_i$ and
-tries to swap neighboring temperatures. After the first propagation, the routine attempts to swap
-temperatures $T_1$ and $T_2$, $T_3$ and $T_4$, and so on. After the second propagation, swaps are
-attempted between temperatures $T_2$ and $T_3$, $T_4$ and $T_5$, and so on.  For the propagation,
-parallel tempering relies on a user routine; typically, one will simply propagate the configuration
-by a few 100 MD time steps.
+Th \es{} implementation of parallel tempering repeatedly propagates
+all configurations $C_i$ and tries to swap neighboring
+temperatures. After the first propagation, the routine attempts to
+swap temperatures $T_1$ and $T_2$, $T_3$ and $T_4$, and so on. After
+the second propagation, swaps are attempted between temperatures $T_2$
+and $T_3$, $T_4$ and $T_5$, and so on.  For the propagation, parallel
+tempering relies on a user routine; typically, one will simply
+propagate the configuration by a few 100 MD time steps.
 
 \subsubsection{Details on usage and an example}
 
-The parallel tempering code has to be loaded explicitely by {\tt source
-  "scripts/parallel_tempering.tcl"} from the Espresso directory. To make use of the parallel
-tempering tool, one needs to implement three methods: the propagation, the energy calculation and
-an initialization routine for a configuration. A typical initialization routine will look roughly
-like this:
+The parallel tempering code has to be loaded explicitely by
+\texttt{source "scripts/parallel_tempering.tcl"} from the \es
+directory. To make use of the parallel tempering tool, one needs to
+implement three methods: the propagation, the energy calculation and
+an initialization routine for a configuration. A typical
+initialization routine will look roughly like this:
 \begin{verbatim}
 proc init {id temp} {
   # create output files for temperature temp

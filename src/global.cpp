@@ -27,6 +27,7 @@
 #include "domain_decomposition.hpp"
 #include "dpd.hpp"
 #include "layered.hpp"
+#include "lees_edwards.hpp"
 #include "npt.hpp"
 #include "tuning.hpp"
 #include "adresso.hpp"

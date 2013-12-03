@@ -23,6 +23,11 @@
 #include "pressure.hpp"
 #include "rotation.hpp"
 
+#ifdef LEES_EDWARDS
+#define fold_position(x,i) fold_position(x,v_le,i)
+#endif
+
+
 observable** observables = 0;
 int n_observables = 0; 
 
@@ -281,6 +286,10 @@ int observable_density_profile(void* pdata_, double* A, unsigned int n_A) {
   int img[3];
   IntList* ids;
   profile_data* pdata;
+#ifdef LEES_EDWARDS
+  double v_le[3];
+#endif
+  
   sortPartCfg();
   pdata=(profile_data*) pdata_;
   ids=pdata->id_list;
@@ -487,6 +496,10 @@ int observable_radial_density_profile(void* pdata_, double* A, unsigned int n_A)
   int img[3];
   double bin_volume;
   IntList* ids;
+#ifdef LEES_EDWARDS
+  double v_le[3];
+#endif
+  
   sortPartCfg();
   radial_profile_data* pdata;
   pdata=(radial_profile_data*) pdata_;
@@ -526,6 +539,10 @@ int observable_radial_flux_density_profile(void* pdata_, double* A, unsigned int
   int img[3];
   double bin_volume;
   IntList* ids;
+#ifdef LEES_EDWARDS
+  double v_le[3];
+#endif
+
   sortPartCfg();
   radial_profile_data* pdata;
   pdata=(radial_profile_data*) pdata_;
@@ -574,6 +591,10 @@ int observable_flux_density_profile(void* pdata_, double* A, unsigned int n_A) {
   int img[3];
   double bin_volume;
   IntList* ids;
+#ifdef LEES_EDWARDS
+  double v_le[3];
+#endif
+
   sortPartCfg();
   profile_data* pdata;
   pdata=(profile_data*) pdata_;

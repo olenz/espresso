@@ -41,6 +41,11 @@
 /** Granularity of the verlet list */
 #define LIST_INCREMENT 20
 
+#ifdef VERLET_DEBUG
+FILE *verlet_log = NULL;
+FILE *verlet_log2 = NULL;
+#endif
+
 /*****************************************
  * Variables 
  *****************************************/
@@ -132,12 +137,14 @@ void build_verlet_lists()
 
       /* Loop cell particles */
       for(i=0; i < np1; i++) {
-	j_start = 0;
-	/* Tasks within cell: store old position, avoid double counting */
-	if(n == 0) {
-	   memcpy(p1[i].l.p_old, p1[i].r.p, 3*sizeof(double));
-	   j_start = i+1;
-	}
+
+	    j_start = 0;
+	    /* Tasks within cell: store old position, avoid double counting */
+	    if(n == 0) {
+	        memcpy(p1[i].l.p_old, p1[i].r.p, 3*sizeof(double));
+	        j_start = i+1;
+	    }
+
 	/* Loop neighbor cell particles */
 	for(j = j_start; j < np2; j++) {
 #ifdef EXCLUSIONS
@@ -204,7 +211,18 @@ void build_verlet_lists_and_calc_verlet_ia()
   Particle *p1, *p2;
   PairList *pl;
   double dist2, vec21[3];
- 
+
+#ifdef VERLET_DEBUG 
+  if( verlet_log == NULL ){
+        char vLogName[64];
+        sprintf(vLogName, "verlet_part%i.dat", this_node);
+        verlet_log = fopen(vLogName, "w");
+        sprintf(vLogName, "verlet_list%i.dat", this_node);
+        verlet_log2 = fopen(vLogName, "w");
+  }
+#endif
+
+
 #ifdef VERLET_DEBUG 
   int estimate, sum=0;
   double max_range_nonbonded2 = SQR(max_cut_nonbonded + skin);
@@ -216,20 +234,33 @@ void build_verlet_lists_and_calc_verlet_ia()
   if (!dd.use_vList) { fprintf(stderr, "%d: build_verlet_lists, but use_vList == 0\n", this_node); errexit(); }
 #endif
  
+#ifdef LEES_EDWARDS_DEBUG
+    int node_total_n;
+    node_total_n = 0;
+#endif
+
   /* Loop local cells */
   for (c = 0; c < local_cells.n; c++) {
-    VERLET_TRACE(fprintf(stderr,"%d: cell %d with %d neighbors\n",this_node,c, dd.cell_inter[c].n_neighbors));
 
     cell = local_cells.cell[c];
     p1   = cell->part;
     np1  = cell->n;
-    
+
+    VERLET_TRACE(fprintf(stderr,"%d: cell %d with %d neighbors and %i particle(s)\n",this_node,c, dd.cell_inter[c].n_neighbors, np1));
+
+#ifdef LEES_EDWARDS_DEBUG
+    for(i=0; i < np1; i++) {
+        p1[i].r.neighbor_count_out = 0;    
+    }
+#endif
+
     /* Loop cell neighbors */
     for (n = 0; n < dd.cell_inter[c].n_neighbors; n++) {
       neighbor = &dd.cell_inter[c].nList[n];
       p2  = neighbor->pList->part;
       np2 = neighbor->pList->n;
-      VERLET_TRACE(fprintf(stderr,"%d: neighbor %d contains %d parts\n",this_node,n,np2));
+      VERLET_TRACE(fprintf(stderr,"%d: neighbor %d at %f %f %f contains %d parts\n",
+                   this_node,n,neighbor->my_pos[0],neighbor->my_pos[1],neighbor->my_pos[2],np2));
       /* init pair list */
       pl  = &neighbor->vList;
       pl->n = 0;
@@ -244,8 +275,15 @@ void build_verlet_lists_and_calc_verlet_ia()
 #endif
 	  memcpy(p1[i].l.p_old, p1[i].r.p, 3*sizeof(double));
 	  j_start = i+1;
+
+#ifdef VERLET_DEBUG
+     fprintf(verlet_log, "%i %f %f %f %f\n",p1[i].p.identity,p1[i].r.p[0],p1[i].r.p[1],p1[i].r.p[2],sim_time);
+#endif
+
 	}
 	
+                   
+
 	/* no interaction set, no need for particle pairs */
 	if (max_cut_nonbonded == 0.0)
 	  continue;
@@ -260,9 +298,34 @@ void build_verlet_lists_and_calc_verlet_ia()
 
 	  VERLET_TRACE(fprintf(stderr,"%d: pair %d %d has distance %f\n",this_node,p1[i].p.identity,p2[j].p.identity,sqrt(dist2)));
 
-	  if(dist2 <= SQR(get_ia_param(p1[i].p.type, p2[j].p.type)->max_cut + skin)) {
+#ifdef VERLET_DEBUG
+if( (int)(sim_time/time_step) % 100 == 0 && dist2 <= SQR(get_ia_param(p1[i].p.type, p2[j].p.type)->max_cut + skin)){     
+
+        double imaged[3];
+
+        imaged[0] = -vec21[0];
+        imaged[1] = -vec21[1];
+        imaged[2] = -vec21[2];
+
+        while( imaged[0] + p1[i].r.p[0] > box_l[0]) imaged[0] -= box_l[0];
+        while( imaged[0] + p1[i].r.p[0] < 0.0)      imaged[0] += box_l[0];
+
+
+        fprintf(verlet_log2, "%i %i %f %f %f %f %f %f %f %.12f %i %i %f %f %f\n",p1[i].p.identity,p2[j].p.identity,
+                                                           p1[i].r.p[0],p1[i].r.p[1],p1[i].r.p[2],
+                                                           -vec21[0],
+                                                           -vec21[1],
+                                                           -vec21[2],sqrt(dist2),sim_time,c,n,neighbor->my_pos[0],neighbor->my_pos[1],neighbor->my_pos[2]);
+}
+#endif
+
+
+	  if(  dist2 <= SQR(get_ia_param(p1[i].p.type, p2[j].p.type)->max_cut + skin)) {
+
+         
 	    ONEPART_TRACE(if(p1[i].p.identity==check_id) fprintf(stderr,"%d: OPT: Verlet Pair %d %d (Cells %d,%d %d,%d dist %f)\n",this_node,p1[i].p.identity,p2[j].p.identity,c,i,n,j,sqrt(dist2)));
 	    ONEPART_TRACE(if(p2[j].p.identity==check_id) fprintf(stderr,"%d: OPT: Verlet Pair %d %d (Cells %d %d dist %f)\n",this_node,p1[i].p.identity,p2[j].p.identity,c,n,sqrt(dist2)));
+
 
 	    add_pair(pl, &p1[i], &p2[j]);
 	    /* calc non bonded interactions */
@@ -275,8 +338,16 @@ void build_verlet_lists_and_calc_verlet_ia()
       VERLET_TRACE(fprintf(stderr,"%d: neighbor %d has %d pairs\n",this_node,n,pl->n));
       VERLET_TRACE(sum += pl->n);
     }
+
   }
 
+
+#ifdef VERLET_DEBUG
+if( (int)(sim_time/time_step) % 100 == 0 ){
+fprintf(verlet_log, "\n\n");
+fprintf(verlet_log2, "\n\n");
+}
+#endif
   VERLET_TRACE(fprintf(stderr,"%d: total number of interaction pairs: %d (should be around %d)\n",this_node,sum,estimate));
  
   rebuild_verletlist = 0;

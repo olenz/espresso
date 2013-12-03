@@ -21,8 +21,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
-
-
 #include "global.hpp"
 #include "adresso_tcl.hpp"
 #include "binary_file_tcl.hpp"
@@ -36,6 +34,7 @@
 #include "integrate_tcl.hpp"
 #include "interaction_data_tcl.hpp"
 #include "lb_tcl.hpp"
+#include "lees_edwards_tcl.hpp"
 #include "lj_tcl.hpp"
 #include "maggs_tcl.hpp"
 #include "metadynamics_tcl.hpp"
@@ -56,7 +55,6 @@
 #include "ghmc_tcl.hpp"
 #include "tuning.hpp"
 #include "electrokinetics_tcl.hpp"
-
 
 #ifdef TK
 #include <tk.h>
@@ -107,6 +105,9 @@ int tclcommand_part(ClientData data, Tcl_Interp *interp,
 int tclcommand_uwerr(ClientData data, Tcl_Interp *interp, int argc, char *argv[]);
 /** callback for \ref timing_samples. See \ref tuning_tcl.cpp */
 int tclcallback_timings(Tcl_Interp *interp, void *data);
+
+/** Tcl command to alter the shear offset between periodic images. */
+int tclcommand_lees_edwards_offset(ClientData data, Tcl_Interp *interp, int argc, char **argv);
 
 /// from \ref scriptsdir.cpp
 char *get_default_scriptsdir();
@@ -212,6 +213,10 @@ static void register_tcl_commands(Tcl_Interp* interp) {
 #ifdef COLLISION_DETECTION
   REGISTER_COMMAND("on_collision", tclcommand_on_collision);
 #endif
+
+/* #ifdef LEES_EDWARDS Register the command even if not implemented, so it can return an informative error*/ 
+  REGISTER_COMMAND("lees_edwards_offset", tclcommand_lees_edwards_offset);
+/* #endif */
 #ifdef CATALYTIC_REACTIONS
   REGISTER_COMMAND("reaction", tclcommand_reaction);
 #endif

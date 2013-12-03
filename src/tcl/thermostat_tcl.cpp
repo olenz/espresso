@@ -113,6 +113,82 @@ int tclcommand_thermostat_parse_langevin(Tcl_Interp *interp, int argc, char **ar
   return (TCL_OK);
 }
 
+#ifdef THERMOSTAT_RESCALING
+int tclcommand_thermostat_parse_rescaling(Tcl_Interp *interp, int argc, char **argv) 
+{
+  double temp;
+  double interval;
+
+  /* check number of arguments */
+  if (argc < 4) {
+    Tcl_AppendResult(interp, "wrong # args:  should be \n\"",
+		     argv[0]," ",argv[1]," <temp> <interval>\"", (char *)NULL);
+    return (TCL_ERROR);
+  }
+
+  /* check argument types */
+  if ( !ARG_IS_D(2, temp) || !ARG_IS_D(3, interval)) {
+    Tcl_AppendResult(interp, argv[0]," needs two DOUBLE arguments", (char *)NULL);
+    return (TCL_ERROR);
+  }
+
+  if (temp < 0) {
+    Tcl_AppendResult(interp, "temperature must be positive", (char *)NULL);
+    return (TCL_ERROR);
+  }
+  if (interval < 0) {
+    Tcl_AppendResult(interp, "rescaling period must be positive", (char *)NULL);
+    return (TCL_ERROR);
+  }
+
+  /* broadcast parameters */
+  temperature               = temp;
+  thermo_rescaling_interval = interval;
+  thermo_switch             = ( thermo_switch & ~THERMO_LANGEVIN ); /* turn off Langevin*/
+  thermo_switch             = ( thermo_switch |  THERMO_RESCALING );
+  mpi_bcast_parameter(FIELD_THERMO_SWITCH);
+  mpi_bcast_parameter(FIELD_TEMPERATURE);
+  mpi_bcast_parameter(FIELD_THERMO_RESCALING_INTERVAL);
+  return (TCL_OK);
+}
+#endif
+
+#ifdef THERMOSTAT_Z_ONLY
+int tclcommand_thermostat_parse_z_only(Tcl_Interp *interp, int argc, char **argv) 
+{
+
+  /* check number of arguments */
+  if (argc < 3) {
+    Tcl_AppendResult(interp, "wrong # args:  should be \n\"",
+		     argv[0]," ",argv[1]," <on/off>\"", (char *)NULL);
+    return (TCL_ERROR);
+  }
+
+  /* check state */
+  if(  0 == (thermo_switch & THERMO_LANGEVIN) 
+    && 0 == (thermo_switch & THERMO_RESCALING)){
+      Tcl_AppendResult(interp, argv[0]," ",argv[1],
+         " Cannot set thermostat_z_only unless rescaling or langevin thermostat is turned on first.", (char *)NULL);
+  }
+
+  /*  z_only is switched on or off*/
+  if ( ARG_IS_S(2, "on") ) {
+    thermo_switch = ( thermo_switch |  THERMO_Z_ONLY );
+  }else if( ARG_IS_S(2, "off") ){
+    thermo_switch = ( thermo_switch & ~THERMO_Z_ONLY );
+  }else {
+    Tcl_AppendResult(interp, argv[0]," ",argv[1],
+         " needs one argument, value 'on' or 'off'.", (char *)NULL);
+    return (TCL_ERROR);
+  }
+
+  /* broadcast parameters */
+  mpi_bcast_parameter(FIELD_THERMO_SWITCH);
+
+  return (TCL_OK);
+}
+#endif
+
 #ifdef NPT
 int tclcommand_thermostat_parse_npt_isotropic(Tcl_Interp *interp, int argc, char **argv) 
 {
@@ -214,7 +290,7 @@ int tclcommand_thermostat_parse_ghmc(Tcl_Interp *interp, int argc, char **argv)
 
 int tclcommand_thermostat_print_all(Tcl_Interp *interp)
 {
-  char buffer[TCL_DOUBLE_SPACE];
+  char buffer[3*TCL_DOUBLE_SPACE];
   /* thermostat not initialized */
   if(temperature == -1.0) {
     Tcl_AppendResult(interp,"{ not initialized } ", (char *)NULL);
@@ -232,6 +308,10 @@ int tclcommand_thermostat_print_all(Tcl_Interp *interp)
     Tcl_PrintDouble(interp, temperature, buffer);
     Tcl_AppendResult(interp,"{ langevin ",buffer, (char *)NULL);
     Tcl_PrintDouble(interp, langevin_gamma, buffer);
+#ifdef THERMOSTAT_Z_ONLY
+    if(  thermo_switch & THERMO_Z_ONLY )
+      Tcl_AppendResult(interp, " z_only");
+#endif
     Tcl_AppendResult(interp," ",buffer," } ", (char *)NULL);
   }
     
@@ -294,6 +374,20 @@ int tclcommand_thermostat_print_all(Tcl_Interp *interp)
     Tcl_AppendResult(interp,"{ inter_dpd ",buffer, " } ", (char *)NULL);
   }
 #endif
+
+#ifdef THERMOSTAT_RESCALING
+  if(thermo_switch & THERMO_RESCALING ) {
+    Tcl_PrintDouble(interp, temperature, buffer);
+    Tcl_AppendResult(interp,"{ velocity_rescaling ",buffer, (char *)NULL);
+    Tcl_PrintDouble(interp, thermo_rescaling_interval, buffer);
+#ifdef THERMOSTAT_Z_ONLY
+    if(  thermo_switch & THERMO_Z_ONLY )
+      Tcl_AppendResult(interp, " z_only");
+#endif
+    Tcl_AppendResult(interp," ",buffer," } ", (char *)NULL);
+  }
+#endif
+
   return (TCL_OK);
 }
 
@@ -314,6 +408,12 @@ int tclcommand_thermostat_print_usage(Tcl_Interp *interp, int argc, char **argv)
 #endif
 #ifdef LB_GPU
   Tcl_AppendResult(interp, "'", argv[0], " set lb_gpu <temperature>" , (char *)NULL);
+#endif
+#ifdef THERMOSTAT_Z_ONLY
+  Tcl_AppendResult(interp, "'", argv[0], " set z_only <on/off>' \n" , (char *)NULL);
+#endif
+#ifdef THERMOSTAT_RESCALING
+  Tcl_AppendResult(interp, "'", argv[0], " set velocity_rescaling <temp> <interval>' \n" , (char *)NULL);
 #endif
   return (TCL_ERROR);
 }
@@ -339,6 +439,10 @@ int tclcommand_thermostat(ClientData data, Tcl_Interp *interp, int argc, char **
     err = tclcommand_thermostat_parse_off(interp, argc, argv);
   else if ( ARG1_IS_S("langevin"))
     err = tclcommand_thermostat_parse_langevin(interp, argc, argv);
+#ifdef THERMOSTAT_Z_ONLY
+  else if ( ARG1_IS_S("z_only"))
+    err = tclcommand_thermostat_parse_z_only(interp, argc, argv);
+#endif
 #ifdef DPD
   else if ( ARG1_IS_S("dpd") )
     err = tclcommand_thermostat_parse_dpd(interp, argc, argv);
@@ -358,6 +462,10 @@ int tclcommand_thermostat(ClientData data, Tcl_Interp *interp, int argc, char **
 #ifdef GHMC
   else if ( ARG1_IS_S("ghmc") )
     err = tclcommand_thermostat_parse_ghmc(interp, argc, argv);
+#endif
+#ifdef THERMOSTAT_RESCALING
+  else if ( ARG1_IS_S("velocity_rescaling"))
+    err = tclcommand_thermostat_parse_rescaling(interp, argc, argv);
 #endif
   else {
     Tcl_AppendResult(interp, "Unknown thermostat ", argv[1], "\n", (char *)NULL);

@@ -18,8 +18,8 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 */
-#ifndef _UTILS_H
-#define _UTILS_H
+#ifndef _UTILS_HPP
+#define _UTILS_HPP
 /** \file utils.hpp
  *    Small functions that are useful not only for one modul.
 
@@ -32,8 +32,8 @@
 #include <cstdlib>
 #include <cstring>
 #include "config.hpp"
-#include "debug.hpp"
 #include "errorhandling.hpp"
+#include "debug.hpp"
 
 /*************************************************************/
 /** \name Mathematical, physical and chemical constants.     */
@@ -71,7 +71,7 @@
 
 /** Integer list. 
     Use the functions specified in list operations. */
-typedef struct {
+struct IntList {
   /** Dynamically allocated integer field. */
   int *e;
   /** number of used elements in the integer field. */
@@ -79,11 +79,11 @@ typedef struct {
   /** allocated size of the integer field. This value is ONLY changed
       in the routines specified in list operations ! */
   int max;
-} IntList;
+};
 
 /** Double list.
     Use the functions specified in list operations. */
-typedef struct {
+struct DoubleList {
   /** Dynamically allocated double field. */
   double *e;
   /** number of used elements in the double field. */
@@ -91,7 +91,7 @@ typedef struct {
   /** allocated size of the double field. This value is ONLY changed
       in the routines specified in list operations ! */
   int max;
-} DoubleList;
+};
 
 /*************************************************************/
 /** \name Dynamic memory allocation.                         */
@@ -856,26 +856,67 @@ inline void print_block(double *data, int start[3], int size[3], int dim[3], int
 /*************************************************************/
 /*@{*/
 
-/** returns the distance between two position. 
+#ifdef LEES_EDWARDS
+extern double box_l[3];
+extern double box_l_i[3];
+#endif
+
+/** returns the Euclidean distance between two position. 
  *  \param pos1 Position one.
  *  \param pos2 Position two.
 */
 inline double distance(double pos1[3], double pos2[3])
 {
+#ifdef LEES_EDWARDS
+  int y_img_count;
+  double dx;
+  
+  /* if there has been L-E imaging, then must use the nearest image */
+  y_img_count = (int)floor(pos1[1]*box_l_i[1]) - (int)floor(pos2[1]*box_l_i[1]);
+  dx          = pos1[0]-pos2[0];
+  if( y_img_count != 0 ){
+    while( dx > 0.5 * box_l[0] ) dx -= box_l[0];
+    while( dx <-0.5 * box_l[0] ) dx += box_l[0];
+  }
+  
+  return( sqrt(SQR(dx) 
+             + SQR(pos1[1]-pos2[1]) 
+             + SQR(pos1[2]-pos2[2]) ));
+  
+#else
   return sqrt( SQR(pos1[0]-pos2[0]) + SQR(pos1[1]-pos2[1]) + SQR(pos1[2]-pos2[2]) );
+#endif
 }
 
-/** returns the distance between two positions squared.
+/** returns the Euclidean distance between two positions squared.
  *  \param pos1 Position one.
  *  \param pos2 Position two.
 */
 inline double distance2(double pos1[3], double pos2[3])
 {
+#ifdef LEES_EDWARDS
+  int y_img_count;
+  double dx;
+  
+  /* if there has been L-E imaging, then must use the nearest image */
+  y_img_count = (int)floor(pos1[1]*box_l_i[1]) - (int)floor(pos2[1]*box_l_i[1]);
+  dx          = pos1[0]-pos2[0];
+  if( y_img_count != 0 ){
+    while( dx > 0.5 * box_l[0] ) dx -= box_l[0];
+    while( dx <-0.5 * box_l[0] ) dx += box_l[0];
+  }
+  
+  return( SQR(dx) 
+             + SQR(pos1[1]-pos2[1]) 
+             + SQR(pos1[2]-pos2[2]) );
+  
+#else
   return SQR(pos1[0]-pos2[0]) + SQR(pos1[1]-pos2[1]) + SQR(pos1[2]-pos2[2]);
+#endif
 }
 
-/** Returns the distance between two positions squared and stores the
-    distance vector pos1-pos2 in vec.
+/** Returns the Euclidean distance between two positions squared and
+ *  stores the distance vector pos1-pos2 in vec.
  *  \param pos1 Position one.
  *  \param pos2 Position two.
  *  \param vec  vecotr pos1-pos2.
@@ -883,35 +924,33 @@ inline double distance2(double pos1[3], double pos2[3])
 */
 inline double distance2vec(double pos1[3], double pos2[3], double vec[3])
 {
+#ifdef LEES_EDWARDS
+  int y_img_count;
+
   vec[0] = pos1[0]-pos2[0];
   vec[1] = pos1[1]-pos2[1];
   vec[2] = pos1[2]-pos2[2];
+
+  /* Imaging in x is needed because of LE offset.
+   * do not worry about double-imaging:
+   * only one copy is sent over the y-wrap in LE.
+   */
+   y_img_count = (int)floor(pos1[1]*box_l_i[1]) - (int)floor(pos2[1]*box_l_i[1]);
+   if( y_img_count != 0 ){
+     while( vec[0] < -0.5 * box_l[0] ){
+          vec[0] += box_l[0];
+     }
+     while( vec[0] > 0.5 * box_l[0] ){
+          vec[0] -= box_l[0];
+     }
+   }
+#else
+  vec[0] = pos1[0]-pos2[0];
+  vec[1] = pos1[1]-pos2[1];
+  vec[2] = pos1[2]-pos2[2];
+#endif
   return SQR(vec[0]) + SQR(vec[1]) + SQR(vec[2]);
 }
-
-/** returns the distance between the unfolded coordintes of two particles. 
- *  \param pos1       Position of particle one.
- *  \param image_box1 simulation box index of particle one .
- *  \param pos2       Position of particle two.
- *  \param image_box2 simulation box index of particle two .
- *  \param box_l      size of simulation box.
-*/
-inline double unfolded_distance(double pos1[3], int image_box1[3], 
-				  double pos2[3], int image_box2[3], double box_l[3])
-{
-  int i;
-  double dist = 0;
-  double lpos1[3],lpos2[3];
-  for(i=0;i<3;i++){
-    lpos1[i] = pos1[i];
-    lpos2[i] = pos2[i];
-    lpos1[i] += image_box1[i]*box_l[i];
-    lpos2[i] += image_box2[i]*box_l[i];
-    dist += SQR(lpos1[i]-lpos2[i]);
-  }
-  return sqrt(dist);
-}
-/*@}*/
 
 /*************************************************************/
 /** \name String helper functions                            */

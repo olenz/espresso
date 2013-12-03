@@ -77,8 +77,13 @@ inline void add_lj_pair_force(Particle *p1, Particle *p2, IA_parameters *ia_para
 	force[j] += fac * d[j];
 
 #ifdef LJ_WARN_WHEN_CLOSE
-      if(fac*dist > 1000) fprintf(stderr,"%d: LJ-Warning: Pair (%d-%d) force=%f dist=%f\n",
+      if(fac*dist > 1000) {
+          fprintf(stderr,"%d: LJ-Warning: Pair (%d-%d) force=%f dist=%f\n",
 				  this_node,p1->p.identity,p2->p.identity,fac*dist,dist);
+       
+          fprintf(stderr, "    %f %f %f - %f %f %f\n", p1->r.p[0],p1->r.p[1], p1->r.p[2], p2->r.p[0],p2->r.p[1], p2->r.p[2]);
+                  
+      }
 #endif
     }
     /* capped part of lj potential. */

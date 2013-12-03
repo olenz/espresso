@@ -149,8 +149,11 @@ int tclcommand_writemd(ClientData data, Tcl_Interp *interp,
   for (p = 0; p <= max_seen_particle; p++) {
     Particle data;
     if (get_particle_data(p, &data)) {
+#ifdef LEES_EDWARDS
+      unfold_position(data.r.p, data.m.v, data.l.i);
+#else
       unfold_position(data.r.p, data.l.i);
-
+#endif
       /* write particle index */
       Tcl_Write(channel, (char *)&p, sizeof(int));
 

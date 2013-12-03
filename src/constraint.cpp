@@ -35,6 +35,14 @@ int reflection_happened;
 
 #ifdef CONSTRAINTS
 
+
+//use a !locally defined only! macro for the imaging call, just for tidiness.
+#ifdef LEES_EDWARDS
+#define fold_position(a, b) fold_position(a, vvle, b)
+#endif
+
+
+
 int n_constraints       = 0;
 Constraint *constraints = NULL;
 
@@ -1741,7 +1749,13 @@ void reflect_particle(Particle *p1, double *distance_vec, int reflecting) {
 
       memcpy(folded_pos, p1->r.p, 3*sizeof(double));
       memcpy(img, p1->l.i, 3*sizeof(int));
+      
+#ifdef LEES_EDWARDS
+      fprintf(stderr, "Lees-Edwards and particle reflection: currently these don't work together.\n");
+      exit(8);
+#else
       fold_position(folded_pos, img);
+#endif
 
       memcpy(vec, distance_vec, 3*sizeof(double));
 /* For Debugging your can show the folded coordinates of the particle before
@@ -1788,6 +1802,9 @@ void add_constraints_forces(Particle *p1)
   if (n_constraints==0)
    return;
   int n, j;
+#ifdef LEES_EDWARDS
+  double vvle[3];
+#endif
   double dist, vec[3], force[3], torque1[3], torque2[3];
 
   IA_parameters *ia_params;
@@ -2047,6 +2064,9 @@ double add_constraints_energy(Particle *p1)
   IA_parameters *ia_params;
   char *errtxt;
   double folded_pos[3];
+#ifdef LEES_EDWARDS
+  double vvle[3];
+#endif
   int img[3];
 
   /* fold the coordinate[2] of the particle */
