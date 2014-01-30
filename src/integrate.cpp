@@ -19,10 +19,10 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 */
 
-/** \file integrate.c   Molecular dynamics integrator.
+/** \file integrate.cpp   Molecular dynamics integrator.
  *
  *  For more information about the integrator 
- *  see \ref integrate.h "integrate.h".
+ *  see \ref integrate.hpp "integrate.h".
 */
 
 #include <mpi.h>
@@ -33,6 +33,7 @@
 #include "utils.hpp"
 #include "integrate.hpp"
 #include "reaction.hpp"
+#include "electrokinetics.hpp"
 #include "interaction_data.hpp"
 #include "particle_data.hpp"
 #include "communication.hpp"
@@ -56,7 +57,6 @@
 #include "lattice.hpp"
 #include "lb.hpp"
 #include "virtual_sites.hpp"
-#include "adresso.hpp"
 #include "statistics_correlation.hpp"
 #include "ghmc.hpp"
 
@@ -190,10 +190,6 @@ void integrate_vv(int n_steps)
     update_mol_vel_pos();
     ghost_communicator(&cell_structure.update_ghost_pos_comm);
     if (check_runtime_errors()) return;
-#ifdef ADRESS
-    //    adress_update_weights();
-    if (check_runtime_errors()) return;
-#endif
 #endif
 #ifdef COLLISION_DETECTION
     prepare_collision_queue();
@@ -306,10 +302,6 @@ void integrate_vv(int n_steps)
       cells_update_ghosts();
 #endif
 
-#ifdef ADRESS
-    //adress_update_weights();
-    if (check_runtime_errors()) break;
-#endif
 #endif
 
     /* Integration Step: Step 3 of Velocity Verlet scheme:
@@ -356,15 +348,28 @@ void integrate_vv(int n_steps)
     recalc_forces = 0;
     
 #ifdef LB
-    if (lattice_switch & LATTICE_LB) lattice_boltzmann_update();
-    if (check_runtime_errors()) break;
+    if (lattice_switch & LATTICE_LB)
+      lattice_boltzmann_update();
+      
+    if (check_runtime_errors())
+      break;
 #endif
 
 #ifdef LB_GPU
     if(this_node == 0){
-      if (lattice_switch & LATTICE_LB_GPU) lattice_boltzmann_update_gpu();
-    }
+#ifdef ELECTROKINETICS
+      if (ek_initialized) {
+        ek_integrate();
+      }
+      else {
 #endif
+        if (lattice_switch & LATTICE_LB_GPU)
+          lattice_boltzmann_update_gpu();
+#ifdef ELECTROKINETICS
+      }
+#endif
+    }
+#endif //LB_GPU
 
 #ifdef BOND_CONSTRAINT
     ghost_communicator(&cell_structure.update_ghost_pos_comm);

@@ -18,8 +18,8 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 */
-/** \file initialize.c
-    Implementation of \ref initialize.h "initialize.h"
+/** \file initialize.cpp
+    Implementation of \ref initialize.hpp "initialize.hpp"
 */
 #include "utils.hpp"
 #include "initialize.hpp"
@@ -56,7 +56,6 @@
 #include "rattle.hpp"
 #include "lattice.hpp"
 #include "iccp3m.hpp" /* -iccp3m- */
-#include "adresso.hpp"
 #include "metadynamics.hpp"
 #include "statistics_observable.hpp"
 #include "statistics_correlation.hpp"
@@ -116,14 +115,6 @@ void on_program_start()
   ghost_init();
   /* Initialise force and energy tables */
   force_and_energy_tables_init();
-#ifdef ADRESS
-#ifdef INTERFACE_CORRECTION
-  adress_force_and_energy_tables_init();
-#endif
-  /* #ifdef THERMODYNAMIC_FORCE */
-  tf_tables_init();
-  /* #endif */
-#endif
 #ifdef P3M
   p3m_pre_init();
 #endif
@@ -369,7 +360,7 @@ node. */
       break;
   }
 #endif
-  /* Update particle and observable information for routines in statistics.c */
+  /* Update particle and observable information for routines in statistics.cpp */
   invalidate_obs();
   freePartCfg();
 
