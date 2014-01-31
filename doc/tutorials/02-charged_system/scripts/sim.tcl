@@ -26,6 +26,7 @@ set box_l [expr pow($n_part/$density,1./3.)]
 
 # Select electrostatics method
 set method "p3m"
+#set method "scafacos_p3m"
 #set method "memd"
 
 # Setup system geometry in Espresso
@@ -66,7 +67,9 @@ if { ![ info exists method ] } {
 
 # Distinguish between different methods
 if { $method == "p3m" } {
-	puts [inter coulomb 10.0 p3m tunev2 accuracy 1e-3 mesh 32]
+#	puts [inter coulomb 10.0 p3m tunev2 accuracy 1e-3 mesh 32]
+    puts [inter coulomb 10.0 p3m 2.771019534648024 32 4 1.1159311917221373 ]
+    puts [inter coulomb]
 } elseif { $method == "memd" } {
 	# MEMD need no Verlet lists!
 	cellsystem domain_decomposition -no_verlet_list
@@ -74,7 +77,9 @@ if { $method == "p3m" } {
 	set f_mass [expr 100.0*pow( ([setmd time_step]*$memd_mesh/$box_l) , 2.0 ) ]
 	puts "memd parameters: mesh=$memd_mesh, f_mass=$f_mass"
 	puts [inter coulomb 10.0 memd $f_mass $memd_mesh]
-#puts [inter coulomb 10.0 scafacos_p3m cutoff 0.249 grid 32 cao 6 ]
+} elseif { $method == "scafacos_p3m" } {
+    puts [inter coulomb 10.0 scafacos_p3m \
+              srf 1 cutoff 2.771019534648024 grid 32 cao 4 alpha 1.1159311917221373]
 } else {
 	puts "Electrostatics method must be one of 'memd' or 'p3m'."
 	exit

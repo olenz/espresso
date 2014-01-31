@@ -643,24 +643,25 @@ static void recalc_maximal_cutoff_nonbonded()
 	max_cut_current += 2.0* max_cut_bonded;
       }
 #endif
-#ifdef SCAFACOS
 
- //TODO
+#ifdef SCAFACOS
 double r_cut_scafacos = 0;
 if(scafacos.short_range_flag == 0){
   switch (coulomb.method) {
+#ifdef SCAFACOS_P2NFFT
     case COULOMB_SCAFACOS_P2NFFT: {
-
       fcs_p2nfft_get_r_cut(fcs_handle, &r_cut_scafacos);
       fprintf(stderr, "interaction_data.c:r_cut_scafacos is %f \n", r_cut_scafacos);
       break;
     }
+#endif
+#ifdef SCAFACOS_P3M
     case COULOMB_SCAFACOS_P3M: {
-
       fcs_p3m_get_r_cut(fcs_handle, &r_cut_scafacos);
       fprintf(stderr, "interaction_data.c:r_cut_scafacos is %f \n", r_cut_scafacos);
       break;
     }
+#endif
   }
 }
 

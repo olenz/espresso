@@ -180,7 +180,7 @@ typedef struct{
 extern scafacos_vmg_parameter_struct scafacos_vmg;
 #endif
 
-#ifdef SCAFACOS_EWALD
+#ifdef SCAFACOS_P3M
 typedef struct {
 /** Ewald splitting parameter (0<alpha<1), rescaled to alpha_L = alpha * box_l. */
   double alpha_L;

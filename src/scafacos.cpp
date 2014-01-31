@@ -231,7 +231,7 @@ void mpi_scafacos_bcast_common_params(){
     default:
       break;
   } 
-  scafacos.n_total_particles = n_total_particles;
+  scafacos.n_total_particles = n_part;
   
   /*
   MPI_Bcast( &scafacos.short_range_flag, 1, MPI_INT, 0, comm_cart); 

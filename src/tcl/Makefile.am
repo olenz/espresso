@@ -129,7 +129,18 @@ libEspressoTcl_la_SOURCES += \
 	p3m-dipolar_tcl.cpp p3m-dipolar_tcl.hpp \
 	p3m_tcl.cpp p3m_tcl.hpp \
 	reaction_field_tcl.cpp reaction_field_tcl.hpp \
-	mdlc_correction_tcl.cpp mdlc_correction_tcl.hpp	
+	mdlc_correction_tcl.cpp mdlc_correction_tcl.hpp	\
+	scafacos_direct_tcl.cpp scafacos_direct_tcl.hpp \
+	scafacos_ewald_tcl.cpp scafacos_ewald_tcl.hpp \
+	scafacos_fmm_tcl.cpp scafacos_fmm_tcl.hpp \
+	scafacos_memd_tcl.cpp scafacos_memd_tcl.hpp \
+	scafacos_mmm1d_tcl.cpp scafacos_mmm1d_tcl.hpp \
+	scafacos_mmm2d_tcl.cpp scafacos_mmm2d_tcl.hpp \
+	scafacos_p2nfft_tcl.cpp scafacos_p2nfft_tcl.hpp \
+	scafacos_p3m_tcl.cpp scafacos_p3m_tcl.hpp \
+	scafacos_pepc_tcl.cpp scafacos_pepc_tcl.hpp \
+	scafacos_pp3mg_tcl.cpp scafacos_pp3mg_tcl.hpp \
+	scafacos_vmg_tcl.cpp scafacos_vmg_tcl.hpp
 
 if CUDA
 libEspressoTcl_la_SOURCES += cuda_init_tcl.cpp

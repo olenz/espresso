@@ -284,9 +284,10 @@ inline void add_non_bonded_pair_force(Particle *p1, Particle *p2,
   
   if (coulomb.method == COULOMB_RF)
     add_rf_coulomb_pair_force(p1,p2,d,dist,force);
+
 #ifdef SCAFACOS
   fcs_float sh_field;
-  if(scafacos.short_range_flag == 0 && (coulomb.method == COULOMB_SCAFACOS_P2NFFT || coulomb.method == COULOMB_SCAFACOS_P3M)) {
+  if (scafacos.short_range_flag == 0 && (coulomb.method == COULOMB_SCAFACOS_P2NFFT || coulomb.method == COULOMB_SCAFACOS_P3M)) {
     fcs_compute_near_field(fcs_handle, (fcs_float) dist, &sh_field);
     int i;
     for(i=0; i<3; i++){

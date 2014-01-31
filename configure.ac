@@ -266,7 +266,7 @@ AS_IF([test x$scafacos_found = xno],[
 AS_IF([test x$scafacos_found = xyes],[
   AC_DEFINE(SCAFACOS,[],[Whether SCAFACOS is available])
   AC_DEFINE(SCAFACOS_P3M,[],[Whether the ScaFaCoS solver p3m is available])
-  AC_DEFINE(SCAFACOS_EWALD,[],[Whether the ScaFaCoS solver ewald is available])
+#  AC_DEFINE(SCAFACOS_EWALD,[],[Whether the ScaFaCoS solver ewald is available])
 ])
 
 
