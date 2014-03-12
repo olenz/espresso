@@ -129,6 +129,8 @@
   #define COULOMB_P3M_GPU 11
   /** Coulomb method is GPU-based MMM1D **/
   #define COULOMB_MMM1D_GPU 12
+  /** Coulomb method is GPU-based EWALD **/
+  #define COULOMB_EWALD_GPU 13
 #endif
 /*@}*/
 

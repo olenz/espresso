@@ -35,6 +35,7 @@
 #include "reaction_field.hpp"
 #include "mmm1d.hpp"
 #include "mmm2d.hpp"
+#include "EwaldgpuForce.hpp"
 #include "maggs.hpp"
 #include "elc.hpp"
 #include "lj.hpp"
@@ -527,6 +528,12 @@ static void recalc_global_maximal_nonbonded_cutoff()
     if (max_cut_global < rf_params.r_cut)
       max_cut_global = rf_params.r_cut;
     break;
+#ifdef EWALD_GPU
+  case COULOMB_EWALD_GPU:
+    if (max_cut_global < ewaldgpu_params.rcut )
+      max_cut_global = ewaldgpu_params.rcut;
+    break;
+#endif
   }
 #endif /*ifdef ELECTROSTATICS */
   
