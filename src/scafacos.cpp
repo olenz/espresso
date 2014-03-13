@@ -111,7 +111,7 @@ int scafacos_run (){
 
  // fprintf(stderr, "scafacos.c: run_scafacos(): fcs_run is being called \n");
   
-  if (fcs_run(fcs_handle, (fcs_int)n_local_particles, (fcs_int)n_local_particles, positions, charges, field, potentials ) != NULL  )
+  if (fcs_run(fcs_handle, (fcs_int)n_local_particles, positions, charges, field, potentials ) != NULL  )
     fprintf(stderr,"Warning: fcs_run exited with an error \n");
 
   count = 0;
@@ -173,7 +173,7 @@ void scafacos_tune(){
       }
      // printf("node: %d, count: %d \n", this_node, count);
 
-  fcs_tune(fcs_handle, (fcs_int)n_local_particles, (fcs_int)n_local_particles, positions, charges );
+  fcs_tune(fcs_handle, (fcs_int)n_local_particles, positions , charges);
   return;
 }
 

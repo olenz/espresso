@@ -25,8 +25,8 @@ set density 0.7
 set box_l [expr pow($n_part/$density,1./3.)]
 
 # Select electrostatics method
-set method "p3m"
-#set method "scafacos_p3m"
+#set method "p3m"
+set method "scafacos_p3m"
 #set method "memd"
 
 # Setup system geometry in Espresso
