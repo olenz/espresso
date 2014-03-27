@@ -27,7 +27,7 @@
 
 extern FCS fcs_handle;
 
-typedef struct{
+struct scafacos_data_struct {
   //char  method[];
   int needs_initialize;
   int needs_solver_specific_set;
@@ -43,7 +43,7 @@ typedef struct{
   int periodicity[3];   
 
   int n_total_particles;
-} scafacos_data_struct;
+};
 extern scafacos_data_struct scafacos;
 
 #ifdef SCAFACOS_DIRECT

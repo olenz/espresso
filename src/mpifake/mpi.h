@@ -24,12 +24,12 @@
     you do not have to have any MPI implementation like LAM or MPICH installed.
 */
 
-#ifndef MPI_H
-#define MPI_H
+#ifndef _MPI_HPP
+#define _MPI_HPP
 
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
 
 //#include "utils.h"
 
