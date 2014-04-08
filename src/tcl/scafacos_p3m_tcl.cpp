@@ -210,7 +210,16 @@ int tclcommand_inter_coulomb_parse_scafacos_p3m(Tcl_Interp * interp, int argc, c
     case COULOMB_SCAFACOS_PEPC:
     case COULOMB_SCAFACOS_PP3MG:
     case COULOMB_SCAFACOS_VMG:
+      //destroy the old handle
       fcs_destroy(fcs_handle);
+
+      //initialize the new handle
+      mpi_scafacos_init();
+      mpi_scafacos_bcast_common_params();
+      mpi_scafacos_bcast_solver_specific();
+      mpi_scafacos_set_common();
+      scafacos_tune();
+
       break;
     default:
       break;
