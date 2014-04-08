@@ -218,6 +218,7 @@ int tclcommand_inter_coulomb_parse_scafacos_p3m(Tcl_Interp * interp, int argc, c
       mpi_scafacos_bcast_common_params();
       mpi_scafacos_bcast_solver_specific();
       mpi_scafacos_set_common();
+      scafacos_tune();
 
       break;
     default:

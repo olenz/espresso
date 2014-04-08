@@ -197,7 +197,7 @@ void mpi_bcast_coulomb_method(){
 }
 
 
-vodi mpi_scafacos_update_params()
+void  mpi_scafacos_update_params()
 {
     int i;
    // fprintf(stderr, "mpi_scafacos_bcast_common_params is running \n");
