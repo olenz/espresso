@@ -328,10 +328,8 @@ parameters, all on each node. */
     case COULOMB_SCAFACOS_PEPC: 
     case COULOMB_SCAFACOS_PP3MG: 
     case COULOMB_SCAFACOS_VMG: {
-      mpi_scafacos_bcast_common_params();
-      mpi_scafacos_bcast_solver_specific();
-      mpi_scafacos_init();
-      mpi_scafacos_set_common();
+      mpi_scafacos_update_params();
+      scafacos_tune();
       mpi_scafacos_solver_specific_set();
       break;
     }

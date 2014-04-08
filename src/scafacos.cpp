@@ -197,42 +197,45 @@ void mpi_bcast_coulomb_method(){
 }
 
 
+vodi mpi_scafacos_update_params()
+{
+    int i;
+   // fprintf(stderr, "mpi_scafacos_bcast_common_params is running \n");
+    scafacos.box_a[0] = box_l[0];
+    scafacos.box_a[1] = 0;
+    scafacos.box_a[2] = 0;
+    scafacos.box_b[0] = 0;
+    scafacos.box_b[1] = box_l[1];
+    scafacos.box_b[2] = 0;
+    scafacos.box_c[0] = 0;
+    scafacos.box_c[1] = 0;
+    scafacos.box_c[2] = box_l[2];
+    for(i=0;i<3;i++){
+      scafacos.offset[i] = 0;
+      scafacos.periodicity[i] = 1;
+    }
+
+    switch(coulomb.method){
+      case COULOMB_SCAFACOS_MMM1D:
+        scafacos.periodicity[0] = 0;
+        scafacos.periodicity[1] = 0;
+        scafacos.periodicity[2] = 1;
+        printf( " MMM1D periodicity \n");
+        break;
+      case COULOMB_SCAFACOS_MMM2D:
+        scafacos.periodicity[0] = 1;
+        scafacos.periodicity[1] = 1;
+        scafacos.periodicity[2] = 0;
+        printf( " MMM2D periodicity \n");
+        break;
+      default:
+        break;
+    }
+    scafacos.n_total_particles = n_part;
+}
+
 void mpi_scafacos_bcast_common_params(){
-  
-  int i;
- // fprintf(stderr, "mpi_scafacos_bcast_common_params is running \n");
-  scafacos.box_a[0] = box_l[0];
-  scafacos.box_a[1] = 0;
-  scafacos.box_a[2] = 0;
-  scafacos.box_b[0] = 0;
-  scafacos.box_b[1] = box_l[1];
-  scafacos.box_b[2] = 0;
-  scafacos.box_c[0] = 0;
-  scafacos.box_c[1] = 0;
-  scafacos.box_c[2] = box_l[2];
-  for(i=0;i<3;i++){
-    scafacos.offset[i] = 0;
-    scafacos.periodicity[i] = 1;
-  }
-  
-  switch(coulomb.method){
-    case COULOMB_SCAFACOS_MMM1D:
-      scafacos.periodicity[0] = 0;
-      scafacos.periodicity[1] = 0;
-      scafacos.periodicity[2] = 1;
-      printf( " MMM1D periodicity \n");
-      break;
-    case COULOMB_SCAFACOS_MMM2D:
-      scafacos.periodicity[0] = 1;
-      scafacos.periodicity[1] = 1;
-      scafacos.periodicity[2] = 0;
-      printf( " MMM2D periodicity \n");
-      break;
-    default:
-      break;
-  } 
-  scafacos.n_total_particles = n_part;
-  
+
   /*
   MPI_Bcast( &scafacos.short_range_flag, 1, MPI_INT, 0, comm_cart); 
   MPI_Bcast( scafacos.box_a, 3, MPI_DOUBLE, 0, comm_cart); 
