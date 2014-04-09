@@ -155,6 +155,7 @@ libEspresso_a_SOURCES += \
 	mmm-common.cpp mmm-common.hpp \
 	p3m.cpp p3m.hpp \
 	p3m_gpu.hpp \
+	EwaldgpuForce.hpp \
         p3m-common.cpp p3m-common.hpp \
 	p3m-dipolar.cpp p3m-dipolar.hpp \
 	reaction_field.cpp reaction_field.hpp
@@ -264,6 +265,7 @@ libEspresso_a_SOURCES += \
 	tcl/maggs_tcl.cpp tcl/maggs_tcl.hpp \
 	tcl/mmm1d_tcl.cpp tcl/mmm1d_tcl.hpp \
 	tcl/mmm1dgpu_tcl.cpp tcl/mmm1dgpu_tcl.hpp \
+	tcl/ewaldgpu_tcl.cpp tcl/ewaldgpu_tcl.hpp \
 	tcl/mmm2d_tcl.cpp tcl/mmm2d_tcl.hpp \
 	tcl/p3m-dipolar_tcl.cpp tcl/p3m-dipolar_tcl.hpp \
 	tcl/p3m_tcl.cpp tcl/p3m_tcl.hpp \
@@ -406,19 +408,22 @@ cuda_init.o: cuda_init.hpp myconfig-final.hpp
 lbgpu.o: lbgpu.hpp myconfig-final.hpp
 p3m_gpu.o: p3m_gpu.hpp myconfig-final.hpp
 Mmm1dgpuForce.o: Mmm1dgpuForce.hpp atomic.cuh mmm-common.cuh specfunc.cuh interaction_data.hpp grid.hpp myconfig-final.hpp
+EwaldgpuForce.o: EwaldgpuForce.hpp myconfig-final.hpp
 
 CUDA_SOURCES = \
 	cuda_init_cuda.cu \
 	cuda_common_cuda.cu \
 	lbgpu_cuda.cu \
-	p3m_gpu_cuda.cu
-	Mmm1dgpuForce.cu Mmm1dgpuForce.hpp
+	p3m_gpu_cuda.cu \
+	Mmm1dgpuForce.cu Mmm1dgpuForce.hpp \
+	EwaldgpuForce.cu EwaldgpuForce.hpp
 
 
 cuda_interface.o: cuda_interface.hpp myconfig-final.hpp
 cuda_init.o: cuda_init.hpp myconfig-final.hpp
 lbgpu.o: lbgpu.hpp myconfig-final.hpp
 p3m_gpu.o: p3m_gpu.hpp myconfig-final.hpp
+EwaldgpuForce.o: EwaldgpuForce.hpp myconfig-final.hpp
 
 if TCL
 

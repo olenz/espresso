@@ -1810,6 +1810,10 @@ void mpi_bcast_coulomb_params_slave(int node, int parm)
   case COULOMB_NONE:
   case COULOMB_MMM1D_GPU:
     break;
+  case COULOMB_EWALD_GPU:
+		#ifdef EWALD_GPU
+  		MPI_Bcast(&ewaldgpu_params, sizeof(Ewaldgpu_params), MPI_BYTE, 0, comm_cart);
+		#endif
 #ifdef P3M
   case COULOMB_ELC_P3M:
     MPI_Bcast(&elc_params, sizeof(ELC_struct), MPI_BYTE, 0, comm_cart);
