@@ -124,7 +124,7 @@
 #define PACKAGE_NAME "ESPResSo"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "ESPResSo 3.2.0-424-g923f822-dirty"
+#define PACKAGE_STRING "ESPResSo 3.2.0-428-ga05a5af"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "espresso"
@@ -133,7 +133,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "3.2.0-424-g923f822-dirty"
+#define PACKAGE_VERSION "3.2.0-428-ga05a5af"
 
 /* Define to the type of arg 1 for `select'. */
 #define SELECT_TYPE_ARG1 int
@@ -157,7 +157,7 @@
 #define USE_NON_CONST 1
 
 /* Version number of package */
-#define VERSION "3.2.0-424-g923f822-dirty"
+#define VERSION "3.2.0-428-ga05a5af"
 
 /* Define to 1 if the X Window System is missing or not being used. */
 /* #undef X_DISPLAY_MISSING */
