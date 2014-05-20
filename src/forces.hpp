@@ -85,7 +85,7 @@
 #include "collision.hpp" 
 
 #include "ForceIterator.hpp"
-#include "EwaldgpuForce.hpp"
+#include "EwaldGPUForce.hpp"
 /* end of force files */
 
 /** \name Exported Functions */

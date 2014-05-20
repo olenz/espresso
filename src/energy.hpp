@@ -21,8 +21,8 @@
 /** \file energy.h
     Implementation of the energy calculation.
 */
-#ifndef _ENERGY_H
-#define _ENERGY_H
+#ifndef _ENERGY_HPP
+#define _ENERGY_HPP
 #include "utils.hpp"
 #include "integrate.hpp"
 #include "statistics.hpp"
@@ -66,11 +66,11 @@
 #include "reaction_field.hpp"
 #include "mmm1d.hpp"
 #include "mmm2d.hpp"
-#include "EwaldgpuForce.hpp"
 #include "maggs.hpp"
 #include "morse.hpp"
 #include "elc.hpp"
 #include "mdlc_correction.hpp"
+#include "EwaldGPUForce.hpp"
 
 /** \name Exported Variables */
 /************************************************************/

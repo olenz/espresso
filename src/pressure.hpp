@@ -32,7 +32,7 @@
 #include "adresso.hpp"
 #include "forces.hpp"
 #include "npt.hpp"
-#include "EwaldgpuForce.hpp"
+#include "EwaldGPUForce.hpp"
 
 /** \name Exported Variables */
 /************************************************************/

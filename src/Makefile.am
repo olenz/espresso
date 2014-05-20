@@ -41,7 +41,7 @@ libEspresso_a_SOURCES = \
         debug.cpp debug.hpp \
 	domain_decomposition.cpp domain_decomposition.hpp \
 	energy.cpp energy.hpp \
-	errorhandling.cpp	errorhandling.hpp \
+	errorhandling.cpp errorhandling.hpp \
 	fft.cpp fft.hpp \
 	fft-common.cpp fft-common.hpp \
 	fft-dipolar.cpp fft-dipolar.hpp \
@@ -147,6 +147,7 @@ libEspresso_a_SOURCES += \
 libEspresso_a_SOURCES += \
 	debye_hueckel.cpp debye_hueckel.hpp \
 	elc.cpp elc.hpp \
+	ewald_gpu.hpp \
 	magnetic_non_p3m_methods.cpp magnetic_non_p3m_methods.hpp \
 	mdlc_correction.cpp  mdlc_correction.hpp \
 	maggs.cpp maggs.hpp \
@@ -155,7 +156,6 @@ libEspresso_a_SOURCES += \
 	mmm-common.cpp mmm-common.hpp \
 	p3m.cpp p3m.hpp \
 	p3m_gpu.hpp \
-	EwaldgpuForce.hpp \
         p3m-common.cpp p3m-common.hpp \
 	p3m-dipolar.cpp p3m-dipolar.hpp \
 	reaction_field.cpp reaction_field.hpp
@@ -407,23 +407,18 @@ cuda_common.o: cuda_common.hpp myconfig-final.hpp
 cuda_init.o: cuda_init.hpp myconfig-final.hpp
 lbgpu.o: lbgpu.hpp myconfig-final.hpp
 p3m_gpu.o: p3m_gpu.hpp myconfig-final.hpp
+cuda_interface.o: cuda_interface.hpp myconfig-final.hpp
+EwaldGPUForce.o: EwaldGPUForce.hpp myconfig-final.hpp
 Mmm1dgpuForce.o: Mmm1dgpuForce.hpp atomic.cuh mmm-common.cuh specfunc.cuh interaction_data.hpp grid.hpp myconfig-final.hpp
-EwaldgpuForce.o: EwaldgpuForce.hpp myconfig-final.hpp
 
 CUDA_SOURCES = \
 	cuda_init_cuda.cu \
 	cuda_common_cuda.cu \
 	lbgpu_cuda.cu \
 	p3m_gpu_cuda.cu \
-	Mmm1dgpuForce.cu Mmm1dgpuForce.hpp \
-	EwaldgpuForce.cu EwaldgpuForce.hpp
+	Mmm1dgpuForce.cu \
+	EwaldGPUForce_cuda.cu
 
-
-cuda_interface.o: cuda_interface.hpp myconfig-final.hpp
-cuda_init.o: cuda_init.hpp myconfig-final.hpp
-lbgpu.o: lbgpu.hpp myconfig-final.hpp
-p3m_gpu.o: p3m_gpu.hpp myconfig-final.hpp
-EwaldgpuForce.o: EwaldgpuForce.hpp myconfig-final.hpp
 
 if TCL
 

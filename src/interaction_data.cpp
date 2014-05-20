@@ -35,7 +35,7 @@
 #include "reaction_field.hpp"
 #include "mmm1d.hpp"
 #include "mmm2d.hpp"
-#include "EwaldgpuForce.hpp"
+#include "EwaldGPUForce.hpp"
 #include "maggs.hpp"
 #include "elc.hpp"
 #include "lj.hpp"

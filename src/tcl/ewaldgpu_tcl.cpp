@@ -1,6 +1,6 @@
 #include "ewaldgpu_tcl.hpp"
 #include "forces.hpp"
-#include "EwaldgpuForce.hpp"
+#include "EwaldGPUForce.hpp"
 
 #ifdef EWALD_GPU
 
@@ -104,7 +104,7 @@ int tclcommand_inter_coulomb_parse_ewaldgpu(Tcl_Interp * interp, int argc, char 
   }
 
   // Create object
-  EwaldgpuForce *A=new EwaldgpuForce(r_cut, num_kx, num_ky, num_kz, alpha);
+  EwaldGPUForce *A=new EwaldGPUForce(r_cut, num_kx, num_ky, num_kz, alpha);
   FI.addMethod(A);
   rebuild_verletlist = 1;
   ewaldgpu_params.ewaldgpu_is_running = true;
@@ -169,7 +169,7 @@ int tclcommand_inter_coulomb_parse_ewaldgpu_tune(Tcl_Interp * interp, int argc, 
   ewaldgpu_set_params_tune(accuracy, precision, K_max, time_calc_steps);
 
   /* Create object */
-  EwaldgpuForce *A=new EwaldgpuForce(r_cut, num_kx, num_ky, num_kz, alpha);
+  EwaldGPUForce *A=new EwaldGPUForce(r_cut, num_kx, num_ky, num_kz, alpha);
   FI.addMethod(A);
   rebuild_verletlist = 1;
 
@@ -248,7 +248,7 @@ int tclcommand_inter_coulomb_parse_ewaldgpu_tunealpha(Tcl_Interp * interp, int a
   mpi_bcast_coulomb_params();
   mpi_bcast_event(INVALIDATE_SYSTEM);
   // Create object
-  EwaldgpuForce *A=new EwaldgpuForce(r_cut, num_kx, num_ky, num_kz, alpha);
+  EwaldGPUForce *A=new EwaldGPUForce(r_cut, num_kx, num_ky, num_kz, alpha);
   FI.addMethod(A);
   rebuild_verletlist = 1;
 
