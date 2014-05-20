@@ -4,8 +4,8 @@
 
 #ifdef EWALD_GPU
 
-#include <cuda.h>
-#include <cuda_runtime.h>
+//#include <cuda.h>
+//#include <cuda_runtime.h>
 #include <math.h>
 #include "cells.hpp"
 
@@ -13,8 +13,8 @@
 #define CUDA_USE_SINGLE_PRECISION
 #endif
 
-#include <cuda.h>
-#include <cuda_runtime.h>
+//#include <cuda.h>
+//#include <cuda_runtime.h>
 
 // the following works around an incompatibility between Eigen and the nvcc preprocessor
 #define EIGEN_DONT_VECTORIZE
