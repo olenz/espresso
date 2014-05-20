@@ -35,10 +35,6 @@
 
 void errexit();
 
-#ifndef inline
- #define inline static inline
-#endif
-
 
 /********************************** REMARK **********************/
 /* This is the fake MPI header of Espresso, and has nothing to  */
@@ -126,6 +122,7 @@ int MPI_Type_struct(int count, int *lengths, MPI_Aint *disps, MPI_Datatype *oldt
 int MPI_Type_contiguous(int count, MPI_Datatype oldtype, MPI_Datatype *newtype);
 int MPI_Type_vector(int count, int length, int stride, MPI_Datatype oldtype, MPI_Datatype *newtype);
 int MPI_Type_hvector(int count, int length, int stride, MPI_Datatype oldtype, MPI_Datatype *newtype);
+int MPI_Type_create_hvector(int count, int length, int stride, MPI_Datatype oldtype, MPI_Datatype *newtype);
 
 inline int MPI_Init(int *a, char ***b) { return MPI_SUCCESS; }
 inline int MPI_Finalize(void) { return MPI_SUCCESS; }
@@ -143,6 +140,11 @@ inline int MPI_Comm_free(MPI_Comm *comm) { return MPI_SUCCESS; }
 inline int MPI_Type_commit(MPI_Datatype *dtype) { return MPI_SUCCESS; }
 inline int MPI_Type_free(MPI_Datatype *dtype) { free(*dtype); *dtype = NULL; return MPI_SUCCESS; }
 inline int MPI_Type_extent(MPI_Datatype dtype, MPI_Aint *pextent) { *pextent = dtype->upper - dtype->lower; return MPI_SUCCESS; }
+inline int MPI_Type_get_extent(MPI_Datatype dtype, MPI_Aint *lower, MPI_Aint *pextent) { 
+  *lower = dtype->lower;
+  *pextent = dtype->upper - dtype->lower; 
+  return MPI_SUCCESS; 
+}
 inline int MPI_Barrier(MPI_Comm comm) { return MPI_SUCCESS; }
 inline int MPI_Waitall(int count, MPI_Request *reqs, MPI_Status *stats) { return MPI_SUCCESS; }
 inline int MPI_Wait(MPI_Request *reqs, MPI_Status *stats) { return MPI_SUCCESS; }

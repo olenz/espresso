@@ -33,7 +33,8 @@ AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
 # Initialize automake
-AM_INIT_AUTOMAKE([1.11 gnu subdir-objects dist-xz])
+# tar-ustar is needed for filenames longer than 99 chars
+AM_INIT_AUTOMAKE([1.11 gnu tar-ustar subdir-objects dist-xz])
 AM_MAINTAINER_MODE
 
 # silent rules, backwards compatiblity
@@ -207,7 +208,6 @@ EOF
 
 LIBS="$LIBS -lm"
 
-
 ##################################
 # check for FFTW
 # with_fftw=no    don't use FFTW
@@ -333,10 +333,10 @@ AS_IF([test x$with_cuda != xno],[
     # NVCC compile check
     AC_MSG_CHECKING([whether CUDA compiles])
     
-    # if no other compute capability is defined by the user, we require at least 1.1
+    # if no other compute capability is defined by the user, we default to 2.0
     case "$NVCCFLAGS" in
        *-arch=*) ;;
-       *) NVCCFLAGS="$NVCCFLAGS --ptxas-options=-v -gencode arch=compute_11,code=compute_11 -gencode arch=compute_20,code=compute_20"
+       *) NVCCFLAGS="$NVCCFLAGS --ptxas-options=-v -gencode arch=compute_20,code=compute_20"
     esac
     
     # use nvcc
@@ -350,8 +350,8 @@ AS_IF([test x$with_cuda != xno],[
     CXX=$NVCC
     CXXFLAGS="$NVCCFLAGS -x cu"
     # libtool linking options likely break NVCC linking, sort out all but simple -L options
-    LDFLAGS="-Xlinker `echo $LDFLAGS | sed -e ['s|-[^L][^ 	]*||g' -e 's|[ 	][ 	]*|,|g']`"
-    LIBS="-Xlinker `echo $LIBS | sed ['s|[ 	][ 	]*|,|g']`"
+    AS_IF([test -n "$LDFLAGS"],[ LDFLAGS="-Xlinker `echo $LDFLAGS | sed -e ['s|-[^L][^ 	]*||g' -e 's|[ 	][ 	]*|,|g']`" ])
+    AS_IF([test -n "$LIBS"   ],[ LIBS="-Xlinker `echo $LIBS | sed ['s|[ 	][ 	]*|,|g']`"])
     
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <cuda.h>],[cudaGetDevice(0);])], [
         AC_MSG_RESULT(yes)
@@ -439,12 +439,14 @@ if test .$with_python_interface != .no; then
 
    AX_PYTHON_MODULE(numpy, required)
    AC_MSG_CHECKING([for numpy include path])
-   NUMPY_INCLUDE="`$PYTHON -c 'import numpy; print numpy.get_include()'`"
+   NUMPY_INCLUDE="`$PYTHON -c 'import numpy; import sys; sys.stdout.write(numpy.get_include())'`"
    PYTHON_CPPFLAGS="$PYTHON_CPPFLAGS -I$NUMPY_INCLUDE"
    AC_MSG_RESULT([$NUMPY_INCLUDE])
    AC_DEFINE(PYTHON_DEV,[],[Whether Python is available])
 fi
 AM_CONDITIONAL(PYTHON_INTERFACE, [test .$with_python_interface != .no])
+# export libtool objdir, so that we can link the .so files to the dir itself
+AC_SUBST(objdir)
 
 cat <<EOF
 ****************************************************************
@@ -494,6 +496,7 @@ if test .$use_tcl = . ; then
 fi
 
 case $target_os in
+  *darwin*) extrapaths=/Library/Frameworks/Tcl.framework/Headers ;;
   *linux*)  # path used by *buntu
 	  extrapaths=/usr/include/$version ;;
 esac
@@ -568,6 +571,7 @@ Try --with-tcl=tcl to also use a generic Tcl version, which may fit better.])
 		fi
 	fi
 	case $target_os in
+	*darwin*) extrapaths=/Library/Frameworks/Tk.framework/Headers ;;
 	*linux*)  # path used by *buntu
 		  extrapaths="/usr/include/$version /usr/include/$use_tcl" ;;
 	(*) ;;
@@ -648,6 +652,7 @@ AC_CONFIG_FILES([
 	src/Makefile
         src/tcl/Makefile
         src/python/Makefile
+        src/python/espresso/Makefile
 	tools/Makefile
 	scripts/Makefile 
 	testsuite/Makefile
@@ -659,12 +664,15 @@ AC_CONFIG_FILES([
 	doc/tutorials/Makefile
 	doc/tutorials/01-lennard_jones/Makefile 
 	doc/tutorials/02-charged_system/Makefile 
+	doc/tutorials/03-object_in_fluid/Makefile 
 	doc/latexit.sh
 	])
 AC_CONFIG_FILES([testsuite/runtest.sh],
 	[chmod 755 testsuite/runtest.sh])
 AC_CONFIG_FILES([tools/es_mpiexec],
 	[chmod 755 tools/es_mpiexec])
+AC_CONFIG_FILES([src/python/pypresso],
+	[chmod 755 src/python/pypresso])
 
 AC_SUBST([CONFIG_STATUS_DEPENDENCIES], ['$(top_srcdir)/src/features.def $(top_srcdir)/config/gen_sampleconfig.py'])
 AC_CONFIG_COMMANDS([myconfig-sample.hpp],
@@ -705,7 +713,7 @@ efence			= $with_efence
 
 EOF
 
-if test x$cuda_ok = xno; then
+if test x$cuda_ok = xyes; then
 cat <<EOF
 Cuda
 ----

@@ -31,6 +31,7 @@
 #include "lbgpu.hpp"
 #include "lb.hpp"
 #include "electrokinetics.hpp"
+#include "electrokinetics_pdb_parse.hpp"
 #include "interaction_data.hpp"
 #include "communication.hpp"
 
@@ -71,6 +72,10 @@ void lbboundary_mindist_position(double pos[3], double* mindist, double distvec[
 
       case CONSTRAINT_STOMATOCYTE:
 	      calculate_stomatocyte_dist(p1, pos, (Particle*) NULL, &lb_boundaries[n].c.stomatocyte, &dist, vec); 
+        break;
+
+      case CONSTRAINT_HOLLOW_CONE:
+	      calculate_hollow_cone_dist(p1, pos, (Particle*) NULL, &lb_boundaries[n].c.hollow_cone, &dist, vec); 
         break;
     }
     
@@ -116,6 +121,9 @@ void lb_init_boundaries() {
           break;
         }
       }
+      if (pdb_charge_lattice) {
+        charged_boundaries = 1;
+      }
         
       for(n = 0; n < int(ek_parameters.number_of_species); n++)
         if(ek_parameters.valency[n] != 0.0) {
@@ -133,7 +141,7 @@ void lb_init_boundaries() {
 
     for(z=0; z<int(lbpar_gpu.dim_z); z++) {
       for(y=0; y<int(lbpar_gpu.dim_y); y++) {
-        for (x=0; x<int(lbpar_gpu.dim_x); x++) {	    
+        for (x=0; x<int(lbpar_gpu.dim_x); x++) {
           pos[0] = (x+0.5)*lbpar_gpu.agrid;
           pos[1] = (y+0.5)*lbpar_gpu.agrid;
           pos[2] = (z+0.5)*lbpar_gpu.agrid;
@@ -175,6 +183,10 @@ void lb_init_boundaries() {
                 calculate_stomatocyte_dist((Particle*) NULL, pos, (Particle*) NULL, &lb_boundaries[n].c.stomatocyte, &dist_tmp, dist_vec);
                 break;
                 
+              case LB_BOUNDARY_HOLLOW_CONE:
+                calculate_hollow_cone_dist((Particle*) NULL, pos, (Particle*) NULL, &lb_boundaries[n].c.hollow_cone, &dist_tmp, dist_vec);
+                break;
+                
               default:
                 errtxt = runtime_error(128);
                 ERROR_SPRINTF(errtxt, "{109 lbboundary type %d not implemented in lb_init_boundaries()\n", lb_boundaries[n].type);
@@ -184,7 +196,6 @@ void lb_init_boundaries() {
               dist = dist_tmp;
               boundary_number = n;
             }
-          
 #ifdef EK_BOUNDARIES
             if (ek_initialized)
             {
@@ -195,21 +206,33 @@ void lb_init_boundaries() {
             }
 #endif
           }
-          
-          if (dist <= 0 && boundary_number >= 0 && n_lb_boundaries > 0) {
+
+#ifdef EK_BOUNDARIES 
+          if(pdb_boundary_lattice && 
+             pdb_boundary_lattice[ek_parameters.dim_y*ek_parameters.dim_x*z + ek_parameters.dim_x*y + x]) {
+            dist = -1;
+            boundary_number = n_lb_boundaries; // Makes sure that boundary_number is not used by a constraint
+          }
+#endif
+          if (dist <= 0 && boundary_number >= 0 && (n_lb_boundaries > 0 || pdb_boundary_lattice)) {
             size_of_index = (number_of_boundnodes+1)*sizeof(int);
             host_boundary_node_list = (int *) realloc(host_boundary_node_list, size_of_index);
             host_boundary_index_list = (int *) realloc(host_boundary_index_list, size_of_index);
             host_boundary_node_list[number_of_boundnodes] = x + lbpar_gpu.dim_x*y + lbpar_gpu.dim_x*lbpar_gpu.dim_y*z;
             host_boundary_index_list[number_of_boundnodes] = boundary_number + 1; 
             number_of_boundnodes++;  
-            // printf("boundindex %i: \n", number_of_boundnodes);  
+            //printf("boundindex %i: \n", number_of_boundnodes);  
           }
         
 #ifdef EK_BOUNDARIES
           if (ek_initialized)
           {
             if(wallcharge_species != -1) {
+              if(pdb_charge_lattice &&
+                 pdb_charge_lattice[ek_parameters.dim_y*ek_parameters.dim_x*z + ek_parameters.dim_x*y + x] != 0.0f) {
+                node_charged = 1;
+                node_wallcharge += pdb_charge_lattice[ek_parameters.dim_y*ek_parameters.dim_x*z + ek_parameters.dim_x*y + x];
+              }
               if(node_charged)
                 host_wallcharge_species_density[ek_parameters.dim_y*ek_parameters.dim_x*z + ek_parameters.dim_x*y + x] = node_wallcharge / ek_parameters.valency[wallcharge_species];
               else if(dist <= 0)
@@ -224,7 +247,7 @@ void lb_init_boundaries() {
     }
 
     /**call of cuda fkt*/
-    float* boundary_velocity = (float *) malloc(3*n_lb_boundaries*sizeof(float));
+    float* boundary_velocity = (float *) malloc(3*(n_lb_boundaries+1)*sizeof(float));
 
     for (n=0; n<n_lb_boundaries; n++) {
       boundary_velocity[3*n+0]=lb_boundaries[n].velocity[0];
@@ -232,7 +255,11 @@ void lb_init_boundaries() {
       boundary_velocity[3*n+2]=lb_boundaries[n].velocity[2];
     }
 
-    if (n_lb_boundaries)
+    boundary_velocity[3*n_lb_boundaries+0] = 0.0f;
+    boundary_velocity[3*n_lb_boundaries+1] = 0.0f;
+    boundary_velocity[3*n_lb_boundaries+2] = 0.0f;
+
+    if (n_lb_boundaries || pdb_boundary_lattice)
       lb_init_boundaries_GPU(n_lb_boundaries, number_of_boundnodes, host_boundary_node_list, host_boundary_index_list, boundary_velocity);
 
     free(boundary_velocity);
@@ -269,9 +296,9 @@ void lb_init_boundaries() {
     for (z=0; z<lblattice.grid[2]+2; z++) {
       for (y=0; y<lblattice.grid[1]+2; y++) {
         for (x=0; x<lblattice.grid[0]+2; x++) {	    
-          pos[0] = (offset[0]+(x-0.5))*lblattice.agrid;
-          pos[1] = (offset[1]+(y-0.5))*lblattice.agrid;
-          pos[2] = (offset[2]+(z-0.5))*lblattice.agrid;
+          pos[0] = (offset[0]+(x-0.5))*lblattice.agrid[0];
+          pos[1] = (offset[1]+(y-0.5))*lblattice.agrid[1];
+          pos[2] = (offset[2]+(z-0.5))*lblattice.agrid[2];
           
           dist = 1e99;
 
@@ -299,6 +326,10 @@ void lb_init_boundaries() {
                 
               case LB_BOUNDARY_STOMATOCYTE:
                 calculate_stomatocyte_dist((Particle*) NULL, pos, (Particle*) NULL, &lb_boundaries[n].c.stomatocyte, &dist_tmp, dist_vec);
+                break;
+                
+              case LB_BOUNDARY_HOLLOW_CONE:
+                calculate_hollow_cone_dist((Particle*) NULL, pos, (Particle*) NULL, &lb_boundaries[n].c.hollow_cone, &dist_tmp, dist_vec);
                 break;
                 
               default:

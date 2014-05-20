@@ -68,12 +68,20 @@ void calculate_pore_dist(Particle *p1, double ppos[3],
 			 Particle *c_p, Constraint_pore *c, 
 			 double *dist, double *vec);
 
+void calculate_slitpore_dist(Particle *p1, double ppos[3], 
+			 Particle *c_p, Constraint_slitpore *c, 
+			 double *dist, double *vec);
+
 void calculate_plane_dist(Particle *p1, double ppos[3], 
 			  Particle *c_p, Constraint_plane *c, 
 			  double *dist, double *vec);
 
 void calculate_stomatocyte_dist( Particle *p1, double ppos [3], 
         Particle *c_p, Constraint_stomatocyte *cons, 
+        double *dist, double *vec );
+
+void calculate_hollow_cone_dist( Particle *p1, double ppos [3], 
+        Particle *c_p, Constraint_hollow_cone *cons, 
         double *dist, double *vec );
 
 void add_rod_force(Particle *p1, double ppos[3], 

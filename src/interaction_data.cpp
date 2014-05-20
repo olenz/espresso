@@ -834,7 +834,7 @@ void make_bond_type_exist(int type)
   n_bonded_ia = ns;
 }
 
-int check_obs_calc_initialized()
+int interactions_sanity_checks()
 {
   /* set to zero if initialization was not successful. */
   int state = 1;
@@ -900,7 +900,6 @@ int coulomb_set_bjerrum(double bjerrum)
       rf_params.B   = 0.0;
     case COULOMB_MMM1D:
       mmm1d_params.maxPWerror = 1e40;
-      mmm1d_params.bessel_cutoff = 0;
     }
  
     mpi_bcast_coulomb_params();
