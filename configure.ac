@@ -141,6 +141,13 @@ if test "${CXXFLAGS+set}" != set; then
   ])
 fi
 
+cat <<EOF
+****************************************************************
+*                  Checking for libtool                        *
+****************************************************************
+EOF
+LT_INIT([disable-static])
+
 ##################################
 # miscellaneous
 AC_PROG_CXX_C_O
@@ -151,11 +158,11 @@ cat <<EOF
 ****************************************************************
 EOF
 
-LT_INIT([disable-static])
 AC_PROG_AWK
 AC_PROG_EGREP
 AC_PROG_INSTALL
 AC_PROG_LN_S
+PKG_PROG_PKG_CONFIG
 AC_PATH_PROG(DOXYGEN,doxygen,no)
 AM_CONDITIONAL(HAVE_DOXYGEN,[test .$DOXYGEN != .no])
 AC_PATH_PROG(DOT,dot)
@@ -241,7 +248,7 @@ AS_IF([test x$fftw_found = xyes],[
 # check for SCAFACOS
 # with_scafacos=no    don't use SCAFACOS
 # with_scafacos=yes   try to find a working SCAFACOS, bail out if none is found
-# not given	  try to find a working SCAFACOS, continue if not found
+# not given	      try to find a working SCAFACOS, continue if not found
 AC_MSG_CHECKING([whether to use SCAFACOS])
 AC_ARG_WITH([scafacos],
 	AS_HELP_STRING([--with-scafacos],
@@ -249,26 +256,63 @@ AC_ARG_WITH([scafacos],
 	, with_scafacos=guess)
 AC_MSG_RESULT($with_scafacos)
 
-AS_IF([test x$with_scafacos = xno], [scafacos_found=no],
-  [ AC_SEARCH_LIBS(fcs_init, [fcs], [scafacos_found=yes], [scafacos_found=no])
-    AS_IF([test x$scafacos_found = xyes],
-      [AC_CHECK_HEADER([fcs.h],, [scafacos_found=no])])
-  ])
+scafacos_found=no
+AS_IF([test .$with_scafacos != .no],[
+    # test whether scafacos works as is
+    AC_MSG_CHECKING([whether SCAFACOS works as is])
+    AC_LINK_IFELSE([AC_LANG_CALL([],[fcs_init])],[scafacos_found=yes],)
+    AC_MSG_RESULT($scafacos_found)
 
-AS_IF([test x$scafacos_found = xno],[
-  AS_IF([test x$with_scafacos = xyes],[
-    AC_MSG_FAILURE([SCAFACOS requested, but SCAFACOS was not found!])
-    ],[ AS_IF([test x$with_scafacos = xguess], [
-          AC_MSG_WARN([SCAFACOS not found. Some features will not be available!])
-         ])
+    AS_IF([test .$scafacos_found = .no],[
+        # if not, test whether a pkg-config package exists
+        PKG_CHECK_MODULES(SCAFACOS, [scafacos], [
+            scafacos_found=yes
+            CPPFLAGS="$CPPFLAGS $SCAFACOS_CFLAGS"
+            LIBS="$LIBS $SCAFACOS_LIBS"
+        ])
     ])
-  ])
-AS_IF([test x$scafacos_found = xyes],[
-  AC_DEFINE(SCAFACOS,[],[Whether SCAFACOS is available])
-  AC_DEFINE(SCAFACOS_P3M,[],[Whether the ScaFaCoS solver p3m is available])
-#  AC_DEFINE(SCAFACOS_EWALD,[],[Whether the ScaFaCoS solver ewald is available])
+
+    AS_IF([test .$scafacos_found = .no],[
+        # scafacos was not found
+        AS_IF([test .$with_scafacos = .yes],[
+            AC_MSG_FAILURE([SCAFACOS requested, but SCAFACOS was not found!])
+        ],[ 
+            AS_IF([test .$with_scafacos = .guess], [
+                AC_MSG_WARN([SCAFACOS not found. Some features will not be available!])
+            ])
+        ])
+    ],[
+      # scafacos was found
+      AC_DEFINE(SCAFACOS,[],[Whether SCAFACOS is available])
+    ])
 ])
 
+AC_DEFUN([SCAFACOS_CHECK_METHOD],[
+    AC_EGREP_CPP([method=1], [
+      #include "fcs_config.h"
+      method=FCS_ENABLE_$1
+    ], [ 
+        AC_DEFINE(SCAFACOS_$1,[],[Whether the ScaFaCoS solver $1 is available])
+        scafacos_methods="$1 $scafacos_methods"
+    ])
+])  
+
+# if SCAFACOS was found, check which methods exist
+AS_IF([test .$scafacos_found = .yes], [
+    AC_MSG_CHECKING([for available SCAFACOS methods])
+    scafacos_methods=""
+
+    SCAFACOS_CHECK_METHOD(P3M)
+    SCAFACOS_CHECK_METHOD(FMM)
+    SCAFACOS_CHECK_METHOD(PP3MG)
+    SCAFACOS_CHECK_METHOD(VMG)
+    SCAFACOS_CHECK_METHOD(EWALD)
+    SCAFACOS_CHECK_METHOD(DIRECT)
+    SCAFACOS_CHECK_METHOD(PEPC)
+    SCAFACOS_CHECK_METHOD(P2NFFT)
+
+    AC_MSG_RESULT($scafacos_methods)
+])
 
 ##################################
 # check for CUDA
@@ -708,7 +752,13 @@ using profiling flags	= $enable_profiling
 Libraries
 ---------
 FFTW 			= $fftw_found
-SCAFACOS		= $scafacos_found
+EOF
+if test .$scafacos_found = .yes; then 
+  echo "SCAFACOS		= $scafacos_found ($scafacos_methods)"
+else
+  echo "SCAFACOS		= $scafacos_found"
+fi
+cat <<EOF
 efence			= $with_efence
 
 EOF

@@ -16,8 +16,8 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 */
-#ifndef _SCAFACOS_H
-#define _SCAFACOS_H
+#ifndef _SCAFACOS_HPP
+#define _SCAFACOS_HPP
 
 #include "utils.hpp"
 
@@ -209,6 +209,7 @@ void mpi_scafacos_bcast_solver_specific();
 void mpi_scafacos_init();
 void mpi_scafacos_set_common();
 void mpi_scafacos_solver_specific_set();
+void  mpi_scafacos_update_params();
 
 void fcs_p3m_count_charged_particles();
 
