@@ -288,9 +288,11 @@ AS_IF([test .$with_scafacos != .no],[
 ])
 
 AC_DEFUN([SCAFACOS_CHECK_METHOD],[
-    AC_EGREP_CPP([method=1], [
+    AC_EGREP_CPP([yes], [
       #include "fcs_config.h"
-      method=FCS_ENABLE_$1
+      #ifdef FCS_ENABLE_$1
+      yes
+      #endif
     ], [ 
         AC_DEFINE(SCAFACOS_$1,[],[Whether the ScaFaCoS solver $1 is available])
         scafacos_methods="$1 $scafacos_methods"
@@ -752,11 +754,10 @@ using profiling flags	= $enable_profiling
 Libraries
 ---------
 FFTW 			= $fftw_found
+ScaFaCoS                = $scafacos_found
 EOF
 if test .$scafacos_found = .yes; then 
-  echo "SCAFACOS		= $scafacos_found ($scafacos_methods)"
-else
-  echo "SCAFACOS		= $scafacos_found"
+  echo "ScaFaCoS methods        = $scafacos_methods"
 fi
 cat <<EOF
 efence			= $with_efence
