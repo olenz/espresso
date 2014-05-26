@@ -283,7 +283,7 @@ AS_IF([test .$with_scafacos != .no],[
         ])
     ],[
       # scafacos was found
-      AC_DEFINE(SCAFACOS,[],[Whether SCAFACOS is available])
+      AC_DEFINE(SCAFACOS_FOUND,[],[Whether SCAFACOS is available])
     ])
 ])
 
@@ -294,7 +294,7 @@ AC_DEFUN([SCAFACOS_CHECK_METHOD],[
       yes
       #endif
     ], [ 
-        AC_DEFINE(SCAFACOS_$1,[],[Whether the ScaFaCoS solver $1 is available])
+        AC_DEFINE(SCAFACOS_FOUND_$1,[],[Whether the ScaFaCoS solver $1 is available])
         scafacos_methods="$1 $scafacos_methods"
     ])
 ])  
@@ -305,13 +305,13 @@ AS_IF([test .$scafacos_found = .yes], [
     scafacos_methods=""
 
     SCAFACOS_CHECK_METHOD(P3M)
-    SCAFACOS_CHECK_METHOD(FMM)
-    SCAFACOS_CHECK_METHOD(PP3MG)
-    SCAFACOS_CHECK_METHOD(VMG)
-    SCAFACOS_CHECK_METHOD(EWALD)
-    SCAFACOS_CHECK_METHOD(DIRECT)
-    SCAFACOS_CHECK_METHOD(PEPC)
-    SCAFACOS_CHECK_METHOD(P2NFFT)
+    # SCAFACOS_CHECK_METHOD(FMM)
+    # SCAFACOS_CHECK_METHOD(PP3MG)
+    # SCAFACOS_CHECK_METHOD(VMG)
+    # SCAFACOS_CHECK_METHOD(EWALD)
+    # SCAFACOS_CHECK_METHOD(DIRECT)
+    # SCAFACOS_CHECK_METHOD(PEPC)
+    # SCAFACOS_CHECK_METHOD(P2NFFT)
 
     AC_MSG_RESULT($scafacos_methods)
 ])

@@ -48,6 +48,8 @@ MOL_CUT                         implies VIRTUAL_SITES_COM
 ELECTROSTATICS
 P3M                             equals ELECTROSTATICS and FFTW
 INTER_RF                        implies ELECTROSTATICS
+SCAFACOS                        equals ELECTROSTATICS and SCAFACOS_FOUND
+SCAFACOS_P3M                    equals SCAFACOS and SCAFACOS_FOUND_P3M
 
 /* Magnetostatics */
 DIPOLES
@@ -184,6 +186,8 @@ ONEPART_DEBUG
 
 # External switches
 # Switches that are set by configure or gcc, not to be set manually
-CUDA external
-FFTW external
-TK   external
+CUDA                    external
+FFTW                    external
+TK                      external
+SCAFACOS_FOUND          external
+SCAFACOS_FOUND_P3M      external
