@@ -18,34 +18,21 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 */
-#ifndef _INTEGRATE_TCL_H
-#define _INTEGRATE_TCL_H
+#ifndef _CELLS_TCL_H
+#define _CELLS_TCL_H
 #include "parser.hpp"
 
 /** \name Exported Functions */
 /************************************************************/
 /*@{*/
 
-/** tcl procedure for integrator steering. For documentation,
-    see \ref tclcommand_integrate
-*/
-int tclcommand_integrate(ClientData data, Tcl_Interp *interp,
-	      int argc, char **argv);
+/** implementation of the Tcl command cellsystem. See \ref cells_tcl.cpp */
+int tclcommand_cellsystem(ClientData data, Tcl_Interp *interp,
+	       int argc, char **argv);
 
-/** Callback for the skin.
- */
-int tclcallback_skin(Tcl_Interp *interp, void *_data);
-
-/** Callback for integration time_step (0.0 <= time_step).
- */
-int tclcallback_time_step(Tcl_Interp *interp, void *_data);
-
-/** Callback for current time in the integration.
- */
-int tclcallback_time(Tcl_Interp *interp, void *_data);
-
-/** Implements the obsolete tcl-command 'invalidate_system'. */
-int tclcommand_invalidate_system(ClientData data, Tcl_Interp *interp, int argc, char **argv);
+/** implementation of the Tcl command sort_particles. See \ref cells_tcl.cpp */
+int tclcommand_sort_particles(ClientData data, Tcl_Interp *interp,
+                              int argc, char **argv);
 
 /*@}*/
 

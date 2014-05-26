@@ -399,10 +399,10 @@ void mpi_bcast_event_slave(int node, int event)
 #endif /*ifdef P3M */
   case MAGGS_COUNT_CHARGES:
     maggs_count_charged_particles();
-    break;
-#endif /*ifdef ELECTROSTATICS*/
-  case INVALIDATE_SYSTEM:
-    local_invalidate_system();
+    break; 
+#endif
+  case SORT_PARTICLES:
+    local_sort_particles();
     break;
 #ifdef ADDITIONAL_CHECKS
   case CHECK_PARTICLES:
@@ -2982,7 +2982,6 @@ void mpi_loop()
 }
 
 void mpi_external_potential_broadcast(int number) {
-  ExternalPotentialTabulated *e = &(external_potentials[number].e.tabulated);
   mpi_call(mpi_external_potential_broadcast_slave, 0, number);
   MPI_Bcast(&external_potentials[number], sizeof(ExternalPotential), MPI_BYTE, 0, comm_cart);
   MPI_Bcast(external_potentials[number].scale, external_potentials[number].n_particle_types, MPI_DOUBLE, 0, comm_cart);
