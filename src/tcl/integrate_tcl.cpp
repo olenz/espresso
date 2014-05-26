@@ -205,13 +205,17 @@ int tclcommand_integrate(ClientData data, Tcl_Interp *interp, int argc, char **a
   if (argc < 1) {
     Tcl_AppendResult(interp, "wrong # args: \n\"", (char *) NULL);
     return tclcommand_integrate_print_usage(interp);  }
-  else if (argc < 2) {                    return tclcommand_integrate_print_status(interp); }
+  else if (argc < 2)
+    return tclcommand_integrate_print_status(interp); 
 
   if (ARG1_IS_S("set")) {
-    if      (argc < 3)                    return tclcommand_integrate_print_status(interp);
-    if      (ARG_IS_S(2,"nvt"))           return tclcommand_integrate_set_nvt(interp, argc, argv);
+    if (argc < 3)
+      return tclcommand_integrate_print_status(interp);
+    if (ARG_IS_S(2,"nvt"))
+      return tclcommand_integrate_set_nvt(interp, argc, argv);
 #ifdef NPT
-    else if (ARG_IS_S(2,"npt_isotropic")) return tclcommand_integrate_set_npt_isotropic(interp, argc, argv);
+    else if (ARG_IS_S(2,"npt_isotropic"))
+      return tclcommand_integrate_set_npt_isotropic(interp, argc, argv);
 #endif
     else {
       Tcl_AppendResult(interp, "unknown integrator method:\n", (char *)NULL);
@@ -228,7 +232,8 @@ int tclcommand_integrate(ClientData data, Tcl_Interp *interp, int argc, char **a
       argc--; argv++;
     }
     
-    if ( !ARG_IS_I(1,n_steps) ) return tclcommand_integrate_print_usage(interp);
+    if ( !ARG_IS_I(1,n_steps) ) 
+      return tclcommand_integrate_print_usage(interp);
   }
   /* go on with integrate <n_steps> */
   if(n_steps < 0) {
