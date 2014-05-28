@@ -1730,7 +1730,7 @@ void mpi_set_time_step_slave(int node, int i)
 /*************** REQ_BCAST_COULOMB ************/
 void mpi_bcast_coulomb_params()
 {
-#if  defined(ELECTROSTATICS) || defined(DIPOLES)
+#if defined(ELECTROSTATICS) || defined(DIPOLES)
   mpi_call(mpi_bcast_coulomb_params_slave, 1, 0);
   mpi_bcast_coulomb_params_slave(-1, 0);
 #endif

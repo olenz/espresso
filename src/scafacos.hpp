@@ -209,9 +209,7 @@ void mpi_scafacos_bcast_solver_specific();
 void mpi_scafacos_init();
 void mpi_scafacos_set_common();
 void mpi_scafacos_solver_specific_set();
-void  mpi_scafacos_update_params();
-
-void fcs_p3m_count_charged_particles();
+void mpi_scafacos_update_params();
 
 #endif
 

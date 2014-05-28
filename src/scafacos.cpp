@@ -67,7 +67,7 @@ scafacos_vmg_parameter_struct scafacos_vmg;
 scafacos_p3m_parameter_struct scafacos_p3m;
 #endif
 
-int scafacos_run (){
+int scafacos_run(){
   Cell *cell;
   Particle *p;
   int np,c,i,j, dir;
@@ -92,7 +92,7 @@ int scafacos_run (){
     cell = local_cells.cell[c];
     p  = cell->part;
     np = cell->n;
-       
+    
     //loop over all particles in a cell
     for(i=0;i<np;i++) {  
       //transform into arrays needed by ScaFaCoS
@@ -108,36 +108,41 @@ int scafacos_run (){
     count += np;
   }
   // end transform
-
- // fprintf(stderr, "scafacos.c: run_scafacos(): fcs_run is being called \n");
   
-  if (fcs_run(fcs_handle, (fcs_int)n_local_particles, positions, charges, field, potentials ) != NULL  )
-    fprintf(stderr,"Warning: fcs_run exited with an error \n");
-
+  // fprintf(stderr, "scafacos.c: run_scafacos(): fcs_run is being called \n");
+  
+  FCSResult res = fcs_run(fcs_handle, (fcs_int)n_local_particles, 
+                          positions, charges, field, potentials);
+  if (res != NULL) {
+    fprintf(stderr,"Warning: fcs_run exited with an error: %s \n", 
+            fcs_result_get_message(res));
+    errexit();
+  }
+  
   count = 0;
   
-   //retransform for Espresso's interface
-      for (c = 0; c < local_cells.n; c++) {
-        cell = local_cells.cell[c];
-        p  = cell->part;
-        np = cell->n;
-       
-        for(i=0;i<np;i++) {   
-          for(j=0;j<3;j++){
-            p[i].f.f[j] +=  field [3*(i+count) + j] * p[i].p.q * coulomb.bjerrum;
-          }
-        }
-	count += np;
+  //retransform for Espresso's interface
+  for (c = 0; c < local_cells.n; c++) {
+    cell = local_cells.cell[c];
+    p  = cell->part;
+    np = cell->n;
+    
+    for(i=0;i<np;i++) {   
+      for(j=0;j<3;j++){
+        p[i].f.f[j] +=  field [3*(i+count) + j] * p[i].p.q * coulomb.bjerrum;
       }
-      //printf("node: %d, count: %d \n", this_node, count);
-
-   // end retransform 
+    }
+    count += np;
+  }
+  //printf("node: %d, count: %d \n", this_node, count);
+  
+  // end retransform 
   return ES_OK;
 }
 
 
 void scafacos_tune(){
-    
+  
   Cell *cell;
   Particle *p;
   int np,c,i,j;
@@ -155,34 +160,39 @@ void scafacos_tune(){
   //printf("node: %d, n_local_particles: %d \n", this_node, n_local_particles);
   
 
-    //loop over all cells
-      for (c = 0; c < local_cells.n; c++) {   
-        cell = local_cells.cell[c];
-        p  = cell->part;
-        np = cell->n;
-       
-        //loop over all particles in a cell
-        for(i=0;i<np;i++) {   
-          for (j=0; j<3; j++) {
-            positions [3*(i+count) + j] = p[i].r.p[j];
-          }
-          charges[i+count] = p[i].p.q;
-        }
-        
-        count += np;
+  //loop over all cells
+  for (c = 0; c < local_cells.n; c++) {   
+    cell = local_cells.cell[c];
+    p  = cell->part;
+    np = cell->n;
+    
+    //loop over all particles in a cell
+    for(i=0;i<np;i++) {   
+      for (j=0; j<3; j++) {
+        positions [3*(i+count) + j] = p[i].r.p[j];
       }
-     // printf("node: %d, count: %d \n", this_node, count);
-
-  fcs_tune(fcs_handle, (fcs_int)n_local_particles, positions , charges);
+      charges[i+count] = p[i].p.q;
+    }
+    
+    count += np;
+  }
+  // printf("node: %d, count: %d \n", this_node, count);
+  
+  FCSResult res = fcs_tune(fcs_handle, (fcs_int)n_local_particles, positions, charges);
+  if (res != NULL) {
+    fprintf(stderr,"Warning: fcs_tune exited with an error: %s \n", 
+            fcs_result_get_message(res));
+    errexit();
+  }
+  
   return;
 }
-
 
 void mpi_scafacos_set_common(){
   if (fcs_set_common(fcs_handle, scafacos.short_range_flag, 
                      scafacos.box_a, scafacos.box_b, scafacos.box_c, 
                      scafacos.offset, scafacos.periodicity, 
-                     scafacos.n_total_particles) != 0){
+                     scafacos.n_total_particles) != 0) {
     char *errtext = runtime_error(128);
     ERROR_SPRINTF(errtext,"{scafacos.c : scafacos_set_common : fcs_set_common has failed} \n");
   }
